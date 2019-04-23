@@ -7,8 +7,7 @@ if (!NODE_ENV) {
     throw new Error('The NODE_ENV variable is required but was not specified.')
 }
 
-const dotenvFiles = [ 'config/.env', `config/.env.${NODE_ENV}` ].filter(Boolean)
-console.log({ dotenvFiles })
+const dotenvFiles = [ `config/.env.${NODE_ENV}` ].filter(Boolean)
 
 dotenvFiles.forEach(dotenvFile => {
     if (fs.existsSync(dotenvFile)) {

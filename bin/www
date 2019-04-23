@@ -7,6 +7,7 @@
 var app = require('../app').default
 var debug = require('debug')('zabo-server:server')
 var http = require('http')
+var logger = require("../utils/logger").logger
 
 process.env.NODE_ENV = process.env.NODE_ENV || "development"
 
@@ -95,6 +96,13 @@ function onListening() {
 	const address = `http://localhost:${port}`
 
 	// TODO: Reinforce this temporary log
+	logger.info(`%%%%% [START] ENV - ${process.env.NODE_ENV} PORT - ${port} [END] %%%%%`)
+	logger.info(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
+	logger.warn(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
+	logger.error(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
+	logger.warn(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
+	logger.info(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
+
 	console.info(`\nServer is running at ${boldBlue(address)}`)
 	console.info(`================ ENV : %s =================\n`, process.env.NODE_ENV)
 }
