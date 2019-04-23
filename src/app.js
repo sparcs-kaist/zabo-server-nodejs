@@ -4,8 +4,12 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
+import graphqlHTTP from "express-graphql"
 
 import indexRouter from "./routes"
+
+import { schema } from "./db/schema"
+import { root as rootValue } from "./db/resolver"
 
 const app = express()
 
@@ -15,6 +19,13 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
+
+
+app.use('/graphql', graphqlHTTP({
+	schema,
+	rootValue,
+	graphiql: process.env.NODE_ENV === "development",
+}))
 
 app.use('/', indexRouter)
 
@@ -38,4 +49,3 @@ app.use(function (err, req, res, next) {
 app.set('port', 3000)
 
 export default app
-
