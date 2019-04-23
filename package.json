@@ -5,7 +5,14 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "node index"
+    "start": "node index",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,json,css}": [
+      "prettier --config .prettierrc --write",
+      "git add"
+    ]
   },
   "dependencies": {
     "@babel/core": "^7.4.3",
@@ -29,5 +36,8 @@
         }
       ]
     ]
+  },
+  "devDependencies": {
+    "prettier": "^1.17.0"
   }
 }
