@@ -1,6 +1,8 @@
 {
   "name": "zabo-server",
   "version": "0.0.0",
+  "description": "This repository is powered by SPARCS KAIST",
+  "main": "index.js",
   "private": true,
   "scripts": {
     "start": "node index"
