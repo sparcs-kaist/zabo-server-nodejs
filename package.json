@@ -7,7 +7,7 @@
   "scripts": {
     "env:dev": "cross-env NODE_ENV=development",
     "env:prod": "cross-env NODE_ENV=production",
-    "dev": "yarn env:dev nodemon --watch index --watch bin",
+    "dev": "yarn env:dev nodemon index --watch src",
     "prod": "yarn env:prod nodemon index",
     "precommit": "lint-staged"
   },
