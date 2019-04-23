@@ -4,9 +4,11 @@
  * Module dependencies.
  */
 
-var app = require('../app')
+var app = require('../app').default
 var debug = require('debug')('zabo-server:server')
 var http = require('http')
+
+process.env.NODE_ENV = process.env.NODE_ENV || "development"
 
 /**
  * Get port from environment and store in Express.
@@ -87,4 +89,12 @@ function onListening() {
 		? 'pipe ' + addr
 		: 'port ' + addr.port
 	debug('Listening on ' + bind)
+
+	const boldBlue = text => `\u001b[1m\u001b[34m${text}\u001b[39m\u001b[22m`
+
+	const address = `http://localhost:${port}`
+
+	// TODO: Reinforce this temporary log
+	console.info(`\nServer is running at ${boldBlue(address)}`)
+	console.info(`================ ENV : %s =================\n`, process.env.NODE_ENV)
 }

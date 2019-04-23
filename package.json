@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www_es6"
+    "start": "node index"
   },
   "dependencies": {
     "@babel/core": "^7.4.3",
