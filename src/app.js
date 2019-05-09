@@ -8,6 +8,7 @@ import graphqlHTTP from "express-graphql"
 
 import indexRouter from "./routes"
 
+import "./db"
 import { schema } from "./db/schema"
 import { root as rootValue } from "./db/resolver"
 
