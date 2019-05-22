@@ -1,6 +1,6 @@
-import { board, user, zabo } from "./schema"
+import { boardSchema, userSchema, zaboSchema } from "./schema"
 
-user.virtual('name')
+userSchema.virtual('name')
 	.get(function () {
 		return `${this.lastName} ${this.firstName}`
 	})
@@ -9,11 +9,11 @@ user.virtual('name')
 		this.firstName = v.substr(v.indexOf(' ') + 1)
 	})
 
-user.statics.findByName = function (name, cb) {
+userSchema.statics.findByName = function (name, cb) {
 	return this.find({ name: new RegExp(name, 'i') }, cb)
 }
 
-user.query.byName = function (name) {
+userSchema.query.byName = function (name) {
 	return this.where({ name: new RegExp(name, 'i') })
 }
 
@@ -23,4 +23,4 @@ user.query.byName = function (name) {
 //	return v.map(el => Object.assign(el, { url: root + el.url }))
 //})
 
-export { user, zabo, board }
+export { userSchema, zaboSchema, boardSchema }
