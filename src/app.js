@@ -4,13 +4,11 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
-import graphqlHTTP from "express-graphql"
 
 import indexRouter from "./routes"
 
+import graphql from "./db/graphql"
 import "./db"
-import { schema } from "./db/schema"
-import { root as rootValue } from "./db/resolver"
 
 const app = express()
 
@@ -22,12 +20,7 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 
-app.use('/graphql', graphqlHTTP({
-	schema,
-	rootValue,
-	graphiql: process.env.NODE_ENV === "development",
-}))
-
+app.use('/graphql', graphql)
 app.use('/', indexRouter)
 
 // catch 404 and forward to error handler
