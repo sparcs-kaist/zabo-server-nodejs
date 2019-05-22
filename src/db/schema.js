@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 
-export const user = new mongoose.Schema({
+export const userSchema = new mongoose.Schema({
 	sso_uid: { type: String, required: true, unique: true },
 	sso_sid: String,
 	email: {
@@ -22,12 +22,16 @@ export const user = new mongoose.Schema({
 	facebookId: String,
 	tweeterId: String,
 	/* From SSO */
-	boards: [ObjectId], // Only one can be created for current plan, array for probable extensions
+	boards: [mongoose.Schema.ObjectId], // Only one can be created for current plan, array for probable extensions
+	type: {
+		type: String,
+		enum: []
+	}
 }, {
 	timestamps: true,
 })
 
-export const zabo = new mongoose.Schema({
+export const zaboSchema = new mongoose.Schema({
 	photos: [{
 		url: String,
 		width: Number,
@@ -48,27 +52,34 @@ export const zabo = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	events: [{
-		name: String,
+	location: {
+		type: String,
+		required: true
+	},
+	schedule: [{ // TODO: 최소한 하나 이상
+		title: String,
 		eventStartAt: Date,
 		eventEndAt: Date,
 	}],
-	registrationType: String,
+	registrationType: {
+		type: String,
+		required: true
+	},
 	category: {
 		type: String,
-		enum: ["recruit", "event", "show"]
-	}, // [리크루팅, 공연, 행사]
-	pinnedBy: [ObjectId],
+		enum: ["recruit", "seminar", "contest", "event", "show", "fair"]
+	}, // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+	pinnedBy: [mongoose.Schema.ObjectId],
 
 }, {
 	timestamps: true,
 })
 
 
-export const board = new mongoose.Schema({
+export const boardSchema = new mongoose.Schema({
 	createdAt: { type: Date, default: Date.now },
 	updatedAt: { type: Date, default: Date.now },
-	pins: [ObjectId],
+	pins: [mongoose.Schema.ObjectId],
 }, {
 	timestamps: true,
 })
