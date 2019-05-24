@@ -6,6 +6,8 @@ import morgan from "morgan"
 import helmet from "helmet"
 
 import indexRouter from "./routes"
+import userRouter from "./routes/users"
+import zaboRouter from "./routes/zabo"
 
 import graphql from "./db/graphql"
 import "./db"
@@ -21,6 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 
 app.use('/graphql', graphql)
+app.use('/user', userRouter)
+app.use('/zabo', zaboRouter)
 app.use('/', indexRouter)
 
 // catch 404 and forward to error handler

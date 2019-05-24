@@ -52,19 +52,6 @@ export const zaboSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	location: {
-		type: String,
-		required: true
-	},
-	schedule: [{ // TODO: 최소한 하나 이상
-		title: String,
-		eventStartAt: Date,
-		eventEndAt: Date,
-	}],
-	registrationType: {
-		type: String,
-		required: true
-	},
 	category: {
 		type: String,
 		enum: ["recruit", "seminar", "contest", "event", "show", "fair"]
