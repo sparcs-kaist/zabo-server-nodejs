@@ -104,6 +104,6 @@ export const logRotationConfig = (filename, options) => {
 		// write these last to ensure they won't be overwritten by passed options
 		zippedArchive: false, // disable until PM2 cluster mode issue resolved
 		datePattern: 'YYYYMMDD',
-		filename: `./${logDir}/${process.env.NODE_ENV.toUpperCase()}-${filename}-%DATE%.log`,
+		filename: `./${logDir}/${filename}-%DATE%.log`,
 	}
 }
