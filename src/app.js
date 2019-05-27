@@ -1,6 +1,7 @@
 import path from "path"
 import createError from "http-errors"
 import express from "express"
+import session from "express-session"
 import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
@@ -11,6 +12,12 @@ import graphql from "./db/graphql"
 import "./db"
 
 const app = express()
+
+app.use(session({
+	secret: 'ZaBO-SerVEr-SEcReT',
+	resave: false,
+	saveUninitialized: true,
+}));
 
 app.use(helmet())
 app.use(morgan('dev'))
