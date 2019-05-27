@@ -9,8 +9,8 @@ module.exports = {
 			"out_file": "out.log",
 			"error_file": "err.log",
 			"merge_logs": true,
-			"instances" : "max",
-			"exec_mode" : "cluster",
+			//"instances" : "max",
+			//"exec_mode" : "cluster",
 			"env": {
 				"NODE_ENV": "development",
 			},
