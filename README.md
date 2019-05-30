@@ -188,7 +188,7 @@ Pictures are going to be stored in S3.
 
 I referred [Google's Angular JS's contributor's commit message guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines) to format commit messages. This leads to more **unified** and **readable messages** helping further history lookups and even CI integrations.
 
-By the way, the way this repository format commit messages is not exactly same as the one suggested above.
+By the way, this repository's commit messages format is not exactly same as the one suggested above.
 
 ### Commit Message Format 
 
@@ -236,6 +236,7 @@ Should be one of the following:
 * **refactor**: A code change that neither fixes a bug nor adds a feature
 * **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 * **test**: Adding missing tests or correcting existing tests
+* **misc**: Adding miscellaneous items
 
 ### Scope
 There's no specific recommendations for naming scope yet.

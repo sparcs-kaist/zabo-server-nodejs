@@ -95,7 +95,6 @@ function onListening() {
 
 	const address = `http://localhost:${port}`
 
-	// TODO: Reinforce this temporary log
 	logger.info(`%%%%% [START] ENV - ${process.env.NODE_ENV} PORT - ${port} [END] %%%%%`)
 	logger.info(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
 	logger.warn(`Server is running at ${boldBlue(`http://localhost:${port}/`)}`)
