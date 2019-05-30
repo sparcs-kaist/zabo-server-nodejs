@@ -36,6 +36,35 @@ router.get('/list', (req, res) => {
   })
 });
 
+router.get('/list/next', (req, res) => {
+  if (!req.query.id) {
+    console.log('null id error');
+    return res.status(400).json({
+      error: "id required"
+    });
+  }
+
+  Zabo.findOne({_id: req.query.id}, (err, zabo) => {
+    if (err) {
+      console.error(err);
+      return res.sendStatus(500);
+    }
+    else if (zabo === null) return res.status(404).json({
+      error: "matched zabo not found"
+    });
+    else {
+      let lowestTime = zabo.createdAt;
+      Zabo.find({createdAt: {$lt: lowestTime}}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
+        if (err) {
+          console.error(err);
+          return res.sendStatus(500);
+        }
+        else return res.json(zabo);
+      })
+    }
+  })
+});
+
 router.post('/', (req, res) => {
   const newZabo = new Zabo(req.body);
   // console.log(req.body);
