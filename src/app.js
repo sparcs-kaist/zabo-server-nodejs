@@ -18,12 +18,20 @@ app.use(session({
 	saveUninitialized: true,
 }));
 
+app.use(function (req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*")
+	res.header("Access-Control-Allow-Headers", "Authorization, X-Requested-With, Content-Type, Accept")
+	res.header("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE,OPTIONS,PATCH')
+	req.method === 'OPTIONS' ? res.send(200) : next()
+})
+
 app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
+app.set("jwt-secret", "zabo-jwt-secret")
 
 
 app.use('/api', routes)

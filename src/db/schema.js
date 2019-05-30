@@ -21,6 +21,10 @@ export const userSchema = new mongoose.Schema({
 	sparcsId: { type: String, sparse: true },
 	facebookId: String,
 	tweeterId: String,
+	studentId: String,
+	kaistEmail: String,
+	kaistPersonType: String,
+	kaistInfoTime: String,
 	/* From SSO */
 	boards: [mongoose.Schema.ObjectId], // Only one can be created for current plan, array for probable extensions
 	type: {
