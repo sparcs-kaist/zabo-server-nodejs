@@ -1,7 +1,7 @@
 import graphql from "../db/graphql"
 import express from "express"
 import authRoutes from "./auth"
-import userRoutes from "./user"
+import userRoutes from "./users"
 import zaboRoutes from "./zabo"
 
 const router = express.Router()
