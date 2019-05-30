@@ -2,15 +2,13 @@ module.exports = {
 	"apps": [
 		{
 			"name": "zabo-server",
-			"script": "yarn start",
+			"script": "./index.js",
 			"watch": true,
 			"ignore_watch": ["node_modules"],
-			"log_file": "combined.outerr.log",
-			"out_file": "out.log",
-			"error_file": "err.log",
-			"merge_logs": true,
+			"log_file": "~/.pm2/logs/zabo-server-combined.log",
 			//"instances" : "max",
 			//"exec_mode" : "cluster",
+			//"merge_logs": true,
 			"env": {
 				"NODE_ENV": "development",
 			},
