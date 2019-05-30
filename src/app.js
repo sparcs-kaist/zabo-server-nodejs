@@ -6,15 +6,14 @@ import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
 
-import indexRouter from "./routes"
+import routes from "./routes"
 
-import graphql from "./db/graphql"
 import "./db"
 
 const app = express()
 
 app.use(session({
-	secret: 'ZaBO-SerVEr-SEcReT',
+	secret: 'ZaBO-SerVEr-SEcReT', // TODO : MOVE TO DOTENV
 	resave: false,
 	saveUninitialized: true,
 }));
@@ -27,8 +26,7 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 
-app.use('/graphql', graphql)
-app.use('/', indexRouter)
+app.use('/api', routes)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
