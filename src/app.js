@@ -1,17 +1,29 @@
 import path from "path"
 import createError from "http-errors"
 import express from "express"
+import session from "express-session"
 import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
-import graphqlHTTP from "express-graphql"
 
-import indexRouter from "./routes"
+import routes from "./routes"
 
-import { schema } from "./db/schema"
-import { root as rootValue } from "./db/resolver"
+import "./db"
 
 const app = express()
+
+app.use(session({
+	secret: 'ZaBO-SerVEr-SEcReT', // TODO : MOVE TO DOTENV
+	resave: false,
+	saveUninitialized: true,
+}));
+
+app.use(function (req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*")
+	res.header("Access-Control-Allow-Headers", "Authorization, X-Requested-With, Content-Type, Accept")
+	res.header("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE,OPTIONS,PATCH')
+	req.method === 'OPTIONS' ? res.send(200) : next()
+})
 
 app.use(helmet())
 app.use(morgan('dev'))
@@ -19,15 +31,10 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
+app.set("jwt-secret", "zabo-jwt-secret")
 
 
-app.use('/graphql', graphqlHTTP({
-	schema,
-	rootValue,
-	graphiql: process.env.NODE_ENV === "development",
-}))
-
-app.use('/', indexRouter)
+app.use('/api', routes)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
