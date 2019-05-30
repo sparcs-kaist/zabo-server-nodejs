@@ -1,42 +1,131 @@
 import SSOClient from "../utils/sso"
+import { parseJSON } from "../utils"
+import jwt from "jsonwebtoken"
+import { User } from "../db"
 
-export const login = (req ,res) => {
-	const { url, state } = SSOClient.getLoginParams();
+export const authCheck = async (req, res) => {
+	const jwtSecret = req.app.get('jwt-secret')
+	const token = (req.headers['authorization'] || "").substring(7)
+	jwt.verify(token, jwtSecret, async (error, decoded) => {
+		if (error) {
+			console.error(error.message, error.lineNumber)
+			res.status(403).json({
+				error: error.message
+			})
+			return
+		}
+		req.decoded = decoded
+		const { sid } = decoded
+		try {
+			const user = await User.findOne({ sso_sid: sid })
+			res.json(user)
+		} catch (error) {
+			console.error(error)
+			res.sendStatus(500)
+		}
+	})
+}
+
+export const login = (req, res) => {
+	const { url, state } = SSOClient.getLoginParams()
 	console.log({
 		url,
-		state
+		state,
 	})
-	req.session.state = state; // state 값을 session에 저장합니다.
-	res.redirect(url); // 사용자를 loginUrl로 redirect 시킵니다.
-	//res.render('index', { title: 'Express' })
+	req.session.state = state
+	res.redirect(url)
 }
 
 export const loginCallback = async (req, res) => {
 	try {
-		console.log("l1ogin callback ", req.query)
 		const stateBefore = req.session.state
-		const { state, code } = req.query
+		const { state, code } = req.body
+		const jwtSecret = req.app.get('jwt-secret')
 		console.log(state, code)
 
 		if (stateBefore !== state) {
-			throw new Error('TOKEN MISMATCH: session might be hijacked!');
+			res.status(401).json({
+				error: 'TOKEN MISMATCH: session might be hijacked!',
+				status: 401,
+			})
+			return
 		}
 
 		const userData = await SSOClient.getUserInfo(code)
+
+		console.log({ userData })
+
+		const { uid, sid, email: sso_email, first_name, last_name, gender, birthday, flags, facebook_id, twitter_id, kaist_id, kaist_info, kaist_info_time, sparcs_id } = userData
+		const { displayname, ku_person_type, ku_sex, ku_std_no, mail: kaist_email } = parseJSON(kaist_info)
+
+		const user = await User.findOneAndUpdate({ sso_sid: sid }, {
+			$set: {
+				sso_uid: uid,
+				sso_sid: sid,
+				email: sso_email,
+				firstName: first_name,
+				lastName: last_name,
+				gender,
+				birthday,
+				flags,
+				facebookId: facebook_id,
+				twitterId: twitter_id,
+				kaistId: kaist_id,
+				sparcsId: sparcs_id,
+				studentId: ku_std_no,
+				kaistPersonType: ku_person_type,
+				kaistEmail: kaist_email,
+				kaistInfoTime: kaist_info_time,
+			},
+		}, {
+			upsert: true,
+			new: true,
+			setDefaultsOnInsert: true,
+		}).exec()
+
 		console.log({
 			userData,
-			type: typeof userData
+			user,
 		})
-		res.json(userData)
-	} catch (err) {
-		console.error(err)
-		res.sendStatus(401)
+
+		const token = jwt.sign({
+			sid,
+			email: sso_email,
+			studentId: ku_std_no,
+		}, jwtSecret, {
+			expiresIn: "10m",
+			issuer: "zabo-sparcs-kaist",
+		})
+
+		res.json({
+			token,
+			user,
+		})
+	} catch (error) {
+		console.error(error)
+		res.sendStatus(500)
 	}
 }
 
 export const logout = async (req, res) => {
 	const sid = req.session.sid
-	const redirectUrl = ''
+	const token = req.session.token
+	const jwtSecret = req.app.get('jwt-secret')
+
+	console.log({
+		sid,
+		token,
+	})
+
+	jwt.verify(token, jwtSecret, (err, decoded) => {
+		if (err) {
+			return console.error(err)
+		}
+		console.log({
+			decoded,
+		})
+	})
+	//const redirectUrl = encodeURIComponent('http://ssal.sparcs.org:10001/after/logout')
 	const logoutUrl = SSOClient.getLogoutUrl(sid)
 	res.redirect(logoutUrl)
 }
