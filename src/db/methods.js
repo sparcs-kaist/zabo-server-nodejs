@@ -1,4 +1,4 @@
-import { boardSchema, userSchema, zaboSchema } from "./schema"
+import { boardSchema, userSchema, zaboSchema, pinSchema, groupSchema } from "./schema"
 
 userSchema.virtual('name')
 	.get(function () {
@@ -17,10 +17,14 @@ userSchema.query.byName = function (name) {
 	return this.where({ name: new RegExp(name, 'i') })
 }
 
+userSchema.post('save', function (doc, next) {
+	//console.log("post save user")
+	next()
+})
 
 // Bad, don't do this!
 //schema.path('arr').get(v => {
 //	return v.map(el => Object.assign(el, { url: root + el.url }))
 //})
 
-export { userSchema, zaboSchema, boardSchema }
+export { userSchema, zaboSchema, boardSchema, pinSchema, groupSchema }
