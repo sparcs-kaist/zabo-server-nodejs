@@ -36,6 +36,9 @@ app.set("jwt-secret", "zabo-jwt-secret")
 
 app.use('/api', routes)
 
+if (process.env.NODE_ENV === "development")
+	app.use('/', express.static(__dirname + '/../../zabo-client-reactjs/deploy'));
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
 	next(createError(404))

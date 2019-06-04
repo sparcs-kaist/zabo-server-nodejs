@@ -1,3 +1,5 @@
+import mongoose from "mongoose"
+
 export const parseJSON = (json) => {
 	try {
 		return JSON.parse(json)
@@ -7,3 +9,5 @@ export const parseJSON = (json) => {
 		return {}
 	}
 }
+
+export const isValidId = mongoose.Types.ObjectId.isValid

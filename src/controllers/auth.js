@@ -1,7 +1,7 @@
 import SSOClient from "../utils/sso"
 import { parseJSON } from "../utils"
 import jwt from "jsonwebtoken"
-import { User } from "../db"
+import { Board, User } from "../db"
 
 export const authCheck = async (req, res) => {
 	const jwtSecret = req.app.get('jwt-secret')
@@ -58,7 +58,21 @@ export const loginCallback = async (req, res) => {
 		const { uid, sid, email: sso_email, first_name, last_name, gender, birthday, flags, facebook_id, twitter_id, kaist_id, kaist_info, kaist_info_time, sparcs_id } = userData
 		const { displayname, ku_person_type, ku_sex, ku_std_no, mail: kaist_email } = parseJSON(kaist_info)
 
-		const user = await User.findOneAndUpdate({ sso_sid: sid }, {
+		const user = await User.findOne({ sso_sid: sid })
+
+		let boards
+		if (user)
+			boards = user.boards
+		else {
+			const board = await Board.create({
+				title: "저장한 포스터"
+			})
+			boards = [board._id]
+		}
+		console.log({ boards })
+
+
+		const newUser = await User.findOneAndUpdate({ sso_sid: sid }, {
 			$set: {
 				sso_uid: uid,
 				sso_sid: sid,
@@ -76,12 +90,13 @@ export const loginCallback = async (req, res) => {
 				kaistPersonType: ku_person_type,
 				kaistEmail: kaist_email,
 				kaistInfoTime: kaist_info_time,
+				boards,
 			},
 		}, {
 			upsert: true,
 			new: true,
 			setDefaultsOnInsert: true,
-		}).exec()
+		})
 
 		console.log({
 			userData,
@@ -99,7 +114,7 @@ export const loginCallback = async (req, res) => {
 
 		res.json({
 			token,
-			user,
+			user: newUser,
 		})
 	} catch (error) {
 		console.error(error)
