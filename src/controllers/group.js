@@ -14,6 +14,7 @@ export const getGroupInfo = async (req, res) => {
 }
 
 export const updatePhoto = async (req, res) => {
+	const { groupId } = req.params
 	res.json('todo')
 }
 
@@ -43,7 +44,7 @@ export const updateMember = async (req, res) => {
 	const self = await User.findOne({ sso_sid: sid })
 	if (self.studentId === studentId) {
 		console.error("Users cannot change their own permission")
-		res.status(400).json({
+		res.status(403).json({
 			error: "Cannot change your own permission"
 		})
 		return
@@ -122,7 +123,7 @@ export const deleteMember = async (req, res) => {
 	const self = await User.findOne({ sso_sid: sid })
 	if (self.studentId === studentId) {
 		console.error("Users cannot change their own permission")
-		res.status(400).json({
+		res.status(403).json({
 			error: "Cannot change your own permission"
 		})
 		return

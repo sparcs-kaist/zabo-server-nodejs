@@ -6,7 +6,7 @@ const router = express.Router()
 
 /* GET users listing. */
 router.post('/group', adminControllers.createGroup)
-router.post('/register', adminControllers.fakeRegister)
+router.post('/fakeRegister', adminControllers.fakeRegister)
 router.post('/fakeLogin', adminControllers.fakeLogin)
 router.get('/user/:studentId', adminControllers.getUserInfo)
 
