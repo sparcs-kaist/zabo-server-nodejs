@@ -1,6 +1,11 @@
 # ZABO Server 
 
-Zabo is ....
+자보는 동아리 리크루팅, 공연, 행사 등을 손쉽게 홍보할 수 있도록 도와주는 웹 플랫폼입니다.
+
+## API Specification
+
+Document for API Speicifcation can be found [here](https://github.com/sparcs-kaist/zabo-server-nodejs/tree/develop/src/routes/README.md)
+
 
 ## Table of Contents
 
