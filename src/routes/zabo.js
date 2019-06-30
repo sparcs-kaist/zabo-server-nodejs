@@ -1,6 +1,24 @@
 import express from "express"
 const router = express.Router();
 
+const AWS = require('aws-sdk');
+AWS.config.loadFromPath(__dirname + "/../../config/awsconfig.json");
+const s3 = new AWS.S3();
+
+const multer = require('multer');
+const multers3 = require('multer-s3');
+let upload = multer({
+  storage: multers3({
+    s3: s3,
+    bucket: "sparcs-kaist-zabo-cookie",
+    key: (req, file, cb) => {
+      let extension = path.extname(file.originalname);
+      cb(null, Date.now().toString() + extension);
+    },
+    acl: 'public-read-write',
+  })
+});
+
 import { Zabo } from "../db"
 
 router.get('/', (req, res) => {
@@ -77,6 +95,11 @@ router.post('/', (req, res) => {
     console.log('new zabo has successfully saved');
     res.send('1');
   });
+});
+
+router.post('/uploadimgtos3', upload.single("imgFile"), (req, res) => { // 임시로 지은 이름
+  let imgFile = req.file;
+  res.json(imgFile);
 });
 
 router.delete('/', (req, res) => {
