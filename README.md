@@ -279,7 +279,8 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 
 ## Authors
 
-* **Cookie** - *Initial work* - [Cookie](https://github.com/jungdj)
+* **Cookie** - [Cookie](https://github.com/jungdj)
+* **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
 
 ## License
 
