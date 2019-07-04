@@ -31,7 +31,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
-app.set("jwt-secret", "zabo-jwt-secret")
+app.set("jwt-secret", "zabo-jwt-secret") // TODO : Move to dotenv
 
 
 app.use('/api', routes)
