@@ -108,7 +108,7 @@ export const loginCallback = async (req, res) => {
 			email: sso_email,
 			studentId: ku_std_no,
 		}, jwtSecret, {
-			expiresIn: "10m",
+			expiresIn: "7d",
 			issuer: "zabo-sparcs-kaist",
 		})
 
