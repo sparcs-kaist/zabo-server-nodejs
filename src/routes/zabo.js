@@ -20,12 +20,12 @@ let upload = multer({
 import { Zabo } from "../db"
 
 router.get('/', (req, res) => {
-  if (!req.body.id) {
+  if (!req.query.id) {
     console.log('null id error');
     return res.error('1');
   }
 
-  Zabo.findOne({_id: req.body.id}, (err, zabo) => {
+  Zabo.findOne({_id: req.query.id}, (err, zabo) => {
     if (err) {
       console.log(err);
       return res.error('1');
@@ -113,22 +113,37 @@ router.get('/downloadimgfroms3', (req, res) => {
   //  res.send("https://sparcs-kaist-zabo-cookie.s3.ap-northeast-2.amazonaws.com/" + req.query.key);
 });
 
-router.post('/', (req, res) => {
-  const newZabo = new Zabo(req.body);
-  // console.log(req.body);
+router.post('/', upload.array("img", 20), async (req, res) => {
+  if (!req.files.length || !req.body.title || !req.body.description || !req.body.type || !req.body.endAt) {
+    return res.error('null data detected');
+  }
+
+  const newZabo = new Zabo();
+
+  for (let i=0; i < req.files.length; i++) {
+    newZabo.photos[i].url = req.files[i].location;
+    // 사진 사이즈는 어떻게 알 수 있을까?
+    // image-size 라는 모듈을 쓰면 구할 수 있어 보이는데,
+    // 프런트에서 처리해서 주는게 서버 부하가 더 적을듯 한데 어떻게 생각하시나요
+  }
+  newZabo.title.type = req.body.title;
+  newZabo.description.type = req.body.description;
+  newZabo.category.type = req.body.type;
+  newZabo.endAt = req.body.endAt;
 
   newZabo.save(err => {
     if (err){
       console.log(err);
-      res.error('1')
+      res.error(err);
     } 
     console.log('new zabo has successfully saved');
-    res.send('1');
+    res.send('new zabo has successfully saved');
   });
 });
 
 router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
-  res.send('Successfully uploaded ' + req.files.length + ' files!');
+  res.send(req.files);
+  // res.send('Successfully uploaded ' + req.files.length + ' files!');
 });
 
 router.delete('/', (req, res) => {
