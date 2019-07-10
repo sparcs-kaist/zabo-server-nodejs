@@ -17,7 +17,7 @@ export const authCheck = async (req, res) => {
 		req.decoded = decoded
 		const { sid } = decoded
 		try {
-			const user = await User.findOne({ sso_sid: sid })
+			const user = await User.findOne({ sso_sid: sid }).populate('groups')
 			res.json(user)
 		} catch (error) {
 			console.error(error)
@@ -96,7 +96,7 @@ export const loginCallback = async (req, res) => {
 			upsert: true,
 			new: true,
 			setDefaultsOnInsert: true,
-		})
+		}).populate('groups')
 
 		console.log({
 			userData,
