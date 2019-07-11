@@ -146,12 +146,12 @@ router.post('/', upload.array("img", 20), (req, res) => {
       newZabo.save(err => {
         if (err){
           console.log(err);
-          res.status(500).json({
+          return res.status(500).json({
             error: err.message,
           });
         } 
         console.log('new zabo has successfully saved');
-        res.send('new zabo has successfully saved');
+        return res.send('new zabo has successfully saved');
       });
     }
 
@@ -177,14 +177,14 @@ router.post('/', upload.array("img", 20), (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send({
+    return res.status(500).send({
       error: error.message
     })
   }
 });
 
 router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
-  res.send(req.files);
+  return res.send(req.files);
   // res.send('Successfully uploaded ' + req.files.length + ' files!');
 });
 
