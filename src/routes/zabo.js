@@ -10,7 +10,7 @@ const multers3 = require('multer-s3');
 let upload = multer({
   storage: multers3({
     s3: s3,
-    bucket: 'sparcs-kaist-zabo-cookie',
+    bucket: 'sparcs-kaist-zabo-dev',
     acl: 'public-read',
     key: (req, file, cb) => {
       cb(null, Date.now().toString());
@@ -85,33 +85,24 @@ router.get('/list/next', (req, res) => {
 router.get('/downloadimgfroms3', (req, res) => {
   // 프런트로부터 어떤 값이 온다고 가정해야 할까?
   // 일단 s3에 올라가있는 이름 그대로 온다고 가정함
-  let imgInfo = {
-    Bucket: "sparcs-kaist-zabo-cookie", 
-    Key: req.query.key
-   };
+  // let imgInfo = {
+  //   Bucket: "sparcs-kaist-zabo-dev", 
+  //   Key: req.query.key
+  //  };
 
-   s3.getObject(imgInfo, (err, data) => {
-     if (err) console.log(err); // an error occurred
-     else res.send(data.Body); // successful response
-     /*
-     data = {
-      AcceptRanges: "bytes", 
-      ContentLength: 3191, 
-      ContentType: "image/jpeg", 
-      ETag: "\"6805f2cfc46c0f04559748bb039d69ae\"", 
-      LastModified: <Date Representation>, 
-      Metadata: {
-      }, 
-      TagCount: 2, 
-      VersionId: "null"
-     }
-     */
-   });
+  //  s3.getObject(imgInfo, (err, data) => {
+  //    if (err) console.log(err); // an error occurred
+  //    else res.send(data.Body); // successful response
+  //  });
 
   // 또 다른 방법 : img url 을 준 다음 프런트에서 <img url="서버에서 준 url"> 으로 하기
   // 이게 서버의 로드를 쓰지 않고 클라이언트에서 쓰는 거라 더 나아보이는데, cookie의 생각은 어떠세용
   // postman으로 테스트해봤을 때 1MB 파일을 보내는데도 몇 초 걸리더라구요,, 사진 20장 보내면 꽤나 걸릴듯
-  //  res.send("https://sparcs-kaist-zabo-cookie.s3.ap-northeast-2.amazonaws.com/" + req.query.key);
+  Zabo.findOne({_id : req.query.id}, (err, zabo) => {
+    let responseArray = [];
+    for (let i=0; i < zabo.photos.length; i++) responseArray.push(zabo.photos[i].url);
+    res.send(responseArray);
+  });
 });
 
 router.post('/', upload.array("img", 20), (req, res) => {
