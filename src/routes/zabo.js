@@ -38,7 +38,9 @@ router.get('/', (req, res) => {
   Zabo.findOne({_id: id}, (err, zabo) => {
     if (err) {
       console.log(err);
-      return res.error(err);
+      return res.status(500).json({
+        error: err.message,
+      });
     }
     else if (zabo === null) {
       console.log('zabo does not exist');
