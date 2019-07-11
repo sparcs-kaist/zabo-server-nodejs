@@ -1,8 +1,10 @@
 import express from "express"
 const router = express.Router();
+const gm = require('gm');
 
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
+const size = require('s3-image-size');
 
 const multer = require('multer');
 const multers3 = require('multer-s3');
@@ -113,7 +115,7 @@ router.get('/downloadimgfroms3', (req, res) => {
   //  res.send("https://sparcs-kaist-zabo-cookie.s3.ap-northeast-2.amazonaws.com/" + req.query.key);
 });
 
-router.post('/', upload.array("img", 20), async (req, res) => {
+router.post('/', upload.array("img", 20), (req, res) => {
   if (!req.files.length || !req.body.title || !req.body.description || !req.body.type || !req.body.endAt) {
     return res.error('null data detected');
   }
@@ -122,9 +124,11 @@ router.post('/', upload.array("img", 20), async (req, res) => {
 
   for (let i=0; i < req.files.length; i++) {
     newZabo.photos[i].url = req.files[i].location;
-    // 사진 사이즈는 어떻게 알 수 있을까?
-    // image-size 라는 모듈을 쓰면 구할 수 있어 보이는데,
-    // 프런트에서 처리해서 주는게 서버 부하가 더 적을듯 한데 어떻게 생각하시나요
+    let s3ImageKey = req.files[i].location.split('/')[-1];
+    size(s3, 'sparcs-kaist-zabo-cookie', s3ImageKey, (err, dimensions, bytesRead) => {
+      newZabo.photos[i].width = dimensions.width;
+      newZabo.photos[i].height = dimensions.height;
+    })
   }
   newZabo.title.type = req.body.title;
   newZabo.description.type = req.body.description;
