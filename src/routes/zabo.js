@@ -21,19 +21,28 @@ let upload = multer({
 import { Zabo } from "../db"
 
 router.get('/', (req, res) => {
-  if (!req.query.id) {
+  const { id } = req.query
+  if (!id) {
     console.log('null id error');
-    return res.error('1');
+    return res.error('null id detected');
   }
 
-  Zabo.findOne({_id: req.query.id}, (err, zabo) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      error: "bad request",
+    });
+  }
+
+  Zabo.findOne({_id: id}, (err, zabo) => {
     if (err) {
       console.log(err);
-      return res.error('1');
+      return res.error(err);
     }
     else if (zabo === null) {
       console.log('zabo does not exist');
-      return res.error('1');
+      return res.status(404).json({
+        error: "zabo does not exist",
+      });
     }
     else {
       return res.json(zabo);
@@ -45,7 +54,9 @@ router.get('/list', (req, res) => {
   Zabo.find({}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
     if (err) {
       console.log(err);
-      return res.error('1');
+      return res.status(500).json({
+        error: err.message,
+      });
     }
     else {
       return res.json(zabo);
@@ -64,7 +75,9 @@ router.get('/list/next', (req, res) => {
   Zabo.findOne({_id: req.query.id}, (err, zabo) => {
     if (err) {
       console.error(err);
-      return res.sendStatus(500);
+      return res.status(500).json({
+        error: err.message,
+      });
     }
     else if (zabo === null) return res.status(404).json({
       error: "matched zabo not found"
@@ -74,7 +87,9 @@ router.get('/list/next', (req, res) => {
       Zabo.find({createdAt: {$lt: lowestTime}}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
         if (err) {
           console.error(err);
-          return res.sendStatus(500);
+          return res.status(500).json({
+            error: err.message,
+          });
         }
         else return res.json(zabo);
       })
@@ -82,9 +97,9 @@ router.get('/list/next', (req, res) => {
   })
 });
 
-router.get('/downloadimgfroms3', (req, res) => {
-  // 프런트로부터 어떤 값이 온다고 가정해야 할까?
-  // 일단 s3에 올라가있는 이름 그대로 온다고 가정함
+// router.get('/downloadimgfroms3', (req, res) => {
+//   프런트로부터 어떤 값이 온다고 가정해야 할까?
+//   일단 s3에 올라가있는 이름 그대로 온다고 가정함
   // let imgInfo = {
   //   Bucket: "sparcs-kaist-zabo-dev", 
   //   Key: req.query.key
@@ -98,32 +113,38 @@ router.get('/downloadimgfroms3', (req, res) => {
   // 또 다른 방법 : img url 을 준 다음 프런트에서 <img url="서버에서 준 url"> 으로 하기
   // 이게 서버의 로드를 쓰지 않고 클라이언트에서 쓰는 거라 더 나아보이는데, cookie의 생각은 어떠세용
   // postman으로 테스트해봤을 때 1MB 파일을 보내는데도 몇 초 걸리더라구요,, 사진 20장 보내면 꽤나 걸릴듯
-  Zabo.findOne({_id : req.query.id}, (err, zabo) => {
-    let responseArray = [];
-    for (let i=0; i < zabo.photos.length; i++) responseArray.push(zabo.photos[i].url);
-    res.send(responseArray);
-  });
-});
+//   Zabo.findOne({_id : req.query.id}, (err, zabo) => {
+//     let responseArray = [];
+//     for (let i=0; i < zabo.photos.length; i++) responseArray.push(zabo.photos[i].url);
+//     res.send(responseArray);
+//   });
+// });
 
 router.post('/', upload.array("img", 20), (req, res) => {
+  const { title, description, category, endAt } = req.body
+
   try {
-    if (!req.files.length || !req.body.title.length || !req.body.description.length || !req.body.category.length || !req.body.endAt.length) {
-      return res.error('null data detected');
+    if (!req.files.length || !title.length || !description.length || !category.length || !endAt.length) {
+      return res.status(400).json({
+        error: 'bad request',
+      });
     }
 
-    const newZabo = new Zabo();
+    const newZabo = new Zabo({
+      title,
+      description,
+      category,
+      endAt
+    });
 
     let count = 0
     const onFinish = () => {
-      newZabo.title = req.body.title;
-      newZabo.description = req.body.description;
-      newZabo.category = req.body.category;
-      newZabo.endAt = req.body.endAt;
-  
       newZabo.save(err => {
         if (err){
           console.log(err);
-          res.error(err);
+          res.status(500).json({
+            error: err.message,
+          });
         } 
         console.log('new zabo has successfully saved');
         res.send('new zabo has successfully saved');
@@ -131,17 +152,19 @@ router.post('/', upload.array("img", 20), (req, res) => {
     }
 
     for (let i=0; i < req.files.length; i++) {
-      let newPhoto = {
-        url: "",
-        width: 0,
-        height: 0,
-      };
-      newPhoto.url = req.files[i].location;
       let s3ImageKey = req.files[i].key;
       size(s3, 'sparcs-kaist-zabo-cookie', s3ImageKey, (err, dimensions, bytesRead) => {
-        if (err) console.error(err);
-        newPhoto.width = dimensions.width;
-        newPhoto.height = dimensions.height;
+        if (err) {
+          console.error(err);
+          return res.status(500).json({
+            error: err.message,
+          })
+        };
+        let newPhoto = {
+          url: req.files[i].location,
+          width: dimensions.width,
+          height: dimensions.height,
+        }
         newZabo.photos.push(newPhoto);
 
         count++
@@ -164,17 +187,21 @@ router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시
 router.delete('/', (req, res) => {
   if (!req.body.id) {
     console.log('null id error');
-    return res.error('1');
+    return res.status(400).json({
+      error: 'bad request',
+    });
   }
 
   Zabo.deleteOne({_id: req.body.id}, (err, zabo) => {
     if (err) {
       console.log(err);
-      return res.error('1');
+      return res.status(500).json({
+        error: err.message,
+      });
     }
     else {
       console.log('zabo successfully deleted');
-      return res.send('1');
+      return res.send('zabo successfully deleted');
     }
   });
 });
