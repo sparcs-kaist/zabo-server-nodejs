@@ -1,6 +1,5 @@
 import express from "express"
 const router = express.Router();
-const gm = require('gm');
 
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
@@ -116,33 +115,54 @@ router.get('/downloadimgfroms3', (req, res) => {
 });
 
 router.post('/', upload.array("img", 20), (req, res) => {
-  if (!req.files.length || !req.body.title || !req.body.description || !req.body.type || !req.body.endAt) {
-    return res.error('null data detected');
-  }
+  try {
+    if (!req.files.length || !req.body.title.length || !req.body.description.length || !req.body.category.length || !req.body.endAt.length) {
+      return res.error('null data detected');
+    }
 
-  const newZabo = new Zabo();
+    const newZabo = new Zabo();
 
-  for (let i=0; i < req.files.length; i++) {
-    newZabo.photos[i].url = req.files[i].location;
-    let s3ImageKey = req.files[i].location.split('/')[-1];
-    size(s3, 'sparcs-kaist-zabo-cookie', s3ImageKey, (err, dimensions, bytesRead) => {
-      newZabo.photos[i].width = dimensions.width;
-      newZabo.photos[i].height = dimensions.height;
+    let count = 0
+    const onFinish = () => {
+      newZabo.title = req.body.title;
+      newZabo.description = req.body.description;
+      newZabo.category = req.body.category;
+      newZabo.endAt = req.body.endAt;
+  
+      newZabo.save(err => {
+        if (err){
+          console.log(err);
+          res.error(err);
+        } 
+        console.log('new zabo has successfully saved');
+        res.send('new zabo has successfully saved');
+      });
+    }
+
+    for (let i=0; i < req.files.length; i++) {
+      let newPhoto = {
+        url: "",
+        width: 0,
+        height: 0,
+      };
+      newPhoto.url = req.files[i].location;
+      let s3ImageKey = req.files[i].key;
+      size(s3, 'sparcs-kaist-zabo-cookie', s3ImageKey, (err, dimensions, bytesRead) => {
+        if (err) console.error(err);
+        newPhoto.width = dimensions.width;
+        newPhoto.height = dimensions.height;
+        newZabo.photos.push(newPhoto);
+
+        count++
+        if (count === req.files.length) onFinish()
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      error: error.message
     })
   }
-  newZabo.title.type = req.body.title;
-  newZabo.description.type = req.body.description;
-  newZabo.category.type = req.body.type;
-  newZabo.endAt = req.body.endAt;
-
-  newZabo.save(err => {
-    if (err){
-      console.log(err);
-      res.error(err);
-    } 
-    console.log('new zabo has successfully saved');
-    res.send('new zabo has successfully saved');
-  });
 });
 
 router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
