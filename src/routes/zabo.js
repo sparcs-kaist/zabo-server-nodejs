@@ -24,12 +24,14 @@ router.get('/', (req, res) => {
   const { id } = req.query
   if (!id) {
     console.log('null id error');
-    return res.error('null id detected');
+    return res.status(400).json({
+      error: 'bad request: null id detected',
+    });
   }
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({
-      error: "bad request",
+      error: "bad request: invalid id",
     });
   }
 
