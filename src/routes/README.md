@@ -249,7 +249,7 @@ TODO: 그룹의 정보 (사진)을 업데이트할 수 있습니다. 이름도 �
 
 ### Zabo
 
-#### <code>GET</code> /zabo (id) => <code>Zabo</code>
+#### <code>GET</code> /zabo (id) => <code>zabo</code>
 
 유효성 확인
 - id는 필수입니다.
@@ -315,6 +315,22 @@ TODO: 그룹의 정보 (사진)을 업데이트할 수 있습니다. 이름도 �
 ##### Errors
 
 400\
+500
+
+#### <code>DELETE</code> /zabo (id) => success
+
+유효성 확인
+- id는 필수입니다.
+
+하나의 zabo를 제거합니다.
+
+| Param  | Type                | Description  |
+| ------ | ------------------- | ------------ |
+| id  | <code>string</code> | id of zabo |
+
+##### Errors
+
+400 : null id\
 500
 
 ### Admin
