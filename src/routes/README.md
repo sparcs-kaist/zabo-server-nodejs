@@ -26,7 +26,11 @@
  - [<code>POST</code> Set Current Group]() /user/currentGroup/:groupId
 
 ### Zabo
- - [<code>GET</code> /zabo]()
+ - [<code>GET</code> Get Zabo Info]() /zabo
+ - [<code>GET</code> Get Zabo List]() /zabo/list
+ - [<code>GET</code> Get Next Zabo List]() /zabo/list/next
+ - [<code>POST</code> Create New Zabo]() /zabo
+ - [<code>DELETE</code> Delete Zabo]() /zabo
 
 ### Admin
  - [<code>POST</code> Create New Group]() /admin/group
@@ -242,6 +246,76 @@ TODO: 그룹의 정보 (사진)을 업데이트할 수 있습니다. 이름도 �
 500
 
 ##### Example
+
+### Zabo
+
+#### <code>GET</code> /zabo (id) => <code>Zabo</code>
+
+유효성 확인
+- id는 필수입니다.
+- id는 mongoDB의 valid한 ObjectID이어야 합니다.
+- id가 Database에 존재해야 합니다.
+
+전달받은 id에 해당하는 Zabo를 검색합니다.
+해당 Zabo로 응답합니다.
+
+| Param  | Type                | Description  |
+| ------ | ------------------- | ------------ |
+| id  | <code>string</code> | database id |
+
+##### Errors
+
+400 : null id 혹은 invalid id\
+404 : 해당하는 zabo가 없음
+500
+
+#### <code>GET</code> /zabo/list () => <code>zaboList</code>
+
+최초로 보여지는 zabo들을 가져옵니다.
+
+##### Errors
+
+500
+
+#### <code>GET</code> /zabo/list/next (id) => <code>zaboList</code>
+
+유효성 확인
+- id는 필수입니다.
+- id가 Database에 존재해야 합니다.
+
+다음으로 보여질 zabo들을 가져옵니다.
+
+| Param  | Type                | Description  |
+| ------ | ------------------- | ------------ |
+| id  | <code>string</code> | last id of previous list |
+
+##### Errors
+
+400 : null id\
+404 : 해당하는 zabo가 없음\
+500
+
+#### <code>POST</code> /zabo (img, title, description, category, endAt) => success
+
+유효성 확인
+- img, title, description, category, endAt은 필수입니다.
+- img는 20개 이하로 전송해야 합니다.
+- category는 recruit, seminar, contest, event, show, fair중 하나여야 합니다.
+
+새로운 zabo를 저장합니다.
+
+| Param  | Type                | Description  |
+| ------ | ------------------- | ------------ |
+| img  | <code>multipart-form-data</code> | image of zabo |
+| title  | <code>string</code> | title of zabo |
+| description  | <code>string</code> | description of zabo |
+| category  | <code>string</code> | category of zabo |
+| endAt  | <code>date</code> | end time of zabo |
+
+##### Errors
+
+400\
+500
 
 ### Admin
 
