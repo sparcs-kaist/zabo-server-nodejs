@@ -109,7 +109,7 @@ router.get('/list/next', (req, res) => {
 //   프런트로부터 어떤 값이 온다고 가정해야 할까?
 //   일단 s3에 올라가있는 이름 그대로 온다고 가정함
   // let imgInfo = {
-  //   Bucket: "sparcs-kaist-zabo-dev", 
+  //   Bucket: "sparcs-kaist-zabo-dev",
   //   Key: req.query.key
   //  };
 
@@ -153,7 +153,7 @@ router.post('/', upload.array("img", 20), (req, res) => {
           return res.status(500).json({
             error: err.message,
           });
-        } 
+        }
         console.log('new zabo has successfully saved');
         return res.send('new zabo has successfully saved');
       });
@@ -161,7 +161,7 @@ router.post('/', upload.array("img", 20), (req, res) => {
 
     for (let i=0; i < req.files.length; i++) {
       let s3ImageKey = req.files[i].key;
-      size(s3, 'sparcs-kaist-zabo-cookie', s3ImageKey, (err, dimensions, bytesRead) => {
+      size(s3, 'sparcs-kaist-zabo-dev', s3ImageKey, (err, dimensions, bytesRead) => {
         if (err) {
           console.error(err);
           return res.status(500).json({
