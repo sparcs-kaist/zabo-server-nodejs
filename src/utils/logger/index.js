@@ -27,8 +27,9 @@ const createCLogger = (name) => winston.createLogger({
 //export const logger = createCLogger("--")
 
 const logger = createCLogger("--")
-logger.db = createCLogger("API")
+logger.db = createCLogger("DB")
 logger.api = createCLogger("API")
+logger.zabo = createCLogger('ZABO')
 
 export { logger }
 
