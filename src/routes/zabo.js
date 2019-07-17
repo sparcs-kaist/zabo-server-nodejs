@@ -1,5 +1,9 @@
 import express from "express"
+import { authMiddleware } from "../middlewares"
+
+
 const router = express.Router();
+const mongoose = require('mongoose');
 
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
@@ -18,7 +22,7 @@ let upload = multer({
   })
 });
 
-import { Zabo } from "../db"
+import { User, Zabo, Pin } from "../db"
 
 router.get('/', (req, res) => {
   const { id } = req.query
@@ -128,7 +132,7 @@ router.post('/', upload.array("img", 20), (req, res) => {
   const { title, description, category, endAt } = req.body
 
   try {
-    if (!req.files.length || !title.length || !description.length || !category.length || !endAt.length) {
+    if (!req.files || !title || !description || !category || !endAt) {
       return res.status(400).json({
         error: 'bad request',
       });
@@ -179,6 +183,75 @@ router.post('/', upload.array("img", 20), (req, res) => {
     console.error(error);
     return res.status(500).send({
       error: error.message
+    })
+  }
+});
+
+router.post('/pin', authMiddleware, async (req, res) => {
+  try { 
+    let { zaboId } = req.body;
+    let { sid } = req.decoded;
+    let boardId;
+
+    if (!zaboId) return res.status(400).json({
+      error: "null id detected",
+    });
+
+    if (!mongoose.Types.ObjectId.isValid(zaboId)) {
+      return res.status(400).json({
+        error: "invalid id",
+      });
+    }
+
+    // find boardId of user
+    const user = await User.findOne({ sso_sid: sid })
+    if (user === null) {
+      console.error("user not found");
+      return res.status(404).json({
+        error: "user does not exist",
+      })
+    }
+    boardId = user.boards[0]
+
+    // .catch(error => {
+    //   console.log("user not found")
+    //   throw error
+    // })
+    if (user === null) {
+      console.log("user not found");
+      return res.status(404).json({
+        error: "user does not exist",
+      });
+    }
+    
+    // edit zabo pins
+    const zabo = await Zabo.findById(zaboId)
+    if (zabo === null) {
+      console.log("zabo does not exist");
+      return res.status(404).json({
+        error: "zabo does not exist",
+      })
+    }
+    
+    let newPin = new Pin({
+      pinnedBy: sid,
+      zaboId,
+      boardId,
+    });
+
+    // save new pin
+    const pin = await newPin.save();
+
+    zabo.pins.push(pin._id);
+    await zabo.save();
+
+    console.log("new pin has successfully saved");
+    return res.send({ zabo, newPin });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({
+      error: err.message
     })
   }
 });
