@@ -183,10 +183,10 @@ router.post('/', upload.array("img", 20), (req, res) => {
   }
 });
 
-router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
-  return res.send(req.files);
-  // res.send('Successfully uploaded ' + req.files.length + ' files!');
-});
+// router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
+//   return res.send(req.files);
+//   res.send('Successfully uploaded ' + req.files.length + ' files!');
+// });
 
 router.delete('/', (req, res) => {
   if (!req.body.id) {
