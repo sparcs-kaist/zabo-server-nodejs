@@ -283,4 +283,65 @@ router.delete('/', (req, res) => {
   });
 });
 
+router.delete('/pin', authMiddleware, async (req, res) => {
+  try { 
+    let { zaboId } = req.body;
+    let { sid } = req.decoded;
+    let boardId;
+
+    if (!zaboId) return res.status(400).json({
+      error: "null id detected",
+    });
+
+    if (!mongoose.Types.ObjectId.isValid(zaboId)) {
+      return res.status(400).json({
+        error: "invalid id",
+      });
+    }
+
+    // find boardId of user
+    const user = await User.findOne({ sso_sid: sid })
+    if (user === null) {
+      console.error("user not found");
+      return res.status(404).json({
+        error: "user does not exist",
+      })
+    }
+    boardId = user.boards[0]
+
+    if (user === null) {
+      console.log("user not found");
+      return res.status(404).json({
+        error: "user does not exist",
+      });
+    }
+
+    // delete the pin
+    const deletedPin = await Pin.findOneAndDelete({zaboId, boardId});
+    console.log(deletedPin._id);
+    
+    // edit zabo pins
+    const zabo = await Zabo.findById(zaboId)
+    if (zabo === null) {
+      console.log("zabo does not exist");
+      return res.status(404).json({
+        error: "zabo does not exist",
+      })
+    }
+    let newPins = zabo.pins.filter(pin => pin.toString() !== deletedPin._id.toString());
+    console.log(newPins);
+    zabo.pins = newPins;
+    await zabo.save();
+
+    console.log("pin has successfully deleted");
+    return res.send({ zabo });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({
+      error: err.message
+    });
+  }
+});
+
 module.exports = router;
