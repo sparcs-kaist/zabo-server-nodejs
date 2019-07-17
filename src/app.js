@@ -14,8 +14,7 @@ const app = express()
 
 app.use(session({
 	secret: 'ZaBO-SerVEr-SEcReT', // TODO : MOVE TO DOTENV
-	resave: false,
-	saveUninitialized: true,
+	cookie: { maxAge: 60000 },
 }));
 
 app.use(function (req, res, next) {
