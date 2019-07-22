@@ -55,7 +55,7 @@ router.get('/', async (req, res) => {
     }
 
   } catch (error) {
-    logger.zabo.error("get /zabo/ request error; 500 - %o", error);
+    logger.zabo.error("get /zabo/ request error; 500 - %s", error);
     return res.status(500).json({
       error: error.message,
     });
@@ -71,7 +71,7 @@ router.get('/list', async (req, res) => {
     return res.json(zaboList);
 
   } catch (error) {
-    logger.zabo.error("get /zabo/list request error; 500 - %o", error);
+    logger.zabo.error("get /zabo/list request error; 500 - %s", error);
     return res.status(500).json({
       error: error.message,
     });
@@ -105,7 +105,7 @@ router.get('/list/next', async (req, res) => {
     }
 
   } catch (error) {
-    logger.zabo.error("get /zabo/list/next request error; 500 - %o", error);
+    logger.zabo.error("get /zabo/list/next request error; 500 - %s", error);
     return res.status(500).json({
       error: error.message,
     });
@@ -138,7 +138,7 @@ router.get('/list/next', async (req, res) => {
 router.post('/', upload.array("img", 20), async (req, res) => {
   try {
     const { title, description, category, endAt } = req.body
-    logger.zabo.info("post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %o", title, description, category, endAt, req.files);
+    logger.zabo.info("post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %s", title, description, category, endAt, req.files);
 
     if (!req.files || !title || !description || !category || !endAt) {
       logger.zabo.error("post /zabo/ request error; 400");
@@ -190,7 +190,7 @@ router.post('/', upload.array("img", 20), async (req, res) => {
     }
 
   } catch (error) {
-    logger.zabo.error("post /zabo/ request error; 500 - %o", error);
+    logger.zabo.error("post /zabo/ request error; 500 - %s", error);
     return res.status(500).json({
       error: error.message,
     })
@@ -258,7 +258,7 @@ router.post('/pin', authMiddleware, async (req, res) => {
     return res.send({ zabo, newPin });
 
   } catch (error) {
-    logger.zabo.error("post /zabo/pin request error; 500 - %o", error);
+    logger.zabo.error("post /zabo/pin request error; 500 - %s", error);
     return res.status(500).send({
       error: error.message
     })
@@ -281,7 +281,7 @@ router.delete('/', async (req, res) => {
     return res.send('zabo successfully deleted');
 
   } catch (error) {
-    logger.zabo.error("delete /zabo/ request error; 500 - %o", error);
+    logger.zabo.error("delete /zabo/ request error; 500 - %s", error);
     return res.status(500).json({
       error: error.message,
     });
@@ -322,7 +322,7 @@ router.delete('/pin', authMiddleware, async (req, res) => {
 
     // delete the pin
     const deletedPin = await Pin.findOneAndDelete({zaboId, boardId});
-    logger.zabo.info("delete /zabo/pin request; deleted pin: %o", deletedPin);
+    logger.zabo.info("delete /zabo/pin request; deleted pin: %s", deletedPin);
     
     // edit zabo pins
     const zabo = await Zabo.findById(zaboId)
@@ -333,13 +333,13 @@ router.delete('/pin', authMiddleware, async (req, res) => {
       })
     }
     let newPins = zabo.pins.filter(pin => pin.toString() !== deletedPin._id.toString());
-    logger.zabo.info("delete /zabo/pin request; edited zabo pins: %o", newPins);
+    logger.zabo.info("delete /zabo/pin request; edited zabo pins: %s", newPins);
     zabo.pins = newPins;
     await zabo.save();
     return res.send({ zabo });
 
   } catch (error) {
-    logger.zabo.error("delete /zabo/pin request error; 500 - %o", error);
+    logger.zabo.error("delete /zabo/pin request error; 500 - %s", error);
     return res.status(500).json({
       error: error.message
     });

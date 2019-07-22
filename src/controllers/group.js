@@ -1,21 +1,50 @@
 import { Group, User } from "../db"
+import logger from "../utils/logger";
 
+// get /group/:groupId
 export const getGroupInfo = async (req, res) => {
-	const { groupId } = req.params
 	try {
+		const { groupId } = req.params
+		logger.api.info("get /group/:groupId request; groupId: %s", groupId);
+
+		if (!groupId) {
+			logger.api.error("get /group/:groupId request error; 400 - null groupId");
+			return res.status(400).json({
+				error: "bad request: null groupId",
+			});
+		}
+
 		const group = await Group.findById(groupId)
 		res.json(group)
 	} catch(error) {
-		console.error(error)
-		res.status(404).json({
+		logger.api.error("get /group/:groupId request error; 500 - %s", error);
+		res.status(500).json({
 			error: error.message
-		})
+		});
 	}
 }
 
+// post /group/:groupId
 export const updatePhoto = async (req, res) => {
-	const { groupId } = req.params
-	res.json('todo')
+	try {
+		const { groupId } = req.params
+		logger.api.info("post /group/:groupId request; groupId: %s", groupId);
+
+		if (!groupId) {
+			logger.api.error("post /group/:groupId request error; 400 - null groupId");
+			return res.status(400).json({
+				error: "bad request: null groupId",
+			});
+		}
+
+		res.json('todo')
+
+	} catch (error) {
+		logger.api.error("post /group/:groupId request error; 500 - %s", error);
+		return res.status(500).json({
+			error: error.message,
+		})
+	}
 }
 
 /**
@@ -26,40 +55,41 @@ export const updatePhoto = async (req, res) => {
  * req.body.studentId : required
  * req.body.isAdmin : optional (default to false)
  */
+// post /group/:groupId/member
 export const updateMember = async (req, res) => {
-	const { groupId } = req.params
-	const { sid } = req.decoded
-	let { studentId, isAdmin } = req.body
-	isAdmin = isAdmin === "true"
+	try {
+		const { groupId } = req.params
+		const { sid } = req.decoded
+		let { studentId, isAdmin } = req.body
+		isAdmin = isAdmin === "true"
+		logger.api.info("post /group/:groupId/member request; groupId: %s, sid: %s, studentId: %s, isAdmin: %s", groupId, sid, studentId, isAdmin);
 
-	console.log({ studentId, isAdmin })
-	if (!studentId) {
-		console.error("Student ID required")
-		res.status(400).json({
-			error: "Student Id required"
-		})
-		return
-	}
+		if (!studentId) {
+			logger.api.error("post /group/:groupId/member request error; 400 - null studentId");
+			res.status(400).json({
+				error: "bad request: null studentId",
+			})
+			return
+		}
 
-	const self = await User.findOne({ sso_sid: sid })
-	if (self.studentId === studentId) {
-		console.error("Users cannot change their own permission")
-		res.status(403).json({
-			error: "Cannot change your own permission"
-		})
-		return
-	}
+		const self = await User.findOne({ sso_sid: sid })
+		if (self.studentId === studentId) {
+			logger.api.error("post /group/:groupId/member request error; 403 - cannot change your own permission");
+			res.status(403).json({
+				error: "forbidden: cannot change your own permission",
+			})
+			return
+		}
 
 	const user = await User.findOne({ studentId })
 	if (!user) {
-		console.error("Student Not Found")
+		logger.api.error("post /group/:groupId/member request error; 404 - student does not exist");
 		res.status(404).json({
-			error: "Student Not Found"
-		})
+			error: "not found: student does not exist",
+		});
 		return
 	}
 
-	try {
 		const group = await Group.findOne({
 			_id: groupId
 		})
@@ -99,45 +129,46 @@ export const updateMember = async (req, res) => {
 		}
 		res.json(newGroup)
 	} catch(error) {
-		console.error(error)
-		res.status(400).json({
+		logger.api.error("post /group/:groupId/member request error; 500 - %s", error);
+		res.status(500).json({
 			error: error.message
 		})
 	}
 }
 
+// delete /group/:groupId/member
 export const deleteMember = async (req, res) => {
-	const { groupId } = req.params
-	const { sid } = req.decoded
-	let { studentId } = req.body
-
-	console.log({ studentId })
-	if (!studentId) {
-		console.error("Student ID required")
-		res.status(400).json({
-			error: "Student Id required"
-		})
-		return
-	}
-
-	const self = await User.findOne({ sso_sid: sid })
-	if (self.studentId === studentId) {
-		console.error("Users cannot change their own permission")
-		res.status(403).json({
-			error: "Cannot change your own permission"
-		})
-		return
-	}
-
-	const user = await User.findOne({ studentId })
-	if (!user) {
-		console.error("Student Not Found")
-		res.status(404).json({
-			error: "Student Not Found"
-		})
-		return
-	}
 	try {
+		const { groupId } = req.params
+		const { sid } = req.decoded
+		let { studentId } = req.body
+		logger.api.info("delete /group/:groupId/member request; groupId: %s, sid: %s, studentId: %s", groupId, sid, studentId);
+		
+		if (!studentId) {
+			logger.api.error("delete /group/:groupId/member request error; 400 - null studentId");
+			res.status(400).json({
+				error: "bad request: null studentId",
+			});
+			return
+		}
+
+		const self = await User.findOne({ sso_sid: sid })
+		if (self.studentId === studentId) {
+			logger.api.error("delete /group/:groupId/member request error; 403 - cannot change your own permission");
+			res.status(403).json({
+				error: "forbidden: cannot change your own permission",
+			})
+			return
+		}
+
+		const user = await User.findOne({ studentId })
+		if (!user) {
+			logger.api.error("delete /group/:groupId/member request error; 404 - student does not exist");
+			res.status(404).json({
+				error: "not found: student does not exist",
+			})
+			return
+		}
 		const group = await Group.findOneAndUpdate({
 			_id: groupId,
 		}, {
@@ -167,7 +198,11 @@ export const deleteMember = async (req, res) => {
 			})
 		}
 		res.json(group)
+
 	} catch (error) {
-		console.error(error)
+		logger.api.error("delete /group/:groupId/member request error; 500 - %s", error);
+		return res.status(500).json({
+			error: error.message,
+		});
 	}
 }
