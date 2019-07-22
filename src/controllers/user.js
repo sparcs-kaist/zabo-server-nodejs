@@ -4,9 +4,10 @@ export const getUserInfo = async (req, res) => {
 	const { sid } = req.decoded
 	try {
 		const user = await User.findOne({ sso_sid: sid })
-			.populate('currentGroup', '_id name profilePhoto')
-			.populate('groups', '_id name profilePhoto')
-			.populate('boards', '_id title isPrivate')
+			.populate('groups')
+			.populate('currentGroup')
+			.populate('currentGroup.members')
+			.populate('boards')
 		res.json(user)
 	} catch(error) {
 		console.error(error)
@@ -30,7 +31,6 @@ export const setCurrentGroup = async (req, res) => {
 			projection: 'currentGroup',
 			populate: {
 				path: 'currentGroup',
-				select: "_id name profilePhoto"
 			}
 		})
 		res.json(user)
