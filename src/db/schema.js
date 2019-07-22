@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { CATEGORIES } from "../utils/variables"
 
 export const userSchema = new mongoose.Schema({
 	sso_uid: { type: String, unique: true },
@@ -77,8 +78,8 @@ export const zaboSchema = new mongoose.Schema({
 	},
 	category: [{
 		type: String,
-		enum: ["recruit", "seminar", "contest", "event", "show", "fair"]
-	}], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+		enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
+	}, // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
 	pins: [{
 		type: mongoose.Schema.ObjectId,
 		ref: "Pin"
