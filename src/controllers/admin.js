@@ -1,15 +1,25 @@
 import { Board, Group, User } from "../db"
 import jwt from "jsonwebtoken"
+import logger from "../utils/logger";
 
+// post /admin/group
 export const createGroup = async (req, res) => {
-	const { name, ownerStudentId } = req.body
-
 	try {
+		const { name, ownerStudentId } = req.body
+		logger.api.info("post /admin/group request; name: %s, ownerStudentId: %s", name, ownerStudentId);
+
+		if (!name || !ownerStudentId) {
+			logger.api.error("post /admin/group request error; 400");
+			return res.status(400).json({
+				error: "bad request: null input",
+			});
+		}
+
 		const user = await User.findOne({ studentId: ownerStudentId })
 		if (!user) {
-			console.error("User with studentId not found")
+			logger.api.error("post /admin/group request error; 404 - user does not exist");
 			res.status(404).json({
-				error: "User with studentId not found"
+				error: "not found: user does not exist"
 			})
 			return
 		}
@@ -32,32 +42,36 @@ export const createGroup = async (req, res) => {
 		console.log(newUser)
 		res.json(group)
 	} catch (error) {
-		console.error(error)
-		res.status(400).json({
+		logger.api.error("post /admin/group request error; 500 - %s", error);
+		res.status(500).json({
 			error: error.message
 		})
 	}
 }
 
+// get /admin/user/:studentId
 export const getUserInfo = async (req, res) => {
-	const { studentId } = req.params
 	try {
+		const { studentId } = req.params
+		logger.api.info("get /admin/user/:studentId request; studentId: %s", studentId);
 		const user = await User.findOne({ studentId })
 			.populate('currentGroup', '_id name profilePhoto')
 			.populate('groups', '_id name profilePhoto')
 			.populate('boards', '_id title isPrivate')
 		res.json(user)
 	} catch(error) {
-		console.error(error)
-		res.status(404).json({
+		logger.api.error("get /admin/user/:studentId request error; 500 - %s", error);
+		res.status(500).json({
 			error: error.message
 		})
 	}
 }
 
+// post /admin/fakeRegister
 export const fakeRegister = async (req, res) => {
-	const { studentId } = req.body
 	try {
+		const { studentId } = req.body
+		logger.api.info("post /admin/fakeRegister request; studentId: %s", studentId);
 		const board = await Board.create({
 			title: "저장한 포스터"
 		})
@@ -71,32 +85,42 @@ export const fakeRegister = async (req, res) => {
 		})
 		res.json(user)
 	} catch(error) {
-		console.error(error)
-		res.status(400).json({
+		logger.api.error("post /admin/fakeRegister request error; 500 - %s", error);
+		res.status(500).json({
 			error: error.message
 		})
 	}
 }
 
+// post /admin/fakeLogin
 export const fakeLogin = async (req, res) => {
-	const { studentId } = req.body
-	const jwtSecret = req.app.get('jwt-secret')
-	const user = await User.findOne({ studentId })
+	try {
+		const { studentId } = req.body
+		const jwtSecret = req.app.get('jwt-secret')
+		const user = await User.findOne({ studentId })
 
-	console.log({
-		sid: user.sso_sid,
-		email: user.email,
-		studentId: user.studentId,
-	})
+		logger.api.info("post /admin/fakeLogin request; sid: %s, email: %s, studentId: %s", user.sso_sid, user.email, user.studentId);
+		// console.log({
+		// 	sid: user.sso_sid,
+		// 	email: user.email,
+		// 	studentId: user.studentId,
+		// })
 
-	const token = jwt.sign({
-		sid: user.sso_sid,
-		email: user.email,
-		studentId: user.studentId,
-	}, jwtSecret, {
-		expiresIn: "60d",
-		issuer: "zabo-sparcs-kaist",
-	})
+		const token = jwt.sign({
+			sid: user.sso_sid,
+			email: user.email,
+			studentId: user.studentId,
+		}, jwtSecret, {
+			expiresIn: "60d",
+			issuer: "zabo-sparcs-kaist",
+		})
 
-	res.json(token)
+		res.json(token)
+	} catch (error) {
+		logger.api.error("post /admin/fakeLogin request error; 500 - %s", error);
+		return res.status(500).json({
+			error: error.message,
+		});
+	}
+	
 }

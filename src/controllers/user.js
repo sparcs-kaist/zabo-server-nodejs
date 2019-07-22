@@ -1,8 +1,12 @@
 import { User } from "../db"
+import logger from "../utils/logger";
 
+// get /user/
 export const getUserInfo = async (req, res) => {
-	const { sid } = req.decoded
 	try {
+		const { sid } = req.decoded
+		logger.api.info("get /user/ request; sid: %s", sid);
+
 		const user = await User.findOne({ sso_sid: sid })
 			.populate('groups')
 			.populate('currentGroup')
@@ -10,18 +14,21 @@ export const getUserInfo = async (req, res) => {
 			.populate('boards')
 		res.json(user)
 	} catch(error) {
-		console.error(error)
-		res.status(404).json({
+		logger.api.error("get /user/ request error; 500 - %s", error);
+		res.status(500).json({
 			error: error.message
 		})
 	}
 }
 
+// post /user/currentGroup/:groupId
 export const setCurrentGroup = async (req, res) => {
-	const { sid } = req.decoded
-	const { groupId } = req.params
 
 	try {
+		const { sid } = req.decoded
+		const { groupId } = req.params
+		logger.api.info("post /user/currentGroup/:groupId request; sid: %s, groupId: %s", sid, groupId);
+
 		const user = await User.findOneAndUpdate({ sso_sid: sid }, {
 			$set: {
 				currentGroup: groupId
@@ -35,6 +42,9 @@ export const setCurrentGroup = async (req, res) => {
 		})
 		res.json(user)
 	} catch(error) {
-		console.error(error)
+		logger.api.error("post /user/currentGroup/:groupId request error; 500 - %s", error);
+		return res.status(500).json({
+			error: error.message,
+		});
 	}
 }
