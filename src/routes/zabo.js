@@ -1,4 +1,7 @@
 import express from "express"
+import { authMiddleware } from "../middlewares"
+import { User } from "../db"
+
 const router = express.Router();
 
 const AWS = require('aws-sdk');
@@ -54,18 +57,29 @@ router.get('/', (req, res) => {
   })
 });
 
-router.get('/list', (req, res) => {
-  Zabo.find({}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({
-        error: err.message,
-      });
-    }
-    else {
-      return res.json(zabo);
-    }
-  })
+router.get('/list', async (req, res) => {
+  try {
+    const zabos = await Zabo.find({}).sort({'createdAt': -1}).limit(10)
+      .populate('createdBy')
+      .populate('owner')
+    res.send(zabos)
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({
+      error: error.message
+    })
+  }
+  //Zabo.find({}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
+  //  if (err) {
+  //    console.log(err);
+  //    return res.status(500).json({
+  //      error: err.message,
+  //    });
+  //  }
+  //  else {
+  //    return res.json(zabo);
+  //  }
+  //})
 });
 
 router.get('/list/next', (req, res) => {
@@ -124,21 +138,30 @@ router.get('/list/next', (req, res) => {
 //   });
 // });
 
-router.post('/', upload.array("img", 20), (req, res) => {
-  const { title, description, category, endAt } = req.body
-
+router.post('/',  authMiddleware, upload.array("img", 20), async (req, res) => {
   try {
-    if (!req.files.length || !title.length || !description.length || !category.length || !endAt.length) {
+    let { title, description, category, endAt } = req.body
+    const { sid } = req.decoded
+    category = (category || "").toLowerCase().split('#').filter(x => !!x)
+    if (!req.files || !title || !description || !endAt) {
       return res.status(400).json({
         error: 'bad request',
       });
+    }
+    const user = await User.findOne({ sso_sid: sid })
+    if (!user.currentGroup) {
+      return res.status(403).json({
+        error: "Requested User Is Not Currently Belonging to Any Group"
+      })
     }
 
     const newZabo = new Zabo({
       title,
       description,
       category,
-      endAt
+      endAt,
+      createdBy: user._id,
+      owner: user.currentGroup,
     });
 
     let count = 0
@@ -151,7 +174,7 @@ router.post('/', upload.array("img", 20), (req, res) => {
           });
         }
         console.log('new zabo has successfully saved');
-        return res.send('new zabo has successfully saved');
+        return res.send(newZabo);
       });
     }
 
@@ -181,11 +204,6 @@ router.post('/', upload.array("img", 20), (req, res) => {
       error: error.message
     })
   }
-});
-
-router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
-  return res.send(req.files);
-  // res.send('Successfully uploaded ' + req.files.length + ' files!');
 });
 
 router.delete('/', (req, res) => {

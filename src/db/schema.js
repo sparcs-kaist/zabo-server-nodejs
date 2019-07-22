@@ -48,6 +48,14 @@ export const userSchema = new mongoose.Schema({
 })
 
 export const zaboSchema = new mongoose.Schema({
+	createdBy: {
+		type: mongoose.Schema.ObjectId,
+		ref: "User",
+	},
+	owner: {
+		type: mongoose.Schema.ObjectId,
+		ref: "Group",
+	},
 	photos: [{
 		url: String,
 		width: Number,
@@ -67,10 +75,10 @@ export const zaboSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	category: {
+	category: [{
 		type: String,
 		enum: ["recruit", "seminar", "contest", "event", "show", "fair"]
-	}, // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+	}], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
 	pins: [{
 		type: mongoose.Schema.ObjectId,
 		ref: "Pin"
