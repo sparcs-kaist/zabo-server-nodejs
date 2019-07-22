@@ -1,6 +1,6 @@
 import express from "express"
+import { logger } from "../utils/logger";
 import { authMiddleware } from "../middlewares"
-
 
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -24,85 +24,92 @@ let upload = multer({
 
 import { User, Zabo, Pin } from "../db"
 
-router.get('/', (req, res) => {
-  const { id } = req.query
-  if (!id) {
-    console.log('null id error');
-    return res.status(400).json({
-      error: 'bad request: null id detected',
-    });
-  }
+router.get('/', async (req, res) => {
+  try {
+    const { id } = req.query
+    logger.zabo.info("get /zabo/ request; id: %s", id);
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({
-      error: "bad request: invalid id",
-    });
-  }
-
-  Zabo.findOne({_id: id}, (err, zabo) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({
-        error: err.message,
+    if (!id) {
+      logger.zabo.error("get /zabo/ request error; 400 - null id");
+      return res.status(400).json({
+        error: 'bad request: null id',
       });
     }
-    else if (zabo === null) {
-      console.log('zabo does not exist');
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      logger.zabo.error("get /zabo/ request error; 400 - invalid id");
+      return res.status(400).json({
+        error: "bad request: invalid id",
+      });
+    }
+
+    const zabo = await Zabo.findOne({_id: id})
+    if (!zabo) {
+      logger.zabo.error("get /zabo/ request error; 404 - zabo does not exist");
+      return res.status(404).json({
+        error: "not found: zabo does not exist",
+      });
+    }
+    else {
+      return res.json(zabo);
+    }
+
+  } catch (error) {
+    logger.zabo.error("get /zabo/ request error; 500 - %o", error);
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+  
+});
+
+router.get('/list', async (req, res) => {
+  try {
+    logger.zabo.info("get /zabo/list request")
+
+    const zaboList = await Zabo.find({}).sort({'createdAt': -1}).limit(10);
+    return res.json(zaboList);
+
+  } catch (error) {
+    logger.zabo.error("get /zabo/list request error; 500 - %o", error);
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+  
+});
+
+router.get('/list/next', async (req, res) => {
+  try {
+    const { id } = req.query;
+    logger.zabo.info("get /zabo/list/next request; id: %s", id);
+
+    if (!id) {
+      logger.zabo.error("get /zabo/list/next request error; 400 - null id");
+      return res.status(400).json({
+        error: "id required"
+      });
+    }
+  
+    const previousZabo = await Zabo.findOne({_id: req.query.id});
+    if (previousZabo === null) {
+      logger.zabo.error("get /zabo/list/next request error; 404 - zabo does not exist");
       return res.status(404).json({
         error: "zabo does not exist",
       });
     }
     else {
-      return res.json(zabo);
+      let lowestTime = previousZabo.createdAt;
+      const nextZaboList = await Zabo.find({createdAt: {$lt: lowestTime}}).sort({'createdAt': -1}).limit(10);
+      return res.json(nextZaboList);
     }
-  })
-});
 
-router.get('/list', (req, res) => {
-  Zabo.find({}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({
-        error: err.message,
-      });
-    }
-    else {
-      return res.json(zabo);
-    }
-  })
-});
-
-router.get('/list/next', (req, res) => {
-  if (!req.query.id) {
-    console.log('null id error');
-    return res.status(400).json({
-      error: "id required"
+  } catch (error) {
+    logger.zabo.error("get /zabo/list/next request error; 500 - %o", error);
+    return res.status(500).json({
+      error: error.message,
     });
   }
-
-  Zabo.findOne({_id: req.query.id}, (err, zabo) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({
-        error: err.message,
-      });
-    }
-    else if (zabo === null) return res.status(404).json({
-      error: "matched zabo not found"
-    });
-    else {
-      let lowestTime = zabo.createdAt;
-      Zabo.find({createdAt: {$lt: lowestTime}}).sort({'createdAt': -1}).limit(10).exec((err, zabo) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({
-            error: err.message,
-          });
-        }
-        else return res.json(zabo);
-      })
-    }
-  })
 });
 
 // router.get('/downloadimgfroms3', (req, res) => {
@@ -128,11 +135,13 @@ router.get('/list/next', (req, res) => {
 //   });
 // });
 
-router.post('/', upload.array("img", 20), (req, res) => {
-  const { title, description, category, endAt } = req.body
-
+router.post('/', upload.array("img", 20), async (req, res) => {
   try {
+    const { title, description, category, endAt } = req.body
+    logger.zabo.info("post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %o", title, description, category, endAt, req.files);
+
     if (!req.files || !title || !description || !category || !endAt) {
+      logger.zabo.error("post /zabo/ request error; 400");
       return res.status(400).json({
         error: 'bad request',
       });
@@ -179,10 +188,11 @@ router.post('/', upload.array("img", 20), (req, res) => {
         if (count === req.files.length) onFinish()
       });
     }
+
   } catch (error) {
-    console.error(error);
-    return res.status(500).send({
-      error: error.message
+    logger.zabo.error("post /zabo/ request error; 500 - %o", error);
+    return res.status(500).json({
+      error: error.message,
     })
   }
 });
@@ -191,13 +201,18 @@ router.post('/pin', authMiddleware, async (req, res) => {
   try { 
     let { zaboId } = req.body;
     let { sid } = req.decoded;
+    logger.zabo.info("post /zabo/pin request; zaboId: %s, sid: %s", zaboId, sid);
     let boardId;
 
-    if (!zaboId) return res.status(400).json({
-      error: "null id detected",
-    });
+    if (!zaboId) {
+      logger.zabo.error("post /zabo/pin request error; 400 - null id");
+      return res.status(400).json({
+        error: "null id",
+      });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(zaboId)) {
+      logger.zabo.error("post /zabo/pin request error; 400 - invalid id");
       return res.status(400).json({
         error: "invalid id",
       });
@@ -206,10 +221,10 @@ router.post('/pin', authMiddleware, async (req, res) => {
     // find boardId of user
     const user = await User.findOne({ sso_sid: sid })
     if (user === null) {
-      console.error("user not found");
+      logger.zabo.error("post /zabo/pin request error; 404 - user does not exist");
       return res.status(404).json({
         error: "user does not exist",
-      })
+      });
     }
     boardId = user.boards[0]
 
@@ -217,24 +232,19 @@ router.post('/pin', authMiddleware, async (req, res) => {
     //   console.log("user not found")
     //   throw error
     // })
-    if (user === null) {
-      console.log("user not found");
-      return res.status(404).json({
-        error: "user does not exist",
-      });
-    }
+    let userId = user._id;
     
     // edit zabo pins
     const zabo = await Zabo.findById(zaboId)
     if (zabo === null) {
-      console.log("zabo does not exist");
+      logger.zabo.error("post /zabo/pin request error; 404 - zabo does not exist");
       return res.status(404).json({
         error: "zabo does not exist",
-      })
+      });
     }
     
     let newPin = new Pin({
-      pinnedBy: sid,
+      pinnedBy: userId,
       zaboId,
       boardId,
     });
@@ -245,101 +255,93 @@ router.post('/pin', authMiddleware, async (req, res) => {
     zabo.pins.push(pin._id);
     await zabo.save();
 
-    console.log("new pin has successfully saved");
     return res.send({ zabo, newPin });
 
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    logger.zabo.error("post /zabo/pin request error; 500 - %o", error);
     return res.status(500).send({
-      error: err.message
+      error: error.message
     })
   }
 });
 
-// router.post('/uploadimgtos3', upload.array("img", 20), (req, res) => { // 임시로 지은 이름
-//   return res.send(req.files);
-//   res.send('Successfully uploaded ' + req.files.length + ' files!');
-// });
+router.delete('/', async (req, res) => {
+  try {
+    const { id } = req.body;
+    logger.zabo.info("delete /zabo/ request; id: %s", id);
 
-router.delete('/', (req, res) => {
-  if (!req.body.id) {
-    console.log('null id error');
-    return res.status(400).json({
-      error: 'bad request',
-    });
-  }
-
-  Zabo.deleteOne({_id: req.body.id}, (err, zabo) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({
-        error: err.message,
+    if (!id) {
+      logger.zabo.error("delete /zabo/ request error; 400 - null id");
+      return res.status(400).json({
+        error: 'bad request: null id',
       });
     }
-    else {
-      console.log('zabo successfully deleted');
-      return res.send('zabo successfully deleted');
-    }
-  });
+
+    await Zabo.deleteOne({_id: req.body.id});
+    return res.send('zabo successfully deleted');
+
+  } catch (error) {
+    logger.zabo.error("delete /zabo/ request error; 500 - %o", error);
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+  
 });
 
 router.delete('/pin', authMiddleware, async (req, res) => {
   try { 
     let { zaboId } = req.body;
     let { sid } = req.decoded;
+    logger.zabo.info("delete /zabo/pin request; zaboId: %s, sid: %s", zaboId, sid);
     let boardId;
 
-    if (!zaboId) return res.status(400).json({
-      error: "null id detected",
-    });
+    if (!zaboId) {
+      logger.zabo.error("delete /zabo/pin request error; 400 - null id");
+      return res.status(400).json({
+        error: "bad request: null id",
+      });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(zaboId)) {
+      logger.zabo.error("delete /zabo/pin request error; 400 - invalid id");
       return res.status(400).json({
-        error: "invalid id",
+        error: "bad request: invalid id",
       });
     }
 
     // find boardId of user
     const user = await User.findOne({ sso_sid: sid })
-    if (user === null) {
-      console.error("user not found");
+    if (!user) {
+      logger.zabo.error("delete /zabo/pin request error; 404 - user does not exist");
       return res.status(404).json({
-        error: "user does not exist",
+        error: "not found: user does not exist",
       })
     }
     boardId = user.boards[0]
 
-    if (user === null) {
-      console.log("user not found");
-      return res.status(404).json({
-        error: "user does not exist",
-      });
-    }
-
     // delete the pin
     const deletedPin = await Pin.findOneAndDelete({zaboId, boardId});
-    console.log(deletedPin._id);
+    logger.zabo.info("delete /zabo/pin request; deleted pin: %o", deletedPin);
     
     // edit zabo pins
     const zabo = await Zabo.findById(zaboId)
-    if (zabo === null) {
-      console.log("zabo does not exist");
+    if (!zabo) {
+      logger.zabo.error("delete /zabo/pin request error; 404 - zabo does not exist");
       return res.status(404).json({
-        error: "zabo does not exist",
+        error: "not found: zabo does not exist",
       })
     }
     let newPins = zabo.pins.filter(pin => pin.toString() !== deletedPin._id.toString());
-    console.log(newPins);
+    logger.zabo.info("delete /zabo/pin request; edited zabo pins: %o", newPins);
     zabo.pins = newPins;
     await zabo.save();
-
-    console.log("pin has successfully deleted");
     return res.send({ zabo });
 
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send({
-      error: err.message
+  } catch (error) {
+    logger.zabo.error("delete /zabo/pin request error; 500 - %o", error);
+    return res.status(500).json({
+      error: error.message
     });
   }
 });

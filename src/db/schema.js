@@ -105,7 +105,10 @@ export const pinSchema = new mongoose.Schema({
 		zabo pinned by user in zabo collection. Even this model incurs extra db
 		operations it's the only way to make it scalable.
 	 */
-	pinnedBy: String, // sso_sid of user
+	pinnedBy: {
+		type: mongoose.Schema.ObjectId,
+		ref: "User",
+	}, // _id of user
 	zaboId: {
 		type: mongoose.Schema.ObjectId,
 		ref: "Zabo"
