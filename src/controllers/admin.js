@@ -42,7 +42,7 @@ export const createGroup = async (req, res) => {
 		console.log(newUser)
 		res.json(group)
 	} catch (error) {
-		logger.api.error("post /admin/group request error; 500 - %s", error);
+		logger.api.error(error)
 		res.status(500).json({
 			error: error.message
 		})
@@ -60,7 +60,7 @@ export const getUserInfo = async (req, res) => {
 			.populate('boards', '_id title isPrivate')
 		res.json(user)
 	} catch(error) {
-		logger.api.error("get /admin/user/:studentId request error; 500 - %s", error);
+		logger.api.error(error)
 		res.status(500).json({
 			error: error.message
 		})
@@ -85,7 +85,7 @@ export const fakeRegister = async (req, res) => {
 		})
 		res.json(user)
 	} catch(error) {
-		logger.api.error("post /admin/fakeRegister request error; 500 - %s", error);
+		logger.api.error(error)
 		res.status(500).json({
 			error: error.message
 		})
@@ -100,11 +100,6 @@ export const fakeLogin = async (req, res) => {
 		const user = await User.findOne({ studentId })
 
 		logger.api.info("post /admin/fakeLogin request; sid: %s, email: %s, studentId: %s", user.sso_sid, user.email, user.studentId);
-		// console.log({
-		// 	sid: user.sso_sid,
-		// 	email: user.email,
-		// 	studentId: user.studentId,
-		// })
 
 		const token = jwt.sign({
 			sid: user.sso_sid,
@@ -117,10 +112,10 @@ export const fakeLogin = async (req, res) => {
 
 		res.json(token)
 	} catch (error) {
-		logger.api.error("post /admin/fakeLogin request error; 500 - %s", error);
+		logger.api.error(error)
 		return res.status(500).json({
 			error: error.message,
 		});
 	}
-	
+
 }
