@@ -1,5 +1,5 @@
 import { Statistic } from "../db"
-import logger from "../utils/logger"
+import { logger } from "../utils/logger"
 
 import { EVENTS, EVENTS_MAP } from "./variables"
 

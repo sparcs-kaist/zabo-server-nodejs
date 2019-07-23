@@ -1,5 +1,5 @@
 import { User } from "../db"
-import logger from "../utils/logger";
+import { logger }from "../utils/logger";
 
 // get /user/
 export const getUserInfo = async (req, res) => {
