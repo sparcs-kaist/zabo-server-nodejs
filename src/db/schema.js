@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { CATEGORIES } from "../utils/variables"
+import { CATEGORIES, EVENTS } from "../utils/variables"
 
 export const userSchema = new mongoose.Schema({
 	sso_uid: { type: String, unique: true },
@@ -145,4 +145,19 @@ export const groupSchema = new mongoose.Schema({
 		},
 		isAdmin: Boolean
 	}], // sso_sid of users
+}, {
+	timestamp: true,
+})
+
+export const statisticsSchema = new mongoose.Schema({
+	type: {
+		type: String,
+		required: true,
+		enum: EVENTS,
+	},
+	data: {
+		type: Map,
+	}
+}, {
+	timestamp: true
 })
