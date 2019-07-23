@@ -76,7 +76,7 @@ export const postNewZabo = async (req, res) => {
 				height: dimensions.height,
 			}
 		})
-		newZabo.photos.concat(photos)
+		newZabo.photos = newZabo.photos.concat(photos)
 		await newZabo.save()
 		return res.send(newZabo)
 	} catch (error) {
@@ -129,8 +129,6 @@ export const listZabos = async (req, res) => {
 export const listNextZabos = async (req, res) => {
 	try {
 		const { id } = req.query
-		logger.zabo.info("get /zabo/list/next request; id: %s", id)
-
 		if (!id) {
 			logger.zabo.error("get /zabo/list/next request error; 400 - null id")
 			return res.status(400).json({
