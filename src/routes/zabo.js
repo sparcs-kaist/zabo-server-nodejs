@@ -1,29 +1,13 @@
 import express from "express"
 import { logger } from "../utils/logger";
 import { authMiddleware } from "../middlewares"
-import { User } from "../db"
-
-const router = express.Router();
-const mongoose = require('mongoose');
-
-const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
-const size = require('s3-image-size');
-
-const multer = require('multer');
-const multers3 = require('multer-s3');
-let upload = multer({
-  storage: multers3({
-    s3: s3,
-    bucket: 'sparcs-kaist-zabo-dev',
-    acl: 'public-read',
-    key: (req, file, cb) => {
-      cb(null, Date.now().toString());
-    },
-  })
-});
+import mongoose from "mongoose"
+import { sizeS3Item } from "../utils/aws"
 
 import { User, Zabo, Pin } from "../db"
+import { photoUpload } from "../utils/aws"
+
+const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
@@ -56,7 +40,7 @@ router.get('/', async (req, res) => {
     }
 
   } catch (error) {
-    logger.zabo.error("get /zabo/ request error; 500 - %s", error);
+    logger.zabo.error(error)
     return res.status(500).json({
       error: error.message,
     });
@@ -70,10 +54,10 @@ router.get('/list', async (req, res) => {
       .populate('owner')
     res.send(zabos)
   } catch (error) {
-    console.error(error)
-    res.status(500).send({
-      error: error.message
-    })
+    logger.zabo.error(error)
+    return res.status(500).json({
+      error: error.message,
+    });
   }
 });
 
@@ -103,7 +87,7 @@ router.get('/list/next', async (req, res) => {
     }
 
   } catch (error) {
-    logger.zabo.error("get /zabo/list/next request error; 500 - %s", error);
+    logger.zabo.error(error)
     return res.status(500).json({
       error: error.message,
     });
@@ -133,7 +117,7 @@ router.get('/list/next', async (req, res) => {
 //   });
 // });
 
-router.post('/',  authMiddleware, upload.array("img", 20), async (req, res) => {
+router.post('/',  authMiddleware, photoUpload.array("img", 20), async (req, res) => {
   try {
     let { title, description, category, endAt } = req.body
     const { sid } = req.decoded
@@ -152,52 +136,28 @@ router.post('/',  authMiddleware, upload.array("img", 20), async (req, res) => {
       })
     }
 
-    const newZabo = new Zabo({
-      title,
-      description,
-      category,
-      endAt,
-      createdBy: user._id,
-      owner: user.currentGroup,
-    });
+    const newZabo = new Zabo({ title, description, category, endAt });
 
-    let count = 0
-    const onFinish = () => {
-      newZabo.save(err => {
-        if (err){
-          console.log(err);
-          return res.status(500).json({
-            error: err.message,
-          });
-        }
-        console.log('new zabo has successfully saved');
-        return res.send(newZabo);
-      });
-    }
+    const calSizes = []
 
     for (let i=0; i < req.files.length; i++) {
       let s3ImageKey = req.files[i].key;
-      size(s3, 'sparcs-kaist-zabo-dev', s3ImageKey, (err, dimensions, bytesRead) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({
-            error: err.message,
-          })
-        };
-        let newPhoto = {
-          url: req.files[i].location,
-          width: dimensions.width,
-          height: dimensions.height,
-        }
-        newZabo.photos.push(newPhoto);
-
-        count++
-        if (count === req.files.length) onFinish()
-      });
+      calSizes.push(sizeS3Item(s3ImageKey))
     }
 
+    const results = await Promise.all(calSizes)
+    const photos = results.map(([dimensions, bytesRead], index) => {
+      return {
+        url: req.files[index].location,
+        width: dimensions.width,
+        height: dimensions.height,
+      }
+    })
+    newZabo.photos.concat(photos)
+    await newZabo.save()
+    return res.send(newZabo);
   } catch (error) {
-    logger.zabo.error("post /zabo/ request error; 500 - %s", error);
+    logger.zabo.error(error)
     return res.status(500).json({
       error: error.message,
     })
@@ -263,9 +223,8 @@ router.post('/pin', authMiddleware, async (req, res) => {
     await zabo.save();
 
     return res.send({ zabo, newPin });
-
   } catch (error) {
-    logger.zabo.error("post /zabo/pin request error; 500 - %s", error);
+    logger.zabo.error(error)
     return res.status(500).send({
       error: error.message
     })
@@ -288,7 +247,7 @@ router.delete('/', async (req, res) => {
     return res.send('zabo successfully deleted');
 
   } catch (error) {
-    logger.zabo.error("delete /zabo/ request error; 500 - %s", error);
+    logger.zabo.error(error)
     return res.status(500).json({
       error: error.message,
     });
@@ -345,7 +304,7 @@ router.delete('/pin', authMiddleware, async (req, res) => {
     return res.send({ zabo });
 
   } catch (error) {
-    logger.zabo.error("delete /zabo/pin request error; 500 - %s", error);
+    logger.zabo.error(error)
     return res.status(500).json({
       error: error.message
     });
