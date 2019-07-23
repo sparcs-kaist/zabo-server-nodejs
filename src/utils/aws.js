@@ -20,6 +20,7 @@ export const photoUpload = multer({
 	storage: multerS3({
 		s3: s3,
 		bucket: 'sparcs-kaist-zabo-dev',
+		cacheControl: 'max-age=31536000',
 		metadata: (req, file, cb) => {
 			cb(null, { fieldName: file.fieldname })
 		},
