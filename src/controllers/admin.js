@@ -1,6 +1,6 @@
 import { Board, Group, User } from "../db"
 import jwt from "jsonwebtoken"
-import logger from "../utils/logger";
+import { logger } from "../utils/logger";
 
 // post /admin/group
 export const createGroup = async (req, res) => {

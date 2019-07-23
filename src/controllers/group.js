@@ -1,5 +1,5 @@
 import { Group, User } from "../db"
-import logger from "../utils/logger";
+import { logger } from "../utils/logger";
 
 // get /group/:groupId
 export const getGroupInfo = async (req, res) => {
