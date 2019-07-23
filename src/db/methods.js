@@ -1,4 +1,4 @@
-import { boardSchema, userSchema, zaboSchema, pinSchema, groupSchema } from "./schema"
+import { boardSchema, userSchema, zaboSchema, pinSchema, groupSchema, statisticsSchema } from "./schema"
 
 userSchema.virtual('name')
 	.get(function () {
@@ -36,4 +36,4 @@ groupSchema.index({
 //	return v.map(el => Object.assign(el, { url: root + el.url }))
 //})
 
-export { userSchema, zaboSchema, boardSchema, pinSchema, groupSchema }
+export { userSchema, zaboSchema, boardSchema, pinSchema, groupSchema, statisticsSchema }
