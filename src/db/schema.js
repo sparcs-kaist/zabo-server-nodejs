@@ -79,12 +79,15 @@ export const zaboSchema = new mongoose.Schema({
 	category: [{
 		type: String,
 		enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
-	}, // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+	}], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
 	pins: [{
 		type: mongoose.Schema.ObjectId,
 		ref: "Pin"
 	}], // Pin
-	endAt: Date,
+	endAt: {
+		type: Date,
+		required: true,
+	},
 }, {
 	timestamps: true,
 })
@@ -111,7 +114,10 @@ export const pinSchema = new mongoose.Schema({
 		zabo pinned by user in zabo collection. Even this model incurs extra db
 		operations it's the only way to make it scalable.
 	 */
-	pinnedBy: String, // sso_sid of user
+	pinnedBy: {
+		type: mongoose.Schema.ObjectId,
+		ref: "User",
+	}, // _id of user
 	zaboId: {
 		type: mongoose.Schema.ObjectId,
 		ref: "Zabo"
