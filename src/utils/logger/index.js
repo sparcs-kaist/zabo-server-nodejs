@@ -30,7 +30,7 @@ const logger = createCLogger("--")
 logger.db = createCLogger("DB")
 logger.api = createCLogger("API")
 logger.zabo = createCLogger('ZABO')
-
+logger.event = createCLogger("EVENT")
 export { logger }
 
 export * from "./debug"

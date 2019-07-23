@@ -1,7 +1,10 @@
+import jwt from "jsonwebtoken"
+
+import { Board, User } from "../db"
+
 import SSOClient from "../utils/sso"
 import { parseJSON } from "../utils"
-import jwt from "jsonwebtoken"
-import { Board, User } from "../db"
+import { stat } from "../utils/statistic"
 import logger from "../utils/logger";
 
 export const authCheck = async (req, res) => {
@@ -64,6 +67,7 @@ export const loginCallback = async (req, res) => {
 		if (user) {
 			boards = user.boards
 		} else {
+			logger.event.info("===== New User Has Registered | %s - %s %s ===", ku_std_no, first_name, last_name)
 			const board = await Board.create({
 				title: "저장한 포스터"
 			})
@@ -99,6 +103,8 @@ export const loginCallback = async (req, res) => {
 			.populate('currentGroup')
 			.populate('currentGroup.members')
 			.populate('boards')
+
+		stat.REGISTER({ userId: newUser._id })
 
 		const token = jwt.sign({
 			sid,

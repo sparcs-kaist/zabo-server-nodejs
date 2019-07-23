@@ -1,6 +1,7 @@
 import { logger } from "../utils/logger"
 import mongoose from "mongoose"
 import { sizeS3Item } from "../utils/aws"
+import { stat } from "../utils/statistic"
 
 import { Pin, User, Zabo } from "../db"
 
@@ -8,6 +9,7 @@ export const getZabo = async (req, res) => {
 	try {
 		const { id } = req.query
 		logger.zabo.info("get /zabo/ request; id: %s", id)
+		stat.GET_ZABO(req)
 
 		if (!id) {
 			logger.zabo.error("get /zabo/ request error; 400 - null id")
