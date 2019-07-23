@@ -1,6 +1,7 @@
 import express from "express"
 import { logger } from "../utils/logger";
 import { authMiddleware } from "../middlewares"
+import { User } from "../db"
 
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -60,23 +61,20 @@ router.get('/', async (req, res) => {
       error: error.message,
     });
   }
-  
 });
 
 router.get('/list', async (req, res) => {
   try {
-    logger.zabo.info("get /zabo/list request")
-
-    const zaboList = await Zabo.find({}).sort({'createdAt': -1}).limit(10);
-    return res.json(zaboList);
-
+    const zabos = await Zabo.find({}).sort({'createdAt': -1}).limit(10)
+      .populate('createdBy')
+      .populate('owner')
+    res.send(zabos)
   } catch (error) {
-    logger.zabo.error("get /zabo/list request error; 500 - %s", error);
-    return res.status(500).json({
-      error: error.message,
-    });
+    console.error(error)
+    res.status(500).send({
+      error: error.message
+    })
   }
-  
 });
 
 router.get('/list/next', async (req, res) => {
@@ -90,7 +88,7 @@ router.get('/list/next', async (req, res) => {
         error: "id required"
       });
     }
-  
+
     const previousZabo = await Zabo.findOne({_id: req.query.id});
     if (previousZabo === null) {
       logger.zabo.error("get /zabo/list/next request error; 404 - zabo does not exist");
@@ -135,23 +133,32 @@ router.get('/list/next', async (req, res) => {
 //   });
 // });
 
-router.post('/', upload.array("img", 20), async (req, res) => {
+router.post('/',  authMiddleware, upload.array("img", 20), async (req, res) => {
   try {
-    const { title, description, category, endAt } = req.body
+    let { title, description, category, endAt } = req.body
+    const { sid } = req.decoded
     logger.zabo.info("post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %s", title, description, category, endAt, req.files);
-
-    if (!req.files || !title || !description || !category || !endAt) {
+    category = (category || "").toLowerCase().split('#').filter(x => !!x)
+    if (!req.files || !title || !description || !endAt) {
       logger.zabo.error("post /zabo/ request error; 400");
       return res.status(400).json({
         error: 'bad request',
       });
+    }
+    const user = await User.findOne({ sso_sid: sid })
+    if (!user.currentGroup) {
+      return res.status(403).json({
+        error: "Requested User Is Not Currently Belonging to Any Group"
+      })
     }
 
     const newZabo = new Zabo({
       title,
       description,
       category,
-      endAt
+      endAt,
+      createdBy: user._id,
+      owner: user.currentGroup,
     });
 
     let count = 0
@@ -164,7 +171,7 @@ router.post('/', upload.array("img", 20), async (req, res) => {
           });
         }
         console.log('new zabo has successfully saved');
-        return res.send('new zabo has successfully saved');
+        return res.send(newZabo);
       });
     }
 
@@ -198,7 +205,7 @@ router.post('/', upload.array("img", 20), async (req, res) => {
 });
 
 router.post('/pin', authMiddleware, async (req, res) => {
-  try { 
+  try {
     let { zaboId } = req.body;
     let { sid } = req.decoded;
     logger.zabo.info("post /zabo/pin request; zaboId: %s, sid: %s", zaboId, sid);
@@ -233,7 +240,7 @@ router.post('/pin', authMiddleware, async (req, res) => {
     //   throw error
     // })
     let userId = user._id;
-    
+
     // edit zabo pins
     const zabo = await Zabo.findById(zaboId)
     if (zabo === null) {
@@ -242,7 +249,7 @@ router.post('/pin', authMiddleware, async (req, res) => {
         error: "zabo does not exist",
       });
     }
-    
+
     let newPin = new Pin({
       pinnedBy: userId,
       zaboId,
@@ -286,11 +293,10 @@ router.delete('/', async (req, res) => {
       error: error.message,
     });
   }
-  
 });
 
 router.delete('/pin', authMiddleware, async (req, res) => {
-  try { 
+  try {
     let { zaboId } = req.body;
     let { sid } = req.decoded;
     logger.zabo.info("delete /zabo/pin request; zaboId: %s, sid: %s", zaboId, sid);
@@ -323,7 +329,7 @@ router.delete('/pin', authMiddleware, async (req, res) => {
     // delete the pin
     const deletedPin = await Pin.findOneAndDelete({zaboId, boardId});
     logger.zabo.info("delete /zabo/pin request; deleted pin: %s", deletedPin);
-    
+
     // edit zabo pins
     const zabo = await Zabo.findById(zaboId)
     if (!zabo) {
