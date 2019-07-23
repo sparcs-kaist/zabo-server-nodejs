@@ -22,6 +22,15 @@ userSchema.post('save', function (doc, next) {
 	next()
 })
 
+zaboSchema.index({
+	title: "text",
+})
+
+groupSchema.index({
+	name: "text",
+	description: "text",
+})
+
 // Bad, don't do this!
 //schema.path('arr').get(v => {
 //	return v.map(el => Object.assign(el, { url: root + el.url }))

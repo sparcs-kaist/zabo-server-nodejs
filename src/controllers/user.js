@@ -14,7 +14,7 @@ export const getUserInfo = async (req, res) => {
 			.populate('boards')
 		res.json(user)
 	} catch(error) {
-		logger.api.error("get /user/ request error; 500 - %s", error);
+		logger.api.error(error);
 		res.status(500).json({
 			error: error.message
 		})
@@ -23,7 +23,6 @@ export const getUserInfo = async (req, res) => {
 
 // post /user/currentGroup/:groupId
 export const setCurrentGroup = async (req, res) => {
-
 	try {
 		const { sid } = req.decoded
 		const { groupId } = req.params
@@ -42,7 +41,7 @@ export const setCurrentGroup = async (req, res) => {
 		})
 		res.json(user)
 	} catch(error) {
-		logger.api.error("post /user/currentGroup/:groupId request error; 500 - %s", error);
+		logger.api.error(error);
 		return res.status(500).json({
 			error: error.message,
 		});

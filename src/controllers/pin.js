@@ -1,6 +1,10 @@
 import mongoose from "mongoose"
 import { Pin, User, Zabo } from "../db"
 
+
+/*
+	This Controller is currently not being used
+ */
 export const createOrRemovePin = async (req, res) => {
 	let { zaboId, boardId } = req.body
 	if (

@@ -5,16 +5,21 @@ import session from "express-session"
 import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
+import connectRedis from "connect-redis"
 
 import routes from "./routes"
 
 import "./db"
 
 const app = express()
+const RedisStore = connectRedis(session)
 
 app.use(session({
 	secret: 'ZaBO-SerVEr-SEcReT', // TODO : MOVE TO DOTENV
 	cookie: { maxAge: 60000 },
+	store: new RedisStore(),
+	resave: false,
+	saveUninitialized: true,
 }));
 
 app.use(function (req, res, next) {
