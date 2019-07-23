@@ -5,7 +5,7 @@ import { Board, User } from "../db"
 import SSOClient from "../utils/sso"
 import { parseJSON } from "../utils"
 import { stat } from "../utils/statistic"
-import logger from "../utils/logger";
+import { logger } from "../utils/logger";
 
 export const authCheck = async (req, res) => {
 	const jwtSecret = req.app.get('jwt-secret')
@@ -45,6 +45,7 @@ export const loginCallback = async (req, res) => {
 	try {
 		const stateBefore = req.session.state
 		const { state, code } = req.body
+		logger.api.info("get /auth/callback request; state: %s, code: %s", state, code)
 		const jwtSecret = req.app.get('jwt-secret')
 
 		if (stateBefore !== state) {

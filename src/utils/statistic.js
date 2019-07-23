@@ -30,3 +30,5 @@ stat.GET_ZABO = (req) => {
 		}
 	})
 }
+
+export { stat }
