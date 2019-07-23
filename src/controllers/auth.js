@@ -2,6 +2,7 @@ import SSOClient from "../utils/sso"
 import { parseJSON } from "../utils"
 import jwt from "jsonwebtoken"
 import { Board, User } from "../db"
+import logger from "../utils/logger";
 
 export const authCheck = async (req, res) => {
 	const jwtSecret = req.app.get('jwt-secret')
@@ -25,7 +26,7 @@ export const authCheck = async (req, res) => {
 
 			res.json(user)
 		} catch (error) {
-			console.error(error)
+			logger.error(error)
 			res.sendStatus(500)
 		}
 	})
@@ -33,10 +34,6 @@ export const authCheck = async (req, res) => {
 
 export const login = (req, res) => {
 	const { url, state } = SSOClient.getLoginParams()
-	console.log({
-		url,
-		state,
-	})
 	req.session.state = state
 	res.redirect(url)
 }
@@ -46,7 +43,6 @@ export const loginCallback = async (req, res) => {
 		const stateBefore = req.session.state
 		const { state, code } = req.body
 		const jwtSecret = req.app.get('jwt-secret')
-		console.log(state, code)
 
 		if (stateBefore !== state) {
 			res.status(401).json({
@@ -58,7 +54,6 @@ export const loginCallback = async (req, res) => {
 
 		const userData = await SSOClient.getUserInfo(code)
 
-		console.log({ userData })
 
 		const { uid, sid, email: sso_email, first_name, last_name, gender, birthday, flags, facebook_id, twitter_id, kaist_id, kaist_info, kaist_info_time, sparcs_id } = userData
 		const { displayname, ku_person_type, ku_sex, ku_std_no, mail: kaist_email } = parseJSON(kaist_info)
@@ -66,16 +61,14 @@ export const loginCallback = async (req, res) => {
 		const user = await User.findOne({ sso_sid: sid })
 
 		let boards
-		if (user)
+		if (user) {
 			boards = user.boards
-		else {
+		} else {
 			const board = await Board.create({
 				title: "저장한 포스터"
 			})
 			boards = [board._id]
 		}
-		console.log({ boards })
-
 
 		const newUser = await User.findOneAndUpdate({ sso_sid: sid }, {
 			$set: {
@@ -107,11 +100,6 @@ export const loginCallback = async (req, res) => {
 			.populate('currentGroup.members')
 			.populate('boards')
 
-		console.log({
-			userData,
-			user,
-		})
-
 		const token = jwt.sign({
 			sid,
 			email: sso_email,
@@ -126,7 +114,7 @@ export const loginCallback = async (req, res) => {
 			user: newUser,
 		})
 	} catch (error) {
-		console.error(error)
+		logger.error(error)
 		res.sendStatus(500)
 	}
 }
@@ -136,19 +124,11 @@ export const logout = async (req, res) => {
 	const token = req.session.token
 	const jwtSecret = req.app.get('jwt-secret')
 
-	console.log({
-		sid,
-		token,
-	})
-
 	jwt.verify(token, jwtSecret, (err, decoded) => {
 		if (err) {
 			return console.error(err)
 		}
-		console.log({
-			decoded,
-		})
-	})
+	}) // TODO : FIX
 	//const redirectUrl = encodeURIComponent('http://ssal.sparcs.org:10001/after/logout')
 	const logoutUrl = SSOClient.getLogoutUrl(sid)
 	res.redirect(logoutUrl)

@@ -17,7 +17,7 @@ export const getGroupInfo = async (req, res) => {
 		const group = await Group.findById(groupId)
 		res.json(group)
 	} catch(error) {
-		logger.api.error("get /group/:groupId request error; 500 - %s", error);
+		logger.api.error(error)
 		res.status(500).json({
 			error: error.message
 		});
@@ -40,7 +40,7 @@ export const updatePhoto = async (req, res) => {
 		res.json('todo')
 
 	} catch (error) {
-		logger.api.error("post /group/:groupId request error; 500 - %s", error);
+		logger.api.error(error)
 		return res.status(500).json({
 			error: error.message,
 		})
@@ -129,7 +129,7 @@ export const updateMember = async (req, res) => {
 		}
 		res.json(newGroup)
 	} catch(error) {
-		logger.api.error("post /group/:groupId/member request error; 500 - %s", error);
+		logger.api.error(error)
 		res.status(500).json({
 			error: error.message
 		})
@@ -143,7 +143,7 @@ export const deleteMember = async (req, res) => {
 		const { sid } = req.decoded
 		let { studentId } = req.body
 		logger.api.info("delete /group/:groupId/member request; groupId: %s, sid: %s, studentId: %s", groupId, sid, studentId);
-		
+
 		if (!studentId) {
 			logger.api.error("delete /group/:groupId/member request error; 400 - null studentId");
 			res.status(400).json({
@@ -200,7 +200,7 @@ export const deleteMember = async (req, res) => {
 		res.json(group)
 
 	} catch (error) {
-		logger.api.error("delete /group/:groupId/member request error; 500 - %s", error);
+		logger.api.error(error)
 		return res.status(500).json({
 			error: error.message,
 		});
