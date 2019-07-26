@@ -102,6 +102,7 @@ export const fakeLogin = async (req, res) => {
 		logger.api.info("post /admin/fakeLogin request; sid: %s, email: %s, studentId: %s", user.sso_sid, user.email, user.studentId);
 
 		const token = jwt.sign({
+			id: user._id,
 			sid: user.sso_sid,
 			email: user.email,
 			studentId: user.studentId,
