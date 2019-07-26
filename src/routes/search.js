@@ -2,25 +2,21 @@ import express from "express"
 import { Group, Zabo } from "../db"
 import { CATEGORIES } from "../utils/variables"
 import { logger } from "../utils/logger"
+import { stat } from "../utils/statistic"
 
 const router = new express.Router()
 
 router.get("/", async (req, res) => {
 	try {
 		const { query } = req.query
+		logger.info("post /search request; query: %s", query)
 		if (!query) {
 			res.status(400).send({
 				error: "Search Keyword Required"
 			})
 			return
 		}
-
-		const testResult = await Zabo.find({
-			$or: [
-				{ "title": { $regex: new RegExp(query, "gi") }},
-				{ "description": { $regex: new RegExp(query, "gi") }},
-			]
-		})
+		stat.SEARCH(req)
 
 		// TODO : Cache search result using REDIS
 		const results = await Promise.all([
@@ -36,7 +32,6 @@ router.get("/", async (req, res) => {
 			zabos: results[0],
 			groups: results[1],
 			categories: results[2],
-			testResult,
 		})
 	} catch (error) {
 		logger.error(error)
