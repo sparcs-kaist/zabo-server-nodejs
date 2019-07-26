@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { userSchema, zaboSchema, boardSchema, pinSchema, groupSchema, statisticsSchema } from "./methods"
+import { userSchema, zaboSchema, boardSchema, pinSchema, groupSchema, statisticsSchema, feedbackSchema } from "./methods"
 import { logger } from "../utils/logger"
 
 mongoose.connect('mongodb://localhost/zabo-develop', {
@@ -22,6 +22,7 @@ export const Board = mongoose.model("Board", boardSchema)
 export const Pin = mongoose.model("Pin", pinSchema)
 export const Group = mongoose.model("Group", groupSchema)
 export const Statistic = mongoose.model("Statistic", statisticsSchema)
+export const Feedback = mongoose.model("Feedback", feedbackSchema)
 
 //const kittySchema = new mongoose.Schema({
 //	name: String,

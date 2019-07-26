@@ -7,13 +7,9 @@ import pinRoutes from "./pin"
 import groupRoutes from "./group"
 import adminRoutes from "./admin"
 import searchRoutes from "./search"
+import feedbackRoutes from "./feedback"
 
 const router = express.Router()
-
-/* GET home page. */
-router.get('/', function (req, res, next) {
-	res.render('index', { title: 'Express' })
-})
 
 router.use('/graphql', graphql)
 router.use("/auth", authRoutes)
@@ -23,5 +19,6 @@ router.use("/pin", pinRoutes)
 router.use("/group", groupRoutes)
 router.use("/admin", adminRoutes)
 router.use("/search", searchRoutes)
+router.use("/feedback", feedbackRoutes)
 
 module.exports = router
