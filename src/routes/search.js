@@ -5,8 +5,8 @@ import { CATEGORIES } from "../utils/variables"
 const router = new express.Router()
 
 router.get("/", async (req, res) => {
-	const { keyword } = req.params
-	if (!keyword) {
+	const { query } = req.params
+	if (!query) {
 		res.status(400).send({
 			error: "Search Keyword Required"
 		})
@@ -15,12 +15,12 @@ router.get("/", async (req, res) => {
 
 	try {
 		const results = await Promise.all([
-			Zabo.find({ $text: { $search: keyword }}),
-			Group.find({ $text: { $search: keyword }}),
+			Zabo.find({ $text: { $search: query }}),
+			Group.find({ $text: { $search: query }}),
 		])
 
 		results.push(
-			CATEGORIES.filter(item => item.indexOf(keyword) > -1)
+			CATEGORIES.filter(item => item.indexOf(query) > -1)
 		)
 	} catch (error) {
 		console.error(error)
