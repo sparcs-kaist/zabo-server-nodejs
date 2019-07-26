@@ -30,6 +30,7 @@ const logger = createCLogger("--")
 logger.db = createCLogger("DB")
 logger.api = createCLogger("API")
 logger.zabo = createCLogger('ZABO')
+logger.pin = createCLogger('PIN')
 logger.event = createCLogger("EVENT")
 export { logger }
 
