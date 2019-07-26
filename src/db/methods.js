@@ -24,12 +24,83 @@ userSchema.post('save', function (doc, next) {
 
 zaboSchema.index({
 	title: "text",
+	description: "text",
+}, {
+	weights: {
+		name: 3,
+		description: 1
+	}
 })
 
 groupSchema.index({
 	name: "text",
 	description: "text",
+}, {
+	weights: {
+		name: 3,
+		description: 1
+	}
 })
+
+zaboSchema.statics = {
+	searchPartial: async function(q) {
+		return this.find({ $or:
+				[
+					{ "title": new RegExp(q, "gi") },
+					{ "description": new RegExp(q, "gi") },
+				]
+		}).limit(20)
+	},
+
+	searchFull: async function(q) {
+		return this.find({
+			$text: { $search: q, $caseSensitive: false },
+		}, {
+			score: { $meta: "textScore" }
+		}).sort({score:{$meta:"textScore"}}).limit(20)
+	},
+
+	search: async function(q) {
+		const result = await this.searchFull(q, (err, data) => {
+			if (!err && data.length) return callback(err, data);
+		});
+		if (result.length < 10) {
+			return this.searchPartial(q)
+		}
+		return result
+	},
+}
+
+groupSchema.statics = {
+	searchPartial: async function(q) {
+		return this.find({ $or:
+				[
+					{ "name": new RegExp(q, "gi") },
+					{ "description": new RegExp(q, "gi") },
+				]
+		}).limit(20)
+	},
+
+	searchFull: async function(q) {
+		return this.find({
+			$text: { $search: q, $caseSensitive: false },
+		}, {
+			score: { $meta: "textScore" }
+		}).sort({score:{$meta:"textScore"}}).limit(20)
+	},
+
+	search: async function(q) {
+		const result = await this.searchFull(q, (err, data) => {
+			if (!err && data.length) return callback(err, data);
+		});
+		if (result.length < 10) {
+			return this.searchPartial(q)
+		}
+		return result
+	},
+}
+
+
 
 // Bad, don't do this!
 //schema.path('arr').get(v => {

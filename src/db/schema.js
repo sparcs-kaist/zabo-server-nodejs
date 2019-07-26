@@ -90,6 +90,7 @@ export const zaboSchema = new mongoose.Schema({
 	},
 }, {
 	timestamps: true,
+	autoIndex: false,
 })
 
 
@@ -147,6 +148,7 @@ export const groupSchema = new mongoose.Schema({
 	}], // sso_sid of users
 }, {
 	timestamp: true,
+	autoIndex: false,
 })
 
 export const statisticsSchema = new mongoose.Schema({
