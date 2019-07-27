@@ -127,7 +127,7 @@ export const listZabos = async (req, res, next) => {
 					error: "related zabo does not exist",
 				})
 			}
-			queryOptions = { category: { $in: zabo.category }}
+			queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } }
 		}
 
 		const zabos = await Zabo.find(queryOptions)
@@ -164,10 +164,17 @@ export const listNextZabos = async (req, res) => {
 					error: "related zabo does not exist",
 				})
 			}
-			queryOptions = { category: { $in: zabo.category }}
+			queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } }
 		}
 
-		const nextZaboList = await Zabo.find({ _id: { $lt: lastSeen }, ...queryOptions }).sort({ 'createdAt': -1 }).limit(30)
+		queryOptions = {
+			...queryOptions,
+			_id: {
+				...queryOptions._id,
+				$lt: lastSeen,
+			}
+		}
+		const nextZaboList = await Zabo.find(queryOptions).sort({ 'createdAt': -1 }).limit(30)
 		return res.json(nextZaboList)
 	} catch (error) {
 		logger.zabo.error(error)
