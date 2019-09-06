@@ -139,7 +139,7 @@ Example nginx configuration is located [here](https://github.com/sparcs-kaist/za
 
 ## Built With
 
-* [Node.js](https://nodejs.org/ko/) - Used to build server.
+* [Express.js](https://expressjs.com/) - Used to build server.
 * [AWS S3](https://aws.amazon.com/s3/?nc1=h_ls) - Amazon S3(Simple Storage Service) is an object storage service that offers nice scalability, data availability, security, and performance.
 * [MongoDB](https://www.mongodb.com/) - Widely used free to use NoSQL database.
 * [Redis](https://redis.io/) - In-memory data structure store.
