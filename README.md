@@ -243,7 +243,7 @@ The footer should contain any information about **Breaking Changes** and is also
 
 ## Branch Management
 
-I use [git-flow](https://danielkummer.github.io/git-flow-cheatsheet/index.html) to manage branches. For branch history, see the [branches on this repository](https://github.com/jungdj/mia/branches).
+I use [git-flow](https://danielkummer.github.io/git-flow-cheatsheet/index.html) to manage branches. For branch history, see the [branches on this repository](https://github.com/sparcs-kaist/zabo-server-nodejs/branches).
 
 
 ## Contributing
