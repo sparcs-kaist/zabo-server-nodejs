@@ -58,6 +58,16 @@ We expect REDIS server to be running on it's default port(6379).
 We expect MongoDB server to be running on it's default port(27017).
 We expect to use *zabo-{env}* for each environment as database name.
 
+**Environment Secrets**
+
+List of environment variables required are specified in [here](config/.env.example)
+
+You can find proper values for those [here](https://wiki.sparcs.org/w/index.php/Zabo_-_2019) 
+
+In order to get a new SSO client id and secrets, refer [SPARCS SSO Dev Center](https://sparcssso.kaist.ac.kr/dev/main/)
+
+**!important: Please be extra careful not to upload any kind of secrets on github.**
+
 ## Getting Started
 
 ### Running Development Server
@@ -133,13 +143,22 @@ zabo-server
 
 ## Deployment
 
-All api endpoints are prefixed with */api*.
-Therefore, you can easily classify API requests out of page loading requests (toward zabo-front-reactjs(https://github.com/sparcs-kaist/zabo-front-reactjs)).
-Example nginx configuration is located [here](https://github.com/sparcs-kaist/zabo-server-nodejs/blob/develop/nginx.conf)
+All api endpoints are prefixed with */api*.  
+Therefore, you can easily classify API requests out of page loading requests (toward [zabo-front-reactjs](https://github.com/sparcs-kaist/zabo-front-reactjs)).  
+Example nginx configuration is located [here](https://github.com/sparcs-kaist/zabo-server-nodejs/blob/develop/nginx.conf)  
+  
+Currently running on   
+  
+[SSAL](http://ssal.sparcs.org:10001/) as development server  
+[Netlify](https://alpha.zabo.sparcs.org/) for continuos integration test and PWA development  
+To be deployed on https://zabo.sparcs.org/ and https://zabo.kaist.ac.kr  
+
 
 ## Built With
 
 * [Express.js](https://expressjs.com/) - Used to build server.
+* [SPARCS SSO](https://github.com/sparcs-kaist/sparcssso) - Using SPARCS SSO for sign-on
+* [JWT](https://jwt.io) - JWT for authentication
 * [AWS S3](https://aws.amazon.com/s3/?nc1=h_ls) - Amazon S3(Simple Storage Service) is an object storage service that offers nice scalability, data availability, security, and performance.
 * [MongoDB](https://www.mongodb.com/) - Widely used free to use NoSQL database.
 * [Redis](https://redis.io/) - In-memory data structure store.
