@@ -258,6 +258,7 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 
 * **Cookie** - [Cookie](https://github.com/jungdj)
 * **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
+* **Alogon** - [Kalogon](https://github.com/Kalogon)
 
 ## License
 
