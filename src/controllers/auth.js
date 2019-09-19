@@ -108,6 +108,7 @@ export const loginCallback = async (req, res) => {
 		stat.REGISTER({ userId: newUser._id })
 
 		const token = jwt.sign({
+			id: newUser._id,
 			sid,
 			email: sso_email,
 			studentId: ku_std_no,

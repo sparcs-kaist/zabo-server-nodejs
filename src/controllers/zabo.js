@@ -2,6 +2,7 @@ import { logger } from "../utils/logger"
 import mongoose from "mongoose"
 import { sizeS3Item } from "../utils/aws"
 import { stat } from "../utils/statistic"
+import { isValidId } from "../utils"
 
 import { Pin, User, Zabo } from "../db"
 
@@ -9,14 +10,14 @@ export const getZabo = async (req, res) => {
 	try {
 		const { id } = req.query
 		logger.zabo.info("get /zabo/ request; id: %s", id)
-		stat.GET_ZABO(req)
-
 		if (!id) {
 			logger.zabo.error("get /zabo/ request error; 400 - null id")
 			return res.status(400).json({
 				error: 'bad request: null id',
 			})
 		}
+		stat.GET_ZABO(req)
+
 		if (!mongoose.Types.ObjectId.isValid(id)) {
 			logger.zabo.error("get /zabo/ request error; 400 - invalid id")
 			return res.status(400).json({
@@ -110,11 +111,28 @@ export const deleteZabo = async (req, res) => {
 	}
 }
 
-export const listZabos = async (req, res) => {
+export const listZabos = async (req, res, next) => {
 	try {
-		const zabos = await Zabo.find({})
+		const { lastSeen, relatedTo } = req.query
+
+		if (lastSeen) return next()
+
+		let queryOptions = {}
+
+		if (relatedTo) {
+			const zabo = await Zabo.findOne({ _id: relatedTo })
+			if (!zabo) {
+				logger.zabo.error("get /zabo/list request error; 404 - related zabo does not exist")
+				return res.status(404).json({
+					error: "related zabo does not exist",
+				})
+			}
+			queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } }
+		}
+
+		const zabos = await Zabo.find(queryOptions)
 			.sort({ 'createdAt': -1 })
-			.limit(10)
+			.limit(20)
 			.populate('createdBy')
 			.populate('owner')
 		res.send(zabos)
@@ -128,26 +146,36 @@ export const listZabos = async (req, res) => {
 
 export const listNextZabos = async (req, res) => {
 	try {
-		const { id } = req.query
-		if (!id) {
-			logger.zabo.error("get /zabo/list/next request error; 400 - null id")
+		const { lastSeen, relatedTo } = req.query
+		if (!isValidId(lastSeen)) {
+			logger.zabo.error("get /zabo/list request error; 400 - invalid lastSeen")
 			return res.status(400).json({
-				error: "id required",
+				error: "invalid lastSeen"
 			})
 		}
 
-		const previousZabo = await Zabo.findOne({ _id: req.query.id })
-		if (previousZabo === null) {
-			logger.zabo.error("get /zabo/list/next request error; 404 - zabo does not exist")
-			return res.status(404).json({
-				error: "zabo does not exist",
-			})
-		} else {
-			let lowestTime = previousZabo.createdAt
-			const nextZaboList = await Zabo.find({ createdAt: { $lt: lowestTime } }).sort({ 'createdAt': -1 }).limit(10)
-			return res.json(nextZaboList)
+		let queryOptions = {}
+
+		if (relatedTo) {
+			const zabo = await Zabo.findOne({ _id: relatedTo })
+			if (!zabo) {
+				logger.zabo.error("get /zabo/list request error; 404 - related zabo does not exist")
+				return res.status(404).json({
+					error: "related zabo does not exist",
+				})
+			}
+			queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } }
 		}
 
+		queryOptions = {
+			...queryOptions,
+			_id: {
+				...queryOptions._id,
+				$lt: lastSeen,
+			}
+		}
+		const nextZaboList = await Zabo.find(queryOptions).sort({ 'createdAt': -1 }).limit(30)
+		return res.json(nextZaboList)
 	} catch (error) {
 		logger.zabo.error(error)
 		return res.status(500).json({

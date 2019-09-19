@@ -1,6 +1,12 @@
 # ZABO Server 
 
-자보는 동아리 리크루팅, 공연, 행사 등을 손쉽게 홍보할 수 있도록 도와주는 웹 플랫폼입니다.
+ZABO helps **KAIST students based** individuals or clubs advertising themselves via web based platform not only in an analogue way. While this service is open public, **only KAIST members** are allowed to post images on this website and others must manually get permission from SPARCS KAIST's current project manager.
+
+We're expecting anyone satisfying above conditions posting there recruiting announcements, performance schedules, and any other events in much better condition (posting paper posters at each dorms, cafeterias, E11, ...etc) with ease and joy.
+
+Please contact SPARCS KAIST to get more detailed information.
+
+If you're looking for frontend codes, you can find it in [here](https://github..com/sparcs-kaist/zabo-front-reactjs)
 
 ## API Specification
 
@@ -14,19 +20,12 @@ Document for API Speicifcation can be found [here](https://github.com/sparcs-kai
     - [Running Development Server](#running-development-server)
         - [Using npm](#npm)
         - [Using yarn](#yarn)
-    - [Running Production Server](#running-production-server)
+    - [Running Production Server](#deploying-on-production-server)
         - [Using npm](#npm)
         - [Using yarn](#yarn)
 - [Folder Structure](#folder-structure)
-- [Available Scripts](#available-scripts) 
-    - [yarn test](#test)
-- [Running Tests](#running-tests)
-    - [Break Down to End to End Tests](#break-down-to-end-to-end-tests)
 - [Deployment](#deployment)
 - [Built With](#built-with)
-- [Database/Storage](#store)
-    - [MongoDB](#mongodb)
-    - [S3](#s3)
 - [Commit Message Guidelines](#commit-message-guidlines)
     - [Commit Message Format](#commit-message-format)
     - [Revert](#revert)
@@ -44,29 +43,48 @@ Document for API Speicifcation can be found [here](https://github.com/sparcs-kai
 
 ## Prerequisites
 
-**You’ll need to have Node 8.10.0 or later on your local development machine**. You can use [nvm](https://github.com/creationix/nvm#installation) (macOS/Linux) or [nvm-windows](https://github.com/coreybutler/nvm-windows#node-version-manager-nvm-for-windows) to easily switch Node versions between different projects.
-Node.js. That's all you need.
+**You’ll need to have Node 8.10.0 or later on your local development and production machine**. You can use [nvm](https://github.com/creationix/nvm#installation) (macOS/Linux) or [nvm-windows](https://github.com/coreybutler/nvm-windows#node-version-manager-nvm-for-windows) to easily switch Node versions between different projects.
 
 ```sh
-node -v // v9.2.0
+node -v // v10.16.3
 ```
+
+**Redis**
+
+We expect REDIS server to be running on it's default port(6379).
+
+**MongoDB**
+
+We expect MongoDB server to be running on it's default port(27017).
+We expect to use *zabo-{env}* for each environment as database name.
+
+**Environment Secrets**
+
+List of environment variables required are specified in [here](config/.env.example)
+
+You can find proper values for those [here](https://wiki.sparcs.org/w/index.php/Zabo_-_2019) 
+
+In order to get a new SSO client id and secrets, refer [SPARCS SSO Dev Center](https://sparcssso.kaist.ac.kr/dev/main/)
+
+**!important: Please be extra careful not to upload any kind of secrets on github.**
 
 ## Getting Started
 
 ### Running Development Server
 
-#### npm
+```
+You need Mongodb and Redis running on your local machine before running our server.
+Please check *prerequisites*(#prerequisites) to find out more
 
-Run server
-
-```sh
-npm install
-npm dev
 ```
 
-Open a new terminal to run database
+#### npm
+
+Run development server
 
 ```sh
+npm install // Installing dependencied with node js package manager
+npm run dev // Run development server with nodemon watching ./src folder
 ```
 
 #### yarn
@@ -74,13 +92,8 @@ Open a new terminal to run database
 Run server
 
 ```sh
-yarn
-yarn dev
-```
-
-Open a new terminal to run database
-
-```sh
+yarn // Installing dependencied with node js package manager
+yarn dev // Run development server with nodemon watching ./src folder
 ```
 
 ### Running Production Server
@@ -90,13 +103,8 @@ Open a new terminal to run database
 Run server
 
 ```sh
-npm install
-npm prod
-```
-
-Open a new terminal to run database
-
-```sh
+npm install // Installing dependencied with node js package manager
+npm start // Run production server with NODE_ENV=production
 ```
 
 #### yarn
@@ -104,13 +112,8 @@ Open a new terminal to run database
 Run server
 
 ```sh
-yarn
-yarn prod
-```
-
-Open a new terminal to run database
-
-```sh
+yarn // Installing dependencied with node js package manager
+yarn start // Run production server with NODE_ENV=production
 ```
 
 
@@ -119,7 +122,6 @@ Open a new terminal to run database
 zabo-server
 ├── README.md
 ├── LICENSE.md
-├── tmp
 ├── node_modules
 ├── package.json
 ├── .gitignore
@@ -134,60 +136,37 @@ zabo-server
 │   ├── db
 │   ├── routes
 │   ├── utils
+│   ├── controllers
 │   └── app.js
 └── index.js  - Entry point
 ```
 
-## Available Scripts
-
-### Server
-
-#### Test
-Preparing...
-Maybe like this
-
-```sh
-yarn test
-```
-
-So simple!
-
-Actually, it's just a plan yet.
-
-
-### Client
-
-Will make new repository **zabo-client-reactjs** soon.
- 
-## Running Tests
-
-### Break down into end to end tests
-
-Will be prepared
-
 ## Deployment
 
-Additional notes about how to deploy this on a live system will be added soon.
+All api endpoints are prefixed with */api*.  
+Therefore, you can easily classify API requests out of page loading requests (toward [zabo-front-reactjs](https://github.com/sparcs-kaist/zabo-front-reactjs)).  
+Example nginx configuration is located [here](https://github.com/sparcs-kaist/zabo-server-nodejs/blob/develop/nginx.conf)  
+  
+Currently running on   
+  
+[SSAL](http://ssal.sparcs.org:10001/) as development server  
+[Netlify](https://alpha.zabo.sparcs.org/) for continuos integration test and PWA development  
+To be deployed on https://zabo.sparcs.org/ and https://zabo.kaist.ac.kr  
+
 
 ## Built With
 
-* [Node.js](https://nodejs.org/ko/) - Used to build server.
-
-> Note: Planing to use 
+* [Express.js](https://expressjs.com/) - Used to build server.
+* [SPARCS SSO](https://github.com/sparcs-kaist/sparcssso) - Using SPARCS SSO for sign-on
+* [JWT](https://jwt.io) - JWT for authentication
 * [AWS S3](https://aws.amazon.com/s3/?nc1=h_ls) - Amazon S3(Simple Storage Service) is an object storage service that offers nice scalability, data availability, security, and performance.
-* [Circle CI](https://circleci.com/) - Continuous Integration.
 * [MongoDB](https://www.mongodb.com/) - Widely used free to use NoSQL database.
-* [Docker](https://www.docker.com/) - Containerizate software.
-
-## Database
-
-### MongoDB
-
-Administrative information such as authentication will be stored in MongoDB.
+* [Redis](https://redis.io/) - In-memory data structure store.
+* [Docker](https://www.docker.com/) - Containerizate software. Docker configuration should be uploaded soon
 
 ### S3
 
-Pictures are going to be stored in S3.
+All the posters are stored in AWS S3
 
 ## Commit Message Guidelines
 
@@ -264,14 +243,12 @@ The footer should contain any information about **Breaking Changes** and is also
 
 ## Branch Management
 
-I use [git-flow](https://danielkummer.github.io/git-flow-cheatsheet/index.html) to manage branches. For branch history, see the [branches on this repository](https://github.com/jungdj/mia/branches).
+I use [git-flow](https://danielkummer.github.io/git-flow-cheatsheet/index.html) to manage branches. For branch history, see the [branches on this repository](https://github.com/sparcs-kaist/zabo-server-nodejs/branches).
 
 
 ## Contributing
 
 Member of SPARCS-KAIST can freely contribute on this repository.
-
-Otherwise, even you're not a member but feel like contributing on our repository, do not hesitate to contact us.
 
 ## Versioning
 
@@ -281,6 +258,7 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 
 * **Cookie** - [Cookie](https://github.com/jungdj)
 * **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
+* **Alogon** - [Kalogon](https://github.com/Kalogon)
 
 ## License
 

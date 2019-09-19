@@ -90,6 +90,7 @@ export const zaboSchema = new mongoose.Schema({
 	},
 }, {
 	timestamps: true,
+	autoIndex: false,
 })
 
 
@@ -147,6 +148,7 @@ export const groupSchema = new mongoose.Schema({
 	}], // sso_sid of users
 }, {
 	timestamp: true,
+	autoIndex: false,
 })
 
 export const statisticsSchema = new mongoose.Schema({
@@ -155,9 +157,25 @@ export const statisticsSchema = new mongoose.Schema({
 		required: true,
 		enum: EVENTS,
 	},
+	userId: {
+		type: mongoose.Schema.ObjectId,
+		ref: "User"
+	},
 	data: {
 		type: Map,
 	}
 }, {
 	timestamp: true
+})
+
+export const feedbackSchema = new mongoose.Schema({
+	userId: {
+		type: mongoose.Schema.ObjectId,
+		ref: "User"
+	},
+	feedback: {
+		type: String
+	}
+}, {
+	timestamp: true,
 })
