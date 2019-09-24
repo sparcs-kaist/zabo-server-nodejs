@@ -36,9 +36,17 @@ export const authCheck = async (req, res) => {
 }
 
 export const login = (req, res) => {
-	const { url, state } = SSOClient.getLoginParams()
-	req.session.state = state
-	res.redirect(url)
+	try {
+		const { url, state } = SSOClient.getLoginParams()
+		logger.api.info("get /auth/login request; url: %s, state: %s", url, state)
+		req.session.state = state
+		res.redirect(url)
+	} catch (error) {
+		logger.api.error(error)
+		return res.status(500).json({
+			error: error.message,
+		})
+	}
 }
 
 export const loginCallback = async (req, res) => {
