@@ -7,6 +7,8 @@ mongoose.connect('mongodb://localhost/zabo-develop', {
 	autoIndex: process.env.NODE_ENV !== "production",
 	useFindAndModify: false,
 	useCreateIndex: true,
+	// sets how many times to try reconnecting (default: 30)
+	reconnectTries: Number.MAX_VALUE,
 })
 
 const db = mongoose.connection
