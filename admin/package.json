@@ -3,13 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.4.3",
+    "@material-ui/icons": "^4.4.3",
+    "chartist": "^0.11.4",
+    "classnames": "^2.2.6",
+    "cross-env": "^6.0.0",
+    "perfect-scrollbar": "^1.4.0",
     "react": "^16.10.0",
     "react-dom": "^16.10.0",
     "react-scripts": "3.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "env:path": "cross-env NODE_PATH=src:src/components",
+    "start": "$npm_execpath run env:path react-scripts start",
+    "build": "$npm_execpath run env:path react-scripts build",
+    "postbuild": "./tools/moveBuildFolder.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
