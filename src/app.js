@@ -15,7 +15,7 @@ const app = express()
 const RedisStore = connectRedis(session)
 
 app.use(session({
-	secret: 'ZaBO-SerVEr-SEcReT', // TODO : MOVE TO DOTENV
+	secret: process.env.SESSION_SECRET,
 	cookie: { maxAge: 60000 },
 	store: new RedisStore(),
 	resave: false,
@@ -35,7 +35,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
-app.set("jwt-secret", "zabo-jwt-secret") // TODO : Move to dotenv
+app.set("jwt-secret", process.env.JWT_SECRET)
 
 
 app.use('/api', routes)
