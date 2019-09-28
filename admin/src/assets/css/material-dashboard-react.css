@@ -57,12 +57,10 @@
     fill: rgba(0, 0, 0, 0.4);
     line-height: 1;
 }
-
 html * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-
 body {
     background-color: #eeeeee;
     color: #3c4858;
@@ -254,7 +252,7 @@ footer ul li a:hover {
     border-radius: 8px 0 0 8px;
     text-align: center;
     top: 120px;
-. badge-primary-background-color: #9c27b0;
+.badge-primary-background-color: #9c27b0;
 }
 
 .fixed-plugin .SocialMediaShareButton,
@@ -317,7 +315,6 @@ footer ul li a:hover {
 .fixed-plugin .dropdown-menu li > a:focus {
     box-shadow: none;
 }
-
 .fixed-plugin .badge {
     border: 3px solid #ffffff;
     border-radius: 50%;
@@ -359,7 +356,6 @@ footer ul li a:hover {
     font-size: 14px;
     margin: 10px;
 }
-
 .fixed-plugin .dropdown-menu li {
     display: block;
     padding: 4px 0px;
@@ -386,7 +382,6 @@ footer ul li a:hover {
 .fixed-plugin li.button-container div {
     margin-bottom: 5px;
 }
-
 .fixed-plugin li.header-title {
     height: 30px;
     line-height: 25px;
@@ -417,7 +412,6 @@ footer ul li a:hover {
 .fixed-plugin .adjustments-line a a:focus {
     color: transparent;
 }
-
 .fixed-plugin .adjustments-line .dropdown-menu > li.adjustments-line > a {
     padding-right: 0;
     padding-left: 0;
@@ -445,7 +439,6 @@ footer ul li a:hover {
 .fixed-plugin .dropdown-menu > li > a.img-holder img {
     margin-top: auto;
 }
-
 .fixed-plugin .dropdown-menu > li:hover > a.img-holder,
 .fixed-plugin .dropdown-menu > li:focus > a.img-holder {
     border-color: rgba(0, 187, 255, 0.53);
@@ -456,7 +449,6 @@ footer ul li a:hover {
     border-color: #00bbff;
     background-color: #ffffff;
 }
-
 .fixed-plugin .dropdown .dropdown-menu {
     -webkit-transform: translateY(-15%);
     -moz-transform: translateY(-15%);
@@ -476,7 +468,6 @@ footer ul li a:hover {
     right: -16px;
     top: 46px;
 }
-
 .fixed-plugin .dropdown .dropdown-menu:after {
     border-bottom: 0.4em solid transparent;
     border-left: 0.4em solid #ffffff;
@@ -507,18 +498,15 @@ footer ul li a:hover {
     transform: translateY(-13%);
     transform-origin: 0 0;
 }
-
 .fixed-plugin.rtl-fixed-plugin {
     right: auto;
     left: 0px;
     border-radius: 0 8px 8px 0;
 }
-
 .fixed-plugin.rtl-fixed-plugin .dropdown-menu {
     right: auto;
     left: 80px;
 }
-
 * {
     letter-spacing: normal !important;
 }

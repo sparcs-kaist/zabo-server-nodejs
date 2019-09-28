@@ -15,7 +15,7 @@ import Edit from '@material-ui/icons/Edit';
 import Close from '@material-ui/icons/Close';
 import Check from '@material-ui/icons/Check';
 // core components
-import styles from 'src/assets/jss/material-dashboard-react/components/tasksStyle';
+import styles from 'assets/jss/material-dashboard-react/components/tasksStyle';
 
 const useStyles = makeStyles(styles);
 
