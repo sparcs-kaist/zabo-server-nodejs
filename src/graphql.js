@@ -1,11 +1,13 @@
 import { GraphQLServer } from 'graphql-yoga';
-import resolvers from './graphql/resolvers';
+import resolvers, { pubsub } from './graphql/resolvers';
 import { logger } from './utils/logger';
 
 const server = new GraphQLServer({
   typeDefs: './src/graphql/schema.graphql',
   resolvers,
+  context: { pubsub },
 });
+
 server.start({
   port: 6002,
   endpoint: '/api/graphql',
