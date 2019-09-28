@@ -8,6 +8,7 @@
     "chartist": "^0.11.4",
     "classnames": "^2.2.6",
     "cross-env": "^6.0.0",
+    "eslint-config-airbnb": "^18.0.1",
     "perfect-scrollbar": "^1.4.0",
     "react": "^16.10.0",
     "react-dom": "^16.10.0",
@@ -22,7 +23,18 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "airbnb"
+    ],
+    "rules": {
+      "react/prefer-stateless-function": 0,
+      "react/jsx-filename-extension": 0,
+      "react/jsx-one-expression-per-line": 0
+    },
+    "env": {
+      "browser": true
+    }
   },
   "browserslist": {
     "production": [
