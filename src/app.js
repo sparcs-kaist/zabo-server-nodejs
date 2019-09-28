@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import helmet from "helmet"
 import connectRedis from "connect-redis"
+import './graphql';
 
 import routes from "./routes"
 
