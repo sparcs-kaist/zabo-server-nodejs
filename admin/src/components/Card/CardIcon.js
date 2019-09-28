@@ -8,7 +8,7 @@ import { makeStyles } from '@material-ui/core/styles';
 // @material-ui/icons
 
 // core components
-import styles from 'src/assets/jss/material-dashboard-react/components/cardIconStyle';
+import styles from 'assets/jss/material-dashboard-react/components/cardIconStyle';
 
 const useStyles = makeStyles(styles);
 
