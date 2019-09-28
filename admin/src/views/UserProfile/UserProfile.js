@@ -13,7 +13,11 @@ import CardAvatar from 'components/Card/CardAvatar';
 import CardBody from 'components/Card/CardBody';
 import CardFooter from 'components/Card/CardFooter';
 
-import avatar from 'assets/img/faces/marc.jpg';
+import avatar1 from 'assets/img/faces/member_1.png';
+import avatar2 from 'assets/img/faces/member_2.png';
+
+const avatars = [avatar1, avatar2]
+const avatar = avatars[Math.floor(Math.random() * avatars.length)]
 
 const styles = {
   cardCategoryWhite: {
