@@ -41,7 +41,11 @@ import {
 
 import styles from "assets/jss/material-dashboard-react/views/rtlStyle";
 
-import avatar from "assets/img/faces/marc.jpg";
+import avatar1 from 'assets/img/faces/member_1.png';
+import avatar2 from 'assets/img/faces/member_2.png';
+
+const avatars = [avatar1, avatar2]
+const avatar = avatars[Math.floor(Math.random() * avatars.length)]
 
 let bugs = [
   "طراح گرافیک از این متن به عنوان عنصری از ترکیب بندی برای پر کردن؟",
