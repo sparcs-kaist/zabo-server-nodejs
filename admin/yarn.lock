@@ -7995,7 +7995,7 @@ react-dev-utils@^9.0.4:
     strip-ansi "5.2.0"
     text-table "0.2.0"
 
-react-dom@16.10.0:
+react-dom@^16.10.0:
   version "16.10.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.10.0.tgz#319356767b5c044f3c016eef28518ef7726dce84"
   integrity sha512-0QJQUFrKG04hB/1lWyUs/FOd1qNseKGRQI+JBRsADIqVAFxYObhZ2zsVQKjt+nVSCmi8KA0sL52RLwwWuXQtOw==
@@ -8076,7 +8076,7 @@ react-scripts@3.1.2:
   optionalDependencies:
     fsevents "2.0.7"
 
-react@16.10.0:
+react@^16.10.0:
   version "16.10.0"
   resolved "https://registry.yarnpkg.com/react/-/react-16.10.0.tgz#95c41e8fc1c706e174deef54b663b5ab94c8ee32"
   integrity sha512-lc37bD3j6ZWJRso/a1rrFu6CO1qOf30ZadUDBi1c5RHA1lBSWA8x2MGABB6Oikk+RfmgC+kAT+XegL0eD1ecKg==
