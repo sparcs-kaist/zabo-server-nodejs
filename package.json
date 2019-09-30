@@ -9,14 +9,7 @@
     "env:prod": "cross-env NODE_ENV=production",
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
-    "prod": "yarn env:prod nodemon index",
-    "precommit": "lint-staged"
-  },
-  "lint-staged": {
-    "src/**/*.{js,jsx,json,css}": [
-      "prettier --config .prettierrc --write",
-      "git add"
-    ]
+    "prod": "yarn env:prod nodemon index"
   },
   "dependencies": {
     "@babel/core": "^7.4.3",
@@ -32,12 +25,14 @@
     "dotenv": "^7.0.0",
     "dotenv-expand": "^5.1.0",
     "dotenv-safe": "^6.1.0",
+    "eslint-config-airbnb": "18.0.1",
     "express": "~4.16.0",
-    "express-graphql": "^0.8.0",
     "express-session": "^1.16.1",
-    "graphql": "^14.2.1",
+    "graphql-redis-subscriptions": "^2.1.1",
+    "graphql-yoga": "^1.18.3",
     "helmet": "^3.16.0",
     "http-errors": "~1.6.2",
+    "ioredis": "^4.14.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.13",
     "mongoose": "^5.5.5",
@@ -48,6 +43,15 @@
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.8.0"
+  },
+  "devDependencies": {
+    "eslint": "6.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "nodemon": "^1.18.11",
+    "prettier": "^1.17.0"
   },
   "babel": {
     "presets": [
@@ -61,8 +65,18 @@
       ]
     ]
   },
-  "devDependencies": {
-    "nodemon": "^1.18.11",
-    "prettier": "^1.17.0"
+  "eslintConfig": {
+    "extends": "airbnb",
+    "rules": {
+      "react/prefer-stateless-function": 0,
+      "react/jsx-filename-extension": 0,
+      "react/jsx-one-expression-per-line": 0,
+      "arrow-parens": 0,
+      "import/no-unresolved": 0,
+      "react/jsx-props-no-spreading": 0
+    },
+    "env": {
+      "browser": true
+    }
   }
 }
