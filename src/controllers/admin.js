@@ -1,4 +1,4 @@
-import { Board, Group, User } from "../db"
+import { Board, Group, User, Zabo } from "../db"
 import jwt from "jsonwebtoken"
 import { logger } from "../utils/logger";
 
@@ -119,4 +119,46 @@ export const fakeLogin = async (req, res) => {
 		});
 	}
 
+}
+
+
+/* For admin page */
+// get /analytics/zabo/date/created
+export const analyticsGetZaboCreatedDate = async (req, res) => {
+	try {
+		logger.api.info("get /analytics/zabo/date/created")
+		const zabos = [];
+
+		// Use stream
+		const cursor = await Zabo.find({}).lean().cursor();
+		cursor.on('data', (zabo) => { zabos.push(zabo.createdAt) });
+		cursor.on('end', () => {
+			res.send(zabos);
+		});
+	} catch(error) {
+		logger.api.error(error);
+		res.status(500).json({
+			error: error.message
+		})
+	}
+}
+
+// get /analytics/user/date/created
+export const analyticsGetUserCreatedDate = async (req, res) => {
+	try {
+		logger.api.info("get /analytics/user/date/created")
+		const users = [];
+
+		// Use stream
+		const cursor = await User.find({}).lean().cursor();
+		cursor.on('data', (user) => { users.push(user.createdAt) });
+		cursor.on('end', () => {
+			res.send(users);
+		});
+	} catch(error) {
+		logger.api.error(error);
+		res.status(500).json({
+			error: error.message
+		})
+	}
 }

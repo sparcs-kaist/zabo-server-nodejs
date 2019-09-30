@@ -33,11 +33,13 @@ import CardBody from "components/Card/CardBody";
 import CardFooter from "components/Card/CardFooter";
 import SnackbarContent from "components/Snackbar/SnackbarContent";
 
+/*
 import {
   dailySalesChart,
   emailsSubscriptionChart,
   completedTasksChart
 } from "variables/charts";
+*/
 
 import styles from "assets/jss/material-dashboard-react/views/rtlStyle";
 
