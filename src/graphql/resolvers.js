@@ -16,12 +16,14 @@ export const pubsub = new RedisPubSub({
 const NEW_NOTICE = 'NEW_NOTICE';
 
 const resolvers = {
+  /*
   notice: {
     subcribe: async (_, __, { pubsub }) => {
       const iterable = pubsub.asyncIterator(NEW_NOTICE);
       return iterable;
     },
   },
+  */
 };
 
 export default resolvers;
