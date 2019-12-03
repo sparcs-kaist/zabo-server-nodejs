@@ -1,17 +1,22 @@
----
-description: 'Zabo server renewed by Cookie, Sexysw, Loopy and Alogon'
----
-
-# README
-
- 
-
-![Logo](.gitbook/assets/services-zabo.svg)
-
- ![](https://img.shields.io/badge/version-1.0-informational.svg) ![](https://img.shields.io/badge/license-MIT-black.svg)
-
- ZABO with modern JS, designed and developed by SPARCS  
- [Go to ZABO](https://alpha.zabo.sparcs.org)
+<br />
+<br />
+<br />
+<p align="center">
+  <a href="https://alpha.zabo.sparcs.org">
+    <img src=".gitbook/assets/services-zabo.svg" alt="Logo" height="150">
+  </a>
+  
+  <p align="center">
+    <img src="https://img.shields.io/badge/version-1.0-informational.svg" />
+    <img src="https://img.shields.io/badge/license-MIT-black.svg" />
+  </p>
+  
+  <p align="center">
+    ZABO with modern JS, designed and developed by SPARCS
+    <br />
+    <a href="https://alpha.zabo.sparcs.org">Go to ZABO</a>
+  </p>
+</p>
 
 ## About
 
