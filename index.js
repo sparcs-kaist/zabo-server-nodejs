@@ -1,5 +1,5 @@
-require("@babel/register")
+require ('@babel/register');
 
-require("./config/env")
+require ('./config/env');
 
-require("./src/bin/www")
+require ('./src/bin/www');
