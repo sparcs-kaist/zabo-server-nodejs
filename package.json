@@ -11,6 +11,17 @@
     "dev": "yarn env:dev nodemon index --watch src",
     "prod": "yarn env:prod nodemon index"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "$npm_execpath lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,json}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
   "dependencies": {
     "@babel/core": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
@@ -47,6 +58,8 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0",
+    "husky": "^4.0.6",
+    "lint-staged": "^9.5.0",
     "nodemon": "^1.18.11",
     "prettier": "^1.17.0"
   },
