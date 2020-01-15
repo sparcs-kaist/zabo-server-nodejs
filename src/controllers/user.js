@@ -40,7 +40,6 @@ export const updateProfilePhoto = async (req, res) => {
         profilePhoto: url,
       },
     }, {
-      upsert: true,
       new: true,
     })
       .populate ('groups')
@@ -48,9 +47,7 @@ export const updateProfilePhoto = async (req, res) => {
       .populate ('currentGroup.members')
       .populate ('boards');
 
-    res.json ({
-      user: updatedUser,
-    });
+    res.json (updatedUser);
   } catch (error) {
     logger.api.error (error);
     res.status (500).json ({

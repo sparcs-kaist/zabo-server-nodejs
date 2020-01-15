@@ -1,3 +1,4 @@
+import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import { Group, User } from '../db';
 import { isValidId } from '../utils';
@@ -35,70 +36,47 @@ export const jwtParseMiddleware = (req, res, next) => {
   });
 };
 
-export const isGroupAdmin = async (req, res, next) => {
-  const { groupName } = req.params;
-  const { sid } = req.decoded;
-
-  try {
-    const [user, group] = await Promise.all ([
-      User.findOne ({ sso_sid: sid }, 'studentId'),
-      Group.findOne ({ name: groupName }, 'members'),
-    ]);
-    console.log ({
-      user,
-      group,
-    });
-    if (!group) {
-      logger.mw.error ('isGroupAdmin - group not found');
-      res.status (404).json ({
-        error: 'Group not found',
-      });
-      return;
-    }
-    if (
-      group.members.find (m => m.isAdmin && (m.studentId === user.studentId))
-    ) {
-      next ();
-    } else {
-      res.status (403).json ({
-        error: 'Not Group Admin',
-      });
-    }
-  } catch (error) {
-    logger.mw.error (error);
-    res.sendStatus (500);
-  }
-};
-
-export const isGroupMember = async (req, res, next) => {
-  const { sid } = req.decoded;
-  const { groupName } = req.params;
-
-  try {
-    const [user, group] = await Promise.all ([
-      User.findOne ({ sso_sid: sid }, 'studentId'),
-      Group.findOne ({ name: groupName }, 'members'),
-    ]);
-    if (!group) {
-      logger.mw.error ('isGroupMember - group not found');
-      res.status (404).json ({
-        error: 'Group not found',
-      });
-      return;
-    }
-    if (
-      group.members.find (m => (m.studentId === user.studentId))
-    ) {
-      next ();
-    } else {
-      res.status (403).json ({
-        error: 'Not Group Member',
-      });
-    }
-  } catch (error) {
-    logger.mw.error (error);
-    res.status (400).json ({
-      error: error.message,
+export const findGroup = ash (async (req, res, next) => {
+  const { groupName } = req;
+  if (!groupName) {
+    logger.api.error ('%s request error; 400 - null groupName', req.originalUrl);
+    return res.status (400).json ({
+      error: 'bad request: null groupName',
     });
   }
-};
+  const group = await Group.findOne ({ name: groupName });
+  if (!group) {
+    logger.api.error ('%s request error; 404 - groupName : %s', req.originalUrl, groupName);
+    return res.status (404).json ({
+      error: 'group not found',
+    });
+  }
+  req.group = group;
+  return next ();
+});
+
+export const isGroupAdmin = ash (async (req, res, next) => {
+  const { sid } = req.decoded;
+  const { group } = req;
+  const user = await User.findOne ({ sso_sid: sid });
+  req.self = user;
+  if (group.members.find (m => m.isAdmin && (m.userId === user._id))) {
+    return next ();
+  }
+  return res.status (403).json ({
+    error: 'Permission Denied',
+  });
+});
+
+export const isGroupMember = ash (async (req, res, next) => {
+  const { sid } = req.decoded;
+  const { group } = req;
+  const user = await User.findOne ({ sso_sid: sid });
+  req.self = user;
+  if (group.members.find (m => (m.userId === user._id))) {
+    return next ();
+  }
+  return res.status (403).json ({
+    error: 'Not Group Member',
+  });
+});

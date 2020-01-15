@@ -3,7 +3,9 @@ import { CATEGORIES, EVENTS } from '../utils/variables';
 
 export const userSchema = new mongoose.Schema ({
   sso_uid: { type: String, unique: true },
-  sso_sid: { type: String, required: true, unique: true },
+  sso_sid: {
+    type: String, required: true, unique: true, index: true,
+  },
   email: {
     type: String,
     unique: true,
@@ -30,6 +32,7 @@ export const userSchema = new mongoose.Schema ({
   /* From SSO */
   username: {
     type: String,
+    // username and group name are globaly unique though it's not represented in schema constraint
     unique: true,
     required: true,
     index: true,
@@ -141,15 +144,17 @@ export const groupSchema = new mongoose.Schema ({
   name: {
     type: String,
     required: true,
+    // username and group name are globaly unique though it's not represented in schema constraint
     unique: true,
     index: true,
   },
   description: String,
   profilePhoto: String,
+  backgroundPhoto: String,
   members: [{
-    studentId: { // TODO: Unique per doc
-      type: String,
-      required: true,
+    userId: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
     },
     isAdmin: Boolean,
   }], // sso_sid of users
