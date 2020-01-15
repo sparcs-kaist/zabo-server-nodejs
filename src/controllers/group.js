@@ -68,33 +68,17 @@ export const addMember = ash (async (req, res) => {
     user.username,
     isAdmin,
   );
-  const found = group.members.find (m => (m.userId === user._id));
-  if (found) {
+  const member = group.members.find (m => (m.userId.equals (user._id)));
+  if (member) {
     return res.status (404).json ({
       error: `${user.username} is already a member.`,
     });
   }
-
-  const updatedGroup = await Group.findOneAndUpdate ({
-    name: groupName,
-  }, {
-    $push: {
-      members: {
-        userId: user._id,
-        isAdmin,
-      },
-    },
-  }, {
-    new: true,
-  });
+  group.members.push ({ userId: user._id, isAdmin });
+  user.groups.push (group._id);
   // EVENT: Group added event for user
-  await User.findByIdAndUpdate (user._id,
-    {
-      $push: {
-        groups: updatedGroup._id,
-      },
-    });
-  return res.json (updatedGroup);
+  await Promise.all ([group.save (), user.save ()]);
+  return res.json (group);
 });
 
 /**
@@ -112,7 +96,6 @@ export const updateMember = ash (async (req, res) => {
   } = req;
   let { isAdmin } = req.body;
   isAdmin = isAdmin === 'true';
-
   logger.api.info (
     'post /group/:groupName/member request; groupName: %s, from: %s, target: %s, isAdmin: %s',
     groupName,
@@ -120,43 +103,22 @@ export const updateMember = ash (async (req, res) => {
     user.username,
     isAdmin,
   );
-
-  if (self._id === user._id) {
+  if (self._id.equals (user._id)) {
     logger.api.error ('post /group/:groupName/member request error; 403 - cannot change your own permission');
     return res.status (403).json ({
       error: 'forbidden: cannot change your own permission',
     });
   }
-
-  const found = group.members.find (m => (m._id === user._id));
-
-  let updatedGroup;
-  if (found) {
-    updatedGroup = await Group.findOneAndUpdate ({
-      name: groupName,
-      'members.userId': user._id,
-    }, {
-      $set: { 'members.$': { userId: user._id, isAdmin } },
-    }, {
-      new: true,
-    });
+  const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
+  if (memberIndex !== -1) {
+    group.members[memberIndex] = { userId: user._id, isAdmin };
   } else {
-    updatedGroup = await Group.findOneAndUpdate (
-      { name: groupName },
-      {
-        $push: {
-          members: { userId: user._id, isAdmin },
-        },
-      },
-      { new: true },
-    );
-    await User.findByIdAndUpdate (user._id, {
-      $push: {
-        groups: updatedGroup._id,
-      },
-    });
+    group.members.push ({ userId: user._id, isAdmin });
+    user.groups.push (group._id);
   }
-  res.json (updatedGroup);
+  // EVENT: Group permission updated event for user
+  await Promise.all ([group.save (), user.save ()]);
+  return res.json (group);
 });
 
 // delete /group/:groupName/member
@@ -171,37 +133,26 @@ export const deleteMember = ash (async (req, res) => {
     user.username,
   );
 
-  if (self._id === user._id) {
+  if (self._id.equals (user._id)) {
     logger.api.error ('delete /group/:groupName/member request error; 403 - cannot change your own permission');
     return res.status (403).json ({
       error: 'forbidden: cannot change your own permission',
     });
   }
 
-  const updatedGroup = await Group.findOneAndUpdate (
-    { name: groupName },
-    {
-      $pull: {
-        members: {
-          userId: user._id,
-        },
-      },
-    },
-    { new: true },
-  );
-
-  // EVENT: Group removed event for user
-  await User.findByIdAndUpdate (user._id, {
-    $pull: {
-      groups: groupName,
-    },
-  });
-  if (updatedGroup._id.equals (user.currentGroup)) {
-    await User.findByIdAndUpdate (user._id, {
-      $set: {
-        currentGroup: null,
-      },
+  const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
+  if (memberIndex === -1) {
+    return res.status (404).json ({
+      error: `${user.username} is not a member.`,
     });
   }
-  return res.json (updatedGroup);
+  group.members.splice (memberIndex, 1);
+  const groupIndex = user.groups.findIndex (groupId => groupId.equals (group._id));
+  user.groups.splice (groupIndex, 1);
+  if (user.currentGroup.equals (group._id)) {
+    user.currentGroup = null;
+  }
+  // EVENT: Removed from group event for user
+  await Promise.all ([group.save (), user.save ()]);
+  return res.json (group);
 });

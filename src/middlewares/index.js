@@ -79,7 +79,7 @@ export const isGroupAdmin = ash (async (req, res, next) => {
   const { group } = req;
   const user = await User.findOne ({ sso_sid: sid });
   req.self = user;
-  if (group.members.find (m => m.isAdmin && (m.userId === user._id))) {
+  if (group.members.find (m => m.isAdmin && (m.userId.equals (user._id)))) {
     return next ();
   }
   return res.status (403).json ({
@@ -92,7 +92,7 @@ export const isGroupMember = ash (async (req, res, next) => {
   const { group } = req;
   const user = await User.findOne ({ sso_sid: sid });
   req.self = user;
-  if (group.members.find (m => (m.userId === user._id))) {
+  if (group.members.find (m => (m.userId.equals (user._id)))) {
     return next ();
   }
   return res.status (403).json ({
