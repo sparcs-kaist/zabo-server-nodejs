@@ -1,6 +1,62 @@
 import { User } from '../db';
 import { logger } from '../utils/logger';
 
+// post /user
+export const updateUserInfo = async (req, res) => {
+  try {
+    const { sid } = req.decoded;
+    const { username } = req.body;
+    logger.api.info ('post /user/ request; sid: %s, username: %s', sid, username);
+    const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
+      $set: {
+        username,
+      },
+    }, {
+      upsert: true,
+    })
+      .populate ('groups')
+      .populate ('currentGroup')
+      .populate ('currentGroup.members')
+      .populate ('boards');
+
+    res.json (updatedUser);
+  } catch (error) {
+    logger.api.error (error);
+    res.status (500).json ({
+      error: error.message,
+    });
+  }
+};
+
+// post /user/profile
+export const updateProfilePhoto = async (req, res) => {
+  try {
+    const { sid } = req.decoded;
+    const url = req.file.location;
+    logger.api.info ('post /user/profile request; sid: %s, url: %s', sid, url);
+    const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
+      $set: {
+        profilePhoto: url,
+      },
+    }, {
+      upsert: true,
+    })
+      .populate ('groups')
+      .populate ('currentGroup')
+      .populate ('currentGroup.members')
+      .populate ('boards');
+
+    res.json ({
+      user: updatedUser,
+    });
+  } catch (error) {
+    logger.api.error (error);
+    res.status (500).json ({
+      error: error.message,
+    });
+  }
+};
+
 // get /user/
 export const getUserInfo = async (req, res) => {
   try {
