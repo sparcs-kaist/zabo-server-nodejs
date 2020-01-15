@@ -1,5 +1,4 @@
 import ash from 'express-async-handler';
-import { Group, User } from '../db';
 import { logger } from '../utils/logger';
 
 // get /group/:groupId
@@ -10,40 +9,27 @@ export const getGroupInfo = ash (async (req, res) => {
 
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
-  const { groupName } = req.params;
-  // TODO:
+  const { group } = req;
+  const { description } = req.body;
+  group.description = description;
+  await group.save ();
+  return res.json (group);
 });
 
 // post /group/:groupName/profile
 export const updateProfilePhoto = ash (async (req, res) => {
-  const { groupName } = req.params;
-  const url = req.file.location;
-  const updatedGroup = await Group.findOneAndUpdate (
-    { name: groupName },
-    {
-      $set: {
-        profilePhoto: url,
-      },
-    },
-    { new: true },
-  );
-  return res.json (updatedGroup);
+  const { group } = req;
+  group.profilePhoto = req.file.location;
+  await group.save ();
+  return res.json (group);
 });
 
 // post /group/:groupName/background
 export const updateBakPhoto = ash (async (req, res) => {
-  const { groupName } = req.params;
-  const url = req.file.location;
-  const updatedGroup = await Group.findOneAndUpdate (
-    { name: groupName },
-    {
-      $set: {
-        backgroundPhoto: url,
-      },
-    },
-    { new: true },
-  );
-  return res.json (updatedGroup);
+  const { group } = req;
+  group.backgroundPhoto = req.file.location;
+  await group.save ();
+  return res.json (group);
 });
 
 /**
