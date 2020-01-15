@@ -1,14 +1,14 @@
-import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { Group, User } from '../db';
 import { isValidId } from '../utils';
+import { logger } from '../utils/logger';
 
 export const authMiddleware = (req, res, next) => {
   const jwtSecret = req.app.get ('jwt-secret');
   const token = (req.headers.authorization || '').substring (7);
   jwt.verify (token, jwtSecret, (err, decoded) => {
     if (err) {
-      console.error (err.message);
+      logger.mw.error (err.message);
       res.status (403).json ({
         error: err.message,
       });
@@ -25,6 +25,7 @@ export const jwtParseMiddleware = (req, res, next) => {
   const token = (req.headers.authorization || '').substring (7);
   jwt.verify (token, jwtSecret, (err, decoded) => {
     if (err) {
+      // Do nothing as jwt is optional
       next ();
       return;
     }
@@ -35,26 +36,20 @@ export const jwtParseMiddleware = (req, res, next) => {
 };
 
 export const isGroupAdmin = async (req, res, next) => {
-  const { groupId } = req.params;
+  const { groupName } = req.params;
   const { sid } = req.decoded;
 
-  if (!isValidId (groupId)) {
-    console.error ('Group Id is Invalid');
-    res.status (400).json ({
-      error: 'Group Id is Invalid',
-    });
-    return;
-  }
-
   try {
-    const user = await User.findOne ({ sso_sid: sid }, 'studentId');
-    const group = await Group.findById (groupId, 'members');
+    const [user, group] = await Promise.all ([
+      User.findOne ({ sso_sid: sid }, 'studentId'),
+      Group.findOne ({ name: groupName }, 'members'),
+    ]);
     console.log ({
       user,
       group,
     });
     if (!group) {
-      console.error ('Group not found');
+      logger.mw.error ('isGroupAdmin - group not found');
       res.status (404).json ({
         error: 'Group not found',
       });
@@ -70,32 +65,22 @@ export const isGroupAdmin = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error (error);
+    logger.mw.error (error);
     res.sendStatus (500);
   }
 };
 
 export const isGroupMember = async (req, res, next) => {
   const { sid } = req.decoded;
-  const { groupId } = req.params;
-
-  if (!isValidId (groupId)) {
-    console.error ('Group Id is Invalid');
-    res.status (400).json ({
-      error: 'Group Id is Invalid',
-    });
-    return;
-  }
+  const { groupName } = req.params;
 
   try {
-    const user = await User.findOne ({ sso_sid: sid }, 'studentId');
-    const group = await Group.findById (groupId, 'members');
-    console.log ({
-      user,
-      group,
-    });
+    const [user, group] = await Promise.all ([
+      User.findOne ({ sso_sid: sid }, 'studentId'),
+      Group.findOne ({ name: groupName }, 'members'),
+    ]);
     if (!group) {
-      console.error ('Group not found');
+      logger.mw.error ('isGroupMember - group not found');
       res.status (404).json ({
         error: 'Group not found',
       });
@@ -111,7 +96,7 @@ export const isGroupMember = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error (error);
+    logger.mw.error (error);
     res.status (400).json ({
       error: error.message,
     });

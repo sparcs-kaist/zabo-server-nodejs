@@ -35,6 +35,9 @@ logger.api = createCLogger ('API');
 logger.zabo = createCLogger ('ZABO');
 logger.pin = createCLogger ('PIN');
 logger.event = createCLogger ('EVENT');
+logger.mw = createCLogger ('MIDDLEWARE');
+logger.sec = createCLogger ('SECURITY');
+
 export { logger };
 
 export * from './debug';
