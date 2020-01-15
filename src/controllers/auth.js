@@ -52,19 +52,19 @@ export const login = (req, res) => {
 
 // TODO: Performance issue. Any better idea?
 const generateUsernameWithPostfix = async (username) => {
-  let testUsername = username;
   let maxNum = 90;
   let bias = 10;
-  let trialLeft = 10;
+  let trialLeft = 50;
   let dup;
+  let testUsername = `${username}${Math.floor (Math.random () * maxNum) + bias}`;
   do {
-    dup = User.findOne ({ username: testUsername });
+    dup = await User.findOne ({ username: testUsername });
     if (dup) {
       trialLeft -= 1;
       const postFix = Math.floor (Math.random () * maxNum) + bias;
       testUsername = `${username}${postFix}`;
       if (trialLeft <= 0) {
-        trialLeft = bias * 10;
+        trialLeft = bias * 5;
         bias *= 10;
         maxNum *= 10;
       }
@@ -121,9 +121,9 @@ const updateOrCreateUserData = async (userData, create) => {
   if (create) {
     let username = `${first_name}${last_name}`;
     if (!username) username = 'noname';
-    username = generateUsernameWithPostfix (username);
+    username = await generateUsernameWithPostfix (username);
 
-    logger.event.info ('===== New User Has Registered | %s - %s %s ===', ku_std_no, first_name, last_name);
+    logger.event.info ('===== New User Has Registered | %s - %s %s ===', ku_std_no, `${first_name} ${last_name}`, username);
     const board = await Board.create ({ title: '저장한 포스터' });
     const boards = [board._id];
     Object.assign (setParams, {
@@ -172,7 +172,7 @@ export const loginCallback = async (req, res) => {
     let user = await User.findOne ({ sso_sid: userData.sid });
     if (update) {
       if (!user) {
-        res.statue (401).json ({
+        res.status (401).json ({
           error: 'Please register first.',
           status: 401,
         });

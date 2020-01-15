@@ -107,7 +107,8 @@
         {
           "treatUndefinedAsUnspecified": true
         }
-      ]
+      ],
+      "no-await-in-loop": "warn"
     },
     "env": {
       "browser": false,
