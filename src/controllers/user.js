@@ -13,6 +13,7 @@ export const updateUserInfo = async (req, res) => {
       },
     }, {
       upsert: true,
+      new: true,
     })
       .populate ('groups')
       .populate ('currentGroup')
@@ -40,6 +41,7 @@ export const updateProfilePhoto = async (req, res) => {
       },
     }, {
       upsert: true,
+      new: true,
     })
       .populate ('groups')
       .populate ('currentGroup')
