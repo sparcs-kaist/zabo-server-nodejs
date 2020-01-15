@@ -96,6 +96,8 @@ const updateOrCreateUserData = async (userData, create) => {
     // ku_sex,
     ku_std_no,
     mail: kaist_email,
+    ku_psft_user_status_kor,
+    ku_kname,
   } = parseJSON (kaist_info);
 
   const setParams = {
@@ -105,6 +107,7 @@ const updateOrCreateUserData = async (userData, create) => {
       email: sso_email,
       firstName: first_name,
       lastName: last_name,
+      koreanName: ku_kname,
       gender,
       birthday,
       flags,
@@ -116,10 +119,11 @@ const updateOrCreateUserData = async (userData, create) => {
       kaistPersonType: ku_person_type,
       kaistEmail: kaist_email,
       kaistInfoTime: kaist_info_time,
+      kaistStatus: ku_psft_user_status_kor,
     },
   };
   if (create) {
-    let username = `${first_name}${last_name}`;
+    let username = ku_kname || `${first_name}${last_name}`;
     if (!username) username = 'noname';
     username = await generateUsernameWithPostfix (username);
 
@@ -170,6 +174,7 @@ export const loginCallback = async (req, res) => {
     }
     const userData = await SSOClient.getUserInfo (code);
     let user = await User.findOne ({ sso_sid: userData.sid });
+    // User wants to refresh SSO data
     if (update) {
       if (!user) {
         res.status (401).json ({

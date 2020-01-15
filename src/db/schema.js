@@ -21,6 +21,7 @@ export const userSchema = new mongoose.Schema ({
   flags: [String],
   firstName: String,
   lastName: String,
+  koreanName: String,
   kaistId: String,
   sparcsId: { type: String, sparse: true },
   facebookId: String,
@@ -29,6 +30,7 @@ export const userSchema = new mongoose.Schema ({
   kaistEmail: String,
   kaistPersonType: String,
   kaistInfoTime: String,
+  kaistStatus: String,
   /* From SSO */
   username: {
     type: String,
