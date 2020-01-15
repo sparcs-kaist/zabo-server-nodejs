@@ -47,7 +47,14 @@ export const postNewZabo = async (req, res) => {
     const { title, description, endAt } = req.body;
     let { category } = req.body;
     const { sid } = req.decoded;
-    logger.zabo.info ('post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %s', title, description, category, endAt, req.files);
+    logger.zabo.info (
+      'post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %s',
+      title,
+      description,
+      category,
+      endAt,
+      req.files,
+    );
     category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
     if (!req.files || !title || !description || !endAt) {
       logger.zabo.error ('post /zabo/ request error; 400');
