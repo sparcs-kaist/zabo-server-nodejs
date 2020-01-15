@@ -24,7 +24,9 @@ export const getZabo = async (req, res) => {
         error: 'bad request: invalid id',
       });
     }
-    const zabo = await Zabo.findOne ({ _id: id });
+    const zabo = await Zabo.findOne ({ _id: id })
+      .populate ('owner', 'name');
+
     if (!zabo) {
       logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
       return res.status (404).json ({
@@ -43,7 +45,7 @@ export const getZabo = async (req, res) => {
 export const postNewZabo = async (req, res) => {
   try {
     const { title, description, endAt } = req.body;
-    let category = req.body;
+    let { category } = req.body;
     const { sid } = req.decoded;
     logger.zabo.info ('post /zabo/ request; title: %s, description: %s, category: %s, endAt: %s, files info: %s', title, description, category, endAt, req.files);
     category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
@@ -61,7 +63,12 @@ export const postNewZabo = async (req, res) => {
     }
 
     const newZabo = new Zabo ({
-      title, description, category, endAt,
+      owner: user.currentGroup,
+      createdBy: user._id,
+      title,
+      description,
+      category,
+      endAt,
     });
 
     const calSizes = [];
@@ -132,8 +139,7 @@ export const listZabos = async (req, res, next) => {
     const zabos = await Zabo.find (queryOptions)
       .sort ({ createdAt: -1 })
       .limit (20)
-      .populate ('createdBy')
-      .populate ('owner');
+      .populate ('owner', 'name');
     return res.send (zabos);
   } catch (error) {
     logger.zabo.error (error);
@@ -173,7 +179,10 @@ export const listNextZabos = async (req, res) => {
         $lt: lastSeen,
       },
     };
-    const nextZaboList = await Zabo.find (queryOptions).sort ({ createdAt: -1 }).limit (30);
+    const nextZaboList = await Zabo.find (queryOptions)
+      .sort ({ createdAt: -1 })
+      .limit (30)
+      .populate ('owner', 'name');
     return res.json (nextZaboList);
   } catch (error) {
     logger.zabo.error (error);
