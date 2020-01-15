@@ -36,17 +36,17 @@ export const jwtParseMiddleware = (req, res, next) => {
   });
 };
 
-export const findUserWithUsername = ash (async (req, res, next) => {
-  const { username } = req;
-  if (!username) {
-    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty username`);
+export const findUserWithKey = (queryKey, reqKey) => ash (async (req, res, next) => {
+  const value = req[reqKey || queryKey];
+  if (!value) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty ${reqKey}`);
     return res.status (400).json ({
-      error: 'bad request: username required',
+      error: `bad request: ${reqKey} required`,
     });
   }
-  const user = await User.findOne ({ username });
+  const user = await User.findOne ({ [queryKey]: value });
   if (!user) {
-    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 404 - user '${username}' not found`);
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 404 - user '${value}' not found`);
     return res.status (404).json ({
       error: 'not found: user does not exist',
     });
@@ -54,6 +54,9 @@ export const findUserWithUsername = ash (async (req, res, next) => {
   req.user = user;
   return next ();
 });
+
+export const findUserWithUsername = findUserWithKey ('username');
+export const findUserWithStudentId = findUserWithKey ('studentId');
 
 export const findGroup = ash (async (req, res, next) => {
   const { groupName } = req;
