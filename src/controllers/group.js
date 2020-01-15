@@ -68,13 +68,13 @@ export const addMember = ash (async (req, res) => {
     user.username,
     isAdmin,
   );
-  const member = group.members.find (m => (m.userId.equals (user._id)));
+  const member = group.members.find (m => (m.user.equals (user._id)));
   if (member) {
     return res.status (404).json ({
       error: `${user.username} is already a member.`,
     });
   }
-  group.members.push ({ userId: user._id, isAdmin });
+  group.members.push ({ user: user._id, isAdmin });
   user.groups.push (group._id);
   // EVENT: Group added event for user
   await Promise.all ([group.save (), user.save ()]);
@@ -111,9 +111,9 @@ export const updateMember = ash (async (req, res) => {
   }
   const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
   if (memberIndex !== -1) {
-    group.members[memberIndex] = { userId: user._id, isAdmin };
+    group.members[memberIndex] = { user: user._id, isAdmin };
   } else {
-    group.members.push ({ userId: user._id, isAdmin });
+    group.members.push ({ user: user._id, isAdmin });
     user.groups.push (group._id);
   }
   // EVENT: Group permission updated event for user

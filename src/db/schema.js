@@ -152,7 +152,7 @@ export const groupSchema = new mongoose.Schema ({
   profilePhoto: String,
   backgroundPhoto: String,
   members: [{
-    userId: {
+    user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
     },
