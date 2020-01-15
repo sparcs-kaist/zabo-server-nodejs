@@ -28,6 +28,12 @@ export const userSchema = new mongoose.Schema ({
   kaistPersonType: String,
   kaistInfoTime: String,
   /* From SSO */
+  username: {
+    type: String,
+    unique: true,
+    required: true,
+    index: true,
+  },
   boards: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
@@ -46,6 +52,7 @@ export const userSchema = new mongoose.Schema ({
   },
 }, {
   timestamps: true,
+  autoIndex: false,
 });
 
 export const zaboSchema = new mongoose.Schema ({
@@ -135,6 +142,7 @@ export const groupSchema = new mongoose.Schema ({
     type: String,
     required: true,
     unique: true,
+    index: true,
   },
   description: String,
   profilePhoto: String,
