@@ -1,4 +1,4 @@
-import { User } from '../db';
+import { Group, User } from '../db';
 import { logger } from '../utils/logger';
 
 // post /user
@@ -7,6 +7,16 @@ export const updateUserInfo = async (req, res) => {
     const { sid } = req.decoded;
     const { username } = req.body;
     logger.api.info ('post /user/ request; sid: %s, username: %s', sid, username);
+    const [userTaken, groupTaken] = await Promise.all ([
+      User.findOne ({ username }),
+      Group.findOne ({ name: username }),
+    ]);
+    if (userTaken || groupTaken) {
+      return res.status (400).json ({
+        error: `'${username}' has already been taken.`,
+      });
+    }
+    // Ignore very rare timing issue which is unlikely to happen.
     const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
       $set: {
         username,
@@ -20,10 +30,10 @@ export const updateUserInfo = async (req, res) => {
       .populate ('currentGroup.members')
       .populate ('boards');
 
-    res.json (updatedUser);
+    return res.json (updatedUser);
   } catch (error) {
     logger.api.error (error);
-    res.status (500).json ({
+    return res.status (500).json ({
       error: error.message,
     });
   }

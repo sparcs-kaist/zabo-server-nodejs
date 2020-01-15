@@ -13,6 +13,16 @@ export const createGroup = ash (async (req, res) => {
       error: 'bad request: null name',
     });
   }
+  const [userTaken, groupTaken] = await Promise.all ([
+    User.findOne ({ username: name }),
+    Group.findOne ({ name }),
+  ]);
+  if (userTaken || groupTaken) {
+    return res.status (400).json ({
+      error: `'${name}' has already been taken.`,
+    });
+  }
+  // Ignore very rare timing issue which is unlikely to happen.
   const group = await Group.create ({ name, members: [{ user: user._id, isAdmin: true }] });
   user.groups.push (group._id);
   await user.save ();

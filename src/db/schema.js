@@ -146,7 +146,7 @@ export const groupSchema = new mongoose.Schema ({
   name: {
     type: String,
     required: true,
-    // username and group name are globaly unique though it's not represented in schema constraint
+    // username and group name are globally unique though it's not represented in schema constraint
     unique: true,
     index: true,
   },

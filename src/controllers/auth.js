@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import { Board, User } from '../db';
+import { Board, User, Group } from '../db';
 
 /* eslint camelcase:0 */
 import SSOClient from '../utils/sso';
@@ -59,6 +59,7 @@ const generateUsernameWithPostfix = async (username) => {
   let testUsername = `${username}${Math.floor (Math.random () * maxNum) + bias}`;
   do {
     dup = await User.findOne ({ username: testUsername });
+    if (!dup) dup = await Group.findOne ({ name: testUsername });
     if (dup) {
       trialLeft -= 1;
       const postFix = Math.floor (Math.random () * maxNum) + bias;
