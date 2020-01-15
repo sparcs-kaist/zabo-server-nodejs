@@ -36,17 +36,36 @@ export const jwtParseMiddleware = (req, res, next) => {
   });
 };
 
+export const findUserWithUsername = ash (async (req, res, next) => {
+  const { username } = req;
+  if (!username) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty username`);
+    return res.status (400).json ({
+      error: 'bad request: username required',
+    });
+  }
+  const user = await User.findOne ({ username });
+  if (!user) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 404 - user '${username}' not found`);
+    return res.status (404).json ({
+      error: 'not found: user does not exist',
+    });
+  }
+  req.user = user;
+  return next ();
+});
+
 export const findGroup = ash (async (req, res, next) => {
   const { groupName } = req;
   if (!groupName) {
-    logger.api.error ('%s request error; 400 - null groupName', req.originalUrl);
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - null groupName`);
     return res.status (400).json ({
       error: 'bad request: null groupName',
     });
   }
   const group = await Group.findOne ({ name: groupName });
   if (!group) {
-    logger.api.error ('%s request error; 404 - groupName : %s', req.originalUrl, groupName);
+    logger.api.error (`[${req.method}] ${req.originalUrl}  request error; 404 - groupName : ${groupName}`);
     return res.status (404).json ({
       error: 'group not found',
     });

@@ -11,6 +11,7 @@ export const getGroupInfo = ash (async (req, res) => {
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
   const { groupName } = req.params;
+  // TODO:
 });
 
 // post /group/:groupName/profile
@@ -55,46 +56,22 @@ export const updateBakPhoto = ash (async (req, res) => {
  */
 // put /group/:groupName/member
 export const addMember = ash (async (req, res) => {
-  const { groupName } = req.params;
-  const { sid } = req.decoded;
-  const { group } = req;
-  const { username } = req.body;
+  const {
+    self, groupName, group, user,
+  } = req;
   let { isAdmin } = req.body;
   isAdmin = isAdmin === 'true';
   logger.api.info (
-    'put /group/:groupName/member request; groupName: %s, sid: %s, username: %s, isAdmin: %s',
+    'put /group/:groupName/member request; groupName: %s, from: %s, target: %s, isAdmin: %s',
     groupName,
-    sid,
-    username,
+    self.username,
+    user.username,
     isAdmin,
   );
-
-  if (!username) {
-    logger.api.error ('put /group/:groupName/member request error; 400 - parameter validation failed');
-    return res.status (400).json ({
-      error: 'bad request: group name and username required',
-    });
-  }
-
-  const user = await User.findOne ({ username });
-
-  if (!user) {
-    logger.api.error (
-      'put /group/:groupName/member request error; 404 - user does not exist',
-    );
-    return res.status (404).json ({
-      error: 'not found: user does not exist',
-    });
-  }
-
-  const found = group.members.find (m => (m.userId === user.userId));
-
+  const found = group.members.find (m => (m.userId === user._id));
   if (found) {
-    logger.api.error (
-      `put /group/:groupName/member request error; 404 - ${!user ? 'user' : 'group'} does not exist`,
-    );
     return res.status (404).json ({
-      error: `${username} is already a member.`,
+      error: `${user.username} is already a member.`,
     });
   }
 
@@ -111,14 +88,12 @@ export const addMember = ash (async (req, res) => {
     new: true,
   });
   // EVENT: Group added event for user
-  await User.findOneAndUpdate (
-    { username },
+  await User.findByIdAndUpdate (user._id,
     {
       $push: {
         groups: updatedGroup._id,
       },
-    },
-  );
+    });
   return res.json (updatedGroup);
 });
 
@@ -132,36 +107,19 @@ export const addMember = ash (async (req, res) => {
  */
 // post /group/:groupName/member
 export const updateMember = ash (async (req, res) => {
-  const { group, self } = req;
-  const { groupName } = req.params;
-  const { username } = req.body;
+  const {
+    groupName, group, self, user,
+  } = req;
   let { isAdmin } = req.body;
   isAdmin = isAdmin === 'true';
+
   logger.api.info (
-    'post /group/:groupName/member request; groupName: %s, from: %s, update: %s, isAdmin: %s',
+    'post /group/:groupName/member request; groupName: %s, from: %s, target: %s, isAdmin: %s',
     groupName,
     self.username,
-    username,
+    user.username,
     isAdmin,
   );
-
-  if (!username) {
-    logger.api.error ('put /group/:groupName/member request error; 400 - parameter validation failed');
-    return res.status (400).json ({
-      error: 'bad request: group name and username required',
-    });
-  }
-
-  const user = await User.findOne ({ username });
-
-  if (!user) {
-    logger.api.error (
-      'put /group/:groupName/member request error; 404 - user does not exist',
-    );
-    return res.status (404).json ({
-      error: 'not found: user does not exist',
-    });
-  }
 
   if (self._id === user._id) {
     logger.api.error ('post /group/:groupName/member request error; 403 - cannot change your own permission');
@@ -203,33 +161,15 @@ export const updateMember = ash (async (req, res) => {
 
 // delete /group/:groupName/member
 export const deleteMember = ash (async (req, res) => {
-  const { group, self } = req;
-  const { groupName } = req.params;
-  const { username } = req.body;
+  const {
+    groupName, group, self, user,
+  } = req;
   logger.api.info (
     'delete /group/:groupName/member request; groupName: %s, from: %s, delete: %s',
     groupName,
     self.username,
-    username,
+    user.username,
   );
-
-  if (!username) {
-    logger.api.error ('put /group/:groupName/member request error; 400 - parameter validation failed');
-    return res.status (400).json ({
-      error: 'bad request: group name and username required',
-    });
-  }
-
-  const user = await User.findOne ({ username });
-
-  if (!user) {
-    logger.api.error (
-      'put /group/:groupName/member request error; 404 - user does not exist',
-    );
-    return res.status (404).json ({
-      error: 'not found: user does not exist',
-    });
-  }
 
   if (self._id === user._id) {
     logger.api.error ('delete /group/:groupName/member request error; 403 - cannot change your own permission');

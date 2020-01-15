@@ -1,25 +1,38 @@
 import express from 'express';
 import * as gc from '../controllers/group';
 import {
-  findGroup, authMiddleware as auth, isGroupAdmin as ga, isGroupMember as gm,
+  findGroup as fg,
+  authMiddleware as auth,
+  isGroupAdmin as ga,
+  isGroupMember as gm,
+  findUserWithUsername,
 } from '../middlewares';
 import { profileUpload } from '../utils/aws';
 
 const router = express.Router ();
 
 // params validator
-const pv = (req, res, next) => {
+const findGroup = (req, res, next) => {
   req.groupName = req.params.groupName;
-  return findGroup (req, res, next);
+  return fg (req, res, next);
 };
 
-router.get ('/:groupName', pv, gc.getGroupInfo);
-router.post ('/:groupName', pv, auth, gm, gc.updateGroupInfo);
-router.post ('/:groupName/profile', pv, auth, gm, profileUpload ('group').single ('img'), gc.updateProfilePhoto);
-router.post ('/:groupName/background', pv, auth, gm, profileUpload ('group-bak').single ('img'), gc.updateBakPhoto);
-router.post ('/:groupName/member', pv, auth, ga, gc.updateMember);
-router.put ('/:groupName/member', pv, auth, ga, gc.addMember);
-router.delete ('/:groupName/member', pv, auth, ga, gc.deleteMember);
+// body validator
+const findUser = (req, res, next) => {
+  req.username = req.body.username;
+  return findUserWithUsername (req, res, next);
+};
+
+const isGroupMember = [findGroup, auth, gm];
+const isGroupAdmin = [findGroup, auth, ga, findUser];
+
+router.get ('/:groupName', findGroup, gc.getGroupInfo);
+router.post ('/:groupName', isGroupMember, gc.updateGroupInfo);
+router.post ('/:groupName/profile', isGroupMember, profileUpload ('group').single ('img'), gc.updateProfilePhoto);
+router.post ('/:groupName/background', isGroupMember, profileUpload ('group-bak').single ('img'), gc.updateBakPhoto);
+router.put ('/:groupName/member', isGroupAdmin, gc.addMember);
+router.post ('/:groupName/member', isGroupAdmin, gc.updateMember);
+router.delete ('/:groupName/member', isGroupAdmin, gc.deleteMember);
 
 
 module.exports = router;
