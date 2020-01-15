@@ -27,34 +27,3 @@ export const Pin = mongoose.model ('Pin', pinSchema);
 export const Group = mongoose.model ('Group', groupSchema);
 export const Statistic = mongoose.model ('Statistic', statisticsSchema);
 export const Feedback = mongoose.model ('Feedback', feedbackSchema);
-
-// const kittySchema = new mongoose.Schema ({
-//  name: String,
-// });
-//
-// // NOTE: methods must be added to the schema before compiling it with mongoose.model()
-// kittySchema.methods.speak = function () {
-//  const greeting = this.name
-//    ? `Meow name is ${this.name}`
-//    : "I don't have a name";
-//  console.log (greeting);
-// };
-//
-// const Kitten = mongoose.model ('Kitten', kittySchema);
-//
-// const silence = new Kitten ({ name: 'Silence' });
-//
-// console.log (silence.name); // 'Silence'
-//
-// silence.speak ();
-//
-// silence.save ((err, fluffy) => {
-//  if (err) return console.error (err);
-//  fluffy.speak ();
-// });
-//
-//
-// Kitten.find ((err, kittens) => {
-//  if (err) return console.error (err);
-//  console.log (kittens);
-// });
