@@ -137,7 +137,7 @@ operations it's the only way to make it scalable. */
     ref: 'Board',
   },
 }, {
-  timestamp: true,
+  timestamps: true,
 });
 
 export const groupSchema = new mongoose.Schema ({
@@ -159,7 +159,7 @@ export const groupSchema = new mongoose.Schema ({
     isAdmin: Boolean,
   }], // sso_sid of users
 }, {
-  timestamp: true,
+  timestamps: true,
   autoIndex: false,
 });
 
@@ -169,7 +169,7 @@ export const statisticsSchema = new mongoose.Schema ({
     required: true,
     enum: EVENTS,
   },
-  userId: {
+  user: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
@@ -177,7 +177,7 @@ export const statisticsSchema = new mongoose.Schema ({
     type: Map,
   },
 }, {
-  timestamp: true,
+  timestamps: true,
 });
 
 export const feedbackSchema = new mongoose.Schema ({
@@ -189,5 +189,5 @@ export const feedbackSchema = new mongoose.Schema ({
     type: String,
   },
 }, {
-  timestamp: true,
+  timestamps: true,
 });
