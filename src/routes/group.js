@@ -4,10 +4,10 @@ import { authMiddleware, isGroupAdmin } from '../middlewares';
 
 const router = express.Router ();
 
-router.get ('/:groupId', groupControllers.getGroupInfo);
-router.post ('/:groupId', groupControllers.updatePhoto); // TODO: Update photo
-router.post ('/:groupId/member', authMiddleware, isGroupAdmin, groupControllers.updateMember);
-router.delete ('/:groupId/member', authMiddleware, isGroupAdmin, groupControllers.deleteMember);
+router.get ('/:groupName', groupControllers.getGroupInfo);
+router.post ('/:groupName', groupControllers.updatePhoto); // TODO: Update photo
+router.post ('/:groupName/member', authMiddleware, isGroupAdmin, groupControllers.updateMember);
+router.delete ('/:groupName/member', authMiddleware, isGroupAdmin, groupControllers.deleteMember);
 
 
 module.exports = router;
