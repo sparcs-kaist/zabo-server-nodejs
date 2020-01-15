@@ -15,17 +15,33 @@ const bucket = process.env.S3_BUCKET || process.env.NODE_ENV === 'production' ? 
 
 // TODO: Change key name
 export const s3 = new AWS.S3 ();
+const options = {
+  s3,
+  bucket,
+  cacheControl: 'max-age=31536000',
+  metadata: (req, file, cb) => {
+    cb (null, { fieldName: file.fieldname });
+  },
+};
 
-export const photoUpload = multer ({
+export const zaboUpload = multer ({
   storage: multerS3 ({
-    s3,
-    bucket: 'sparcs-kaist-zabo-dev',
-    cacheControl: 'max-age=31536000',
-    metadata: (req, file, cb) => {
-      cb (null, { fieldName: file.fieldname });
-    },
+    ...options,
     key: (req, file, cb) => {
-      cb (null, Date.now ().toString ());
+      const filename = Date.now ().toString ();
+      const fullPath = `zabo/zabo-${filename}`;
+      cb (null, fullPath);
+    },
+  }),
+});
+
+export const profileUpload = (type) => multer ({
+  storage: multerS3 ({
+    ...options,
+    key: (req, file, cb) => {
+      const filename = Date.now ().toString ();
+      const fullPath = `profile/${type}-${filename}`;
+      cb (null, fullPath);
     },
   }),
 });
