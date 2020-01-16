@@ -2,6 +2,19 @@ import ash from 'express-async-handler';
 import { Group, User } from '../db';
 import { logger } from '../utils/logger';
 
+// get /user/
+export const getUserInfo = ash (async (req, res) => {
+  const { sid } = req.decoded;
+  logger.api.info ('get /user/ request; sid: %s', sid);
+
+  const user = await User.findOne ({ sso_sid: sid })
+    .populate ('groups')
+    .populate ('currentGroup')
+    .populate ('currentGroup.members')
+    .populate ('boards');
+  res.json (user);
+});
+
 // post /user
 export const updateUserInfo = ash (async (req, res) => {
   const { sid } = req.decoded;
@@ -51,19 +64,6 @@ export const updateProfilePhoto = ash (async (req, res) => {
     .populate ('boards');
 
   res.json (updatedUser);
-});
-
-// get /user/
-export const getUserInfo = ash (async (req, res) => {
-  const { sid } = req.decoded;
-  logger.api.info ('get /user/ request; sid: %s', sid);
-
-  const user = await User.findOne ({ sso_sid: sid })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
-  res.json (user);
 });
 
 // post /user/currentGroup/:groupId

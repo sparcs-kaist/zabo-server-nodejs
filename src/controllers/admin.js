@@ -34,10 +34,11 @@ export const createGroup = ash (async (req, res) => {
 // get /admin/user/:studentId
 export const getUserInfo = ash (async (req, res) => {
   const { user } = req;
-  const populated = user
+  const populated = await user
     .populate ('currentGroup', '_id name profilePhoto')
     .populate ('groups', '_id name profilePhoto')
-    .populate ('boards', '_id title isPrivate');
+    .populate ('boards', '_id title isPrivate')
+    .execPopulate ();
   res.json (populated);
 });
 
