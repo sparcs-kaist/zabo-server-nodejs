@@ -5,7 +5,7 @@ import {
   authMiddleware as auth,
   isGroupMember as gm,
 } from '../middlewares';
-import { userProfileUpload } from '../utils/aws';
+import { userBakupload, userProfileUpload } from '../utils/aws';
 
 const router = express.Router ();
 
@@ -19,6 +19,7 @@ const findGroup = (req, res, next) => {
 router.get ('/', auth, uc.getUserInfo);
 router.post ('/', auth, uc.updateUserInfo);
 router.post ('/profile', auth, userProfileUpload.single ('img'), uc.updateProfilePhoto);
+router.post ('/background', auth, userBakupload.single ('img'), uc.updateBakPhoto);
 router.post ('/currentGroup/:groupName', auth, findGroup, gm, uc.setCurrentGroup);
 
 module.exports = router;

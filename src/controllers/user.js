@@ -66,6 +66,26 @@ export const updateProfilePhoto = ash (async (req, res) => {
   res.json (updatedUser);
 });
 
+// post /user/background
+export const updateBakPhoto = ash (async (req, res) => {
+  const { sid } = req.decoded;
+  const url = req.file.location;
+  logger.api.info ('post /user/background request; sid: %s, url: %s', sid, url);
+  const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
+    $set: {
+      backgroundPhoto: url,
+    },
+  }, {
+    new: true,
+  })
+    .populate ('groups')
+    .populate ('currentGroup')
+    .populate ('currentGroup.members')
+    .populate ('boards');
+
+  res.json (updatedUser);
+});
+
 // post /user/currentGroup/:groupId
 export const setCurrentGroup = ash (async (req, res) => {
   const { group, self } = req;

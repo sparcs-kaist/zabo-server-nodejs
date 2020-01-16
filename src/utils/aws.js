@@ -46,6 +46,7 @@ export const profileUpload = (type) => multer ({
   }),
 });
 export const userProfileUpload = profileUpload ('user');
+export const userBakupload = profileUpload ('user-bak');
 export const groupProfileUpload = profileUpload ('group');
 export const groupBakUpload = profileUpload ('group-bak');
 

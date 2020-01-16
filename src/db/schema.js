@@ -15,6 +15,7 @@ export const userSchema = new mongoose.Schema ({
     match: /^[^@\s]+@[^@\s]+\.[^@\s]+$/s,
   },
   profilePhoto: String,
+  backgroundPhoto: String,
   /* From SSO */
   gender: String,
   birthday: Date,
