@@ -1,3 +1,4 @@
+import ash from 'express-async-handler';
 import { Group, User } from '../db';
 import { logger } from '../utils/logger';
 
@@ -87,28 +88,11 @@ export const getUserInfo = async (req, res) => {
 };
 
 // post /user/currentGroup/:groupId
-export const setCurrentGroup = async (req, res) => {
-  try {
-    const { sid } = req.decoded;
-    const { groupId } = req.params;
-    logger.api.info ('post /user/currentGroup/:groupId request; sid: %s, groupId: %s', sid, groupId);
-
-    const user = await User.findOneAndUpdate ({ sso_sid: sid }, {
-      $set: {
-        currentGroup: groupId,
-      },
-    }, {
-      new: true,
-      projection: 'currentGroup',
-      populate: {
-        path: 'currentGroup',
-      },
-    });
-    res.json (user);
-  } catch (error) {
-    logger.api.error (error);
-    return res.status (500).json ({
-      error: error.message,
-    });
-  }
-};
+export const setCurrentGroup = ash (async (req, res) => {
+  const { group, self } = req;
+  const { sid } = req.decoded;
+  logger.api.info ('post /user/currentGroup/:groupId request; sid: %s, groupName: %s', sid, group.name);
+  self.currentGroup = group._id;
+  await self.save ();
+  res.json (group);
+});

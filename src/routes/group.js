@@ -7,7 +7,7 @@ import {
   isGroupMember as gm,
   findUserWithUsername,
 } from '../middlewares';
-import { profileUpload } from '../utils/aws';
+import { groupProfileUpload, groupBakUpload } from '../utils/aws';
 
 const router = express.Router ();
 
@@ -23,13 +23,13 @@ const findUser = (req, res, next) => {
   return findUserWithUsername (req, res, next);
 };
 
-const isGroupMember = [findGroup, auth, gm];
-const isGroupAdmin = [findGroup, auth, ga, findUser];
+const isGroupMember = [auth, findGroup, gm];
+const isGroupAdmin = [auth, findGroup, ga, findUser];
 
 router.get ('/:groupName', findGroup, gc.getGroupInfo);
 router.post ('/:groupName', isGroupMember, gc.updateGroupInfo);
-router.post ('/:groupName/profile', isGroupMember, profileUpload ('group').single ('img'), gc.updateProfilePhoto);
-router.post ('/:groupName/background', isGroupMember, profileUpload ('group-bak').single ('img'), gc.updateBakPhoto);
+router.post ('/:groupName/profile', isGroupMember, groupProfileUpload.single ('img'), gc.updateProfilePhoto);
+router.post ('/:groupName/background', isGroupMember, groupBakUpload.single ('img'), gc.updateBakPhoto);
 router.put ('/:groupName/member', isGroupAdmin, gc.addMember);
 router.post ('/:groupName/member', isGroupAdmin, gc.updateMember);
 router.delete ('/:groupName/member', isGroupAdmin, gc.deleteMember);

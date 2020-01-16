@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Board, Group, User } from '../db';
 import { logger } from '../utils/logger';
 
+// TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
   const { user, studentId } = req;
@@ -42,17 +43,18 @@ export const getUserInfo = ash (async (req, res) => {
 
 // post /admin/fakeRegister
 export const fakeRegister = ash (async (req, res) => {
-  const { studentId } = req.body;
+  const { username } = req.body;
   const board = await Board.create ({
     title: '저장한 포스터',
   });
   const boards = [board._id];
   const user = await User.create ({
-    sso_uid: studentId,
-    sso_sid: studentId,
-    studentId,
-    email: `${studentId}@kaist.ac.kr`,
+    flags: ['TEST', 'SPARCS'],
+    sso_uid: new Date ().getTime (),
+    sso_sid: new Date ().getTime (),
+    email: `${username}@kaist.ac.kr`,
     boards,
+    username,
   });
   return res.json (user);
 });

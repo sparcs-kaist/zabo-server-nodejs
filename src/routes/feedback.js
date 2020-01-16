@@ -15,7 +15,7 @@ router.post ('/', jwtParseMiddleware, async (req, res) => {
     if (req.decoded) {
       const { sid } = req.decoded;
       const user = await User.findOne ({ sso_sid: sid });
-      data.userId = user._id;
+      data.user = user._id;
     }
     const result = await Feedback.create (data);
     res.json (result);

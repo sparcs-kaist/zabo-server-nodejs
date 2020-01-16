@@ -151,7 +151,7 @@ const updateOrCreateUserData = async (userData, create) => {
     .populate ('boards');
 
   if (create) {
-    stat.REGISTER ({ userId: newUser._id });
+    stat.REGISTER ({ user: newUser._id });
   }
 
   return newUser;
@@ -194,7 +194,7 @@ export const loginCallback = async (req, res) => {
       id: user._id,
       sid: user.sso_sid,
       email: user.email,
-      studentId: user.studentId,
+      username: user.username,
     }, jwtSecret, {
       expiresIn: '60d',
       issuer: 'zabo-sparcs-kaist',

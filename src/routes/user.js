@@ -1,14 +1,24 @@
 import express from 'express';
-import * as userControllers from '../controllers/user';
-import { authMiddleware, isGroupMember } from '../middlewares';
-import { profileUpload } from '../utils/aws';
+import * as uc from '../controllers/user';
+import {
+  findGroup as fg,
+  authMiddleware as auth,
+  isGroupMember as gm,
+} from '../middlewares';
+import { userProfileUpload } from '../utils/aws';
 
 const router = express.Router ();
 
+// params validator
+const findGroup = (req, res, next) => {
+  req.groupName = req.params.groupName;
+  return fg (req, res, next);
+};
+
 /* GET users listing. */
-router.get ('/', authMiddleware, userControllers.getUserInfo);
-router.post ('/', authMiddleware, userControllers.updateUserInfo);
-router.post ('/profile', profileUpload ('user').single ('img'), authMiddleware, userControllers.updateProfilePhoto);
-router.post ('/currentGroup/:groupId', authMiddleware, isGroupMember, userControllers.setCurrentGroup);
+router.get ('/', auth, uc.getUserInfo);
+router.post ('/', auth, uc.updateUserInfo);
+router.post ('/profile', auth, userProfileUpload.single ('img'), uc.updateProfilePhoto);
+router.post ('/currentGroup/:groupName', auth, findGroup, gm, uc.setCurrentGroup);
 
 module.exports = router;

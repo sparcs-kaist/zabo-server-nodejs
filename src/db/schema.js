@@ -183,7 +183,7 @@ export const statisticsSchema = new mongoose.Schema ({
 });
 
 export const feedbackSchema = new mongoose.Schema ({
-  userId: {
+  user: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
