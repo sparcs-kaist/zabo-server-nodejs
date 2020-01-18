@@ -14,6 +14,14 @@ export const userSchema = new mongoose.Schema ({
     },
     match: /^[^@\s]+@[^@\s]+\.[^@\s]+$/s,
   },
+  username: {
+    type: String,
+    // username and group name are globaly unique though it's not represented in schema constraint
+    unique: true,
+    required: true,
+    index: true,
+  },
+  description: String,
   profilePhoto: String,
   backgroundPhoto: String,
   /* From SSO */
@@ -33,13 +41,6 @@ export const userSchema = new mongoose.Schema ({
   kaistInfoTime: String,
   kaistStatus: String,
   /* From SSO */
-  username: {
-    type: String,
-    // username and group name are globaly unique though it's not represented in schema constraint
-    unique: true,
-    required: true,
-    index: true,
-  },
   boards: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Board',

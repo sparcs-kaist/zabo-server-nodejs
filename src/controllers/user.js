@@ -18,22 +18,38 @@ export const getUserInfo = ash (async (req, res) => {
 // post /user
 export const updateUserInfo = ash (async (req, res) => {
   const { sid } = req.decoded;
-  const { username } = req.body;
-  logger.api.info ('post /user/ request; sid: %s, username: %s', sid, username);
-  const [userTaken, groupTaken] = await Promise.all ([
-    User.findOne ({ username }),
-    Group.findOne ({ name: username }),
-  ]);
-  if (userTaken || groupTaken) {
+  const { username, description } = req.body;
+  logger.api.info (
+    'post /user/ request; sid: %s, username: %s, description: %s',
+    sid,
+    username,
+    description,
+  );
+  if (!username && !description) {
     return res.status (400).json ({
-      error: `'${username}' has already been taken.`,
+      error: 'Username or descrtion required',
     });
   }
+  const updateParams = {};
+  if (username) {
+    const [userTaken, groupTaken] = await Promise.all ([
+      User.findOne ({ username }),
+      Group.findOne ({ name: username }),
+    ]);
+    if (userTaken || groupTaken) {
+      return res.status (400).json ({
+        error: `'${username}' has already been taken.`,
+      });
+    }
+    Object.assign (updateParams, { username });
+  }
+  if (description) {
+    Object.assign (updateParams, { description });
+  }
+
   // Ignore very rare timing issue which is unlikely to happen.
   const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
-    $set: {
-      username,
-    },
+    $set: updateParams,
   }, {
     upsert: true,
     new: true,
