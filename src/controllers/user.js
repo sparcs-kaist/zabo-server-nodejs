@@ -25,13 +25,14 @@ export const updateUserInfo = ash (async (req, res) => {
     username,
     description,
   );
-  if (!username && !description) {
+  if (!username) {
     return res.status (400).json ({
-      error: 'Username or descrtion required',
+      error: 'username required',
     });
   }
-  const updateParams = {};
-  if (username) {
+  const updateParams = { description };
+  const self = await User.findOne ({ sso_sid: sid });
+  if (self.username !== username) {
     const [userTaken, groupTaken] = await Promise.all ([
       User.findOne ({ username }),
       Group.findOne ({ name: username }),
@@ -41,12 +42,8 @@ export const updateUserInfo = ash (async (req, res) => {
         error: `'${username}' has already been taken.`,
       });
     }
-    Object.assign (updateParams, { username });
+    updateParams.username = username;
   }
-  if (description) {
-    Object.assign (updateParams, { description });
-  }
-
   // Ignore very rare timing issue which is unlikely to happen.
   const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
     $set: updateParams,
