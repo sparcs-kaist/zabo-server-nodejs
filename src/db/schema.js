@@ -144,6 +144,13 @@ operations it's the only way to make it scalable. */
   timestamps: true,
 });
 
+const revisionHistorySchema = new mongoose.Schema ({
+  prev: String,
+  next: String,
+}, {
+  timestamps: true,
+});
+
 export const groupSchema = new mongoose.Schema ({
   name: {
     type: String,
@@ -152,6 +159,7 @@ export const groupSchema = new mongoose.Schema ({
     unique: true,
     index: true,
   },
+  revisionHistory: [revisionHistorySchema],
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
