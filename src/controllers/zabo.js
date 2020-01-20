@@ -110,6 +110,7 @@ export const editZabo = ash (async (req, res) => {
   return res.json (zabo);
 });
 
+// DANGER: Not fully implemented. Don't use
 export const deleteZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
   logger.zabo.info ('delete /zabo/ request; id: %s', zaboId);
