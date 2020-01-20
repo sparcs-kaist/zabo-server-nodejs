@@ -7,12 +7,12 @@ import * as zc from '../controllers/zabo';
 
 const router = express.Router ();
 
-router.get ('/', jwtParseMiddleware, zc.getZabo);
-router.post ('/', authMiddleware, zaboUpload.array ('img', 20), zc.postNewZabo);
-router.patch ('/:zaboId', authMiddleware, isZaboOwner, zc.editZabo);
-router.delete ('/', authMiddleware, zc.deleteZabo);
 router.get ('/list', zc.listZabos, zc.listNextZabos);
 router.post ('/pin', authMiddleware, zc.pinZabo);
 router.delete ('/pin', authMiddleware, zc.deletePin);
+router.get ('/:zaboId', jwtParseMiddleware, zc.getZabo);
+router.post ('/', authMiddleware, zaboUpload.array ('img', 20), zc.postNewZabo);
+router.patch ('/:zaboId', authMiddleware, isZaboOwner, zc.editZabo);
+router.delete ('/:zaboId', authMiddleware, zc.deleteZabo);
 
 module.exports = router;

@@ -8,9 +8,9 @@ import { isValidId } from '../utils';
 import { Pin, User, Zabo } from '../db';
 
 export const getZabo = ash (async (req, res) => {
-  const { id } = req.query;
-  logger.zabo.info ('get /zabo/ request; id: %s', id);
-  if (!id) {
+  const { zaboId } = req.params;
+  logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
+  if (!zaboId) {
     logger.zabo.error ('get /zabo/ request error; 400 - null id');
     return res.status (400).json ({
       error: 'bad request: null id',
@@ -18,13 +18,13 @@ export const getZabo = ash (async (req, res) => {
   }
   stat.GET_ZABO (req);
 
-  if (!mongoose.Types.ObjectId.isValid (id)) {
+  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
     logger.zabo.error ('get /zabo/ request error; 400 - invalid id');
     return res.status (400).json ({
       error: 'bad request: invalid id',
     });
   }
-  const zabo = await Zabo.findOne ({ _id: id })
+  const zabo = await Zabo.findOne ({ _id: zaboId })
     .populate ('owner', 'name profilePhoto');
 
   if (!zabo) {
@@ -111,10 +111,10 @@ export const editZabo = ash (async (req, res) => {
 });
 
 export const deleteZabo = ash (async (req, res) => {
-  const { id } = req.body;
-  logger.zabo.info ('delete /zabo/ request; id: %s', id);
+  const { zaboId } = req.params;
+  logger.zabo.info ('delete /zabo/ request; id: %s', zaboId);
 
-  if (!id) {
+  if (!zaboId) {
     logger.zabo.error ('delete /zabo/ request error; 400 - null id');
     return res.status (400).json ({
       error: 'bad request: null id',
