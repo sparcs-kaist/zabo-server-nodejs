@@ -26,7 +26,7 @@ export const getZabo = async (req, res) => {
       });
     }
     const zabo = await Zabo.findOne ({ _id: id })
-      .populate ('owner', 'name');
+      .populate ('owner', 'name profilePhoto');
 
     if (!zabo) {
       logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
