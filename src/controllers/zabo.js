@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
@@ -101,6 +102,27 @@ export const postNewZabo = async (req, res) => {
     });
   }
 };
+
+export const editZabo = ash (async (req, res) => {
+  const { zabo } = req;
+  const { title, description, endAt } = req.body;
+  let { category } = req.body;
+  logger.zabo.info (
+    'post /zabo/%s/edit request; title: %s, description: %s, category: %s, endAt: %s',
+    zabo._id,
+    title,
+    description,
+    category,
+    endAt,
+  );
+  category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
+  zabo.title = title;
+  zabo.description = description;
+  zabo.category = category;
+  zabo.endAt = endAt;
+  await zabo.save ();
+  return res.json (zabo);
+});
 
 export const deleteZabo = async (req, res) => {
   try {

@@ -1,7 +1,6 @@
 import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
-import { Group, User } from '../db';
-import { isValidId } from '../utils';
+import { Group, User, Zabo } from '../db';
 import { logger } from '../utils/logger';
 
 export const authMiddleware = (req, res, next) => {
@@ -52,6 +51,24 @@ export const findUserWithKey = (queryKey, reqKey) => ash (async (req, res, next)
     });
   }
   req.user = user;
+  return next ();
+});
+
+export const isZaboOwner = ash (async (req, res, next) => {
+  const { sid } = req.decoded;
+  const { zaboId } = req.params;
+  const [self, zabo] = await Promise.all ([
+    User.findOne ({ sso_sid: sid }),
+    Zabo.findById (zaboId),
+  ]);
+  req.self = self;
+  req.zabo = zabo;
+  const found = self.groups.find (group => zabo.owner.equals (group));
+  if (!found) {
+    return res.status (403).json ({
+      error: 'Permission Denied',
+    });
+  }
   return next ();
 });
 
