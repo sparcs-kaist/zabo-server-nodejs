@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import ash from 'express-async-handler';
+import moment from 'moment';
 import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
@@ -19,11 +20,9 @@ export const getZabo = ash (async (req, res) => {
   }
 
   let newVisit;
-  if (req.session[zaboId]) {
-    req.session[zaboId] += 1;
-  } else {
-    req.session[zaboId] = 1;
+  if (!req.session[zaboId] || moment ().isAfter (req.session[zaboId])) {
     newVisit = true;
+    req.session[zaboId] = moment ().add (30, 'seconds');
   }
 
   let zabo;
