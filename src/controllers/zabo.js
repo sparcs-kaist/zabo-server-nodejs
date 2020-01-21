@@ -38,7 +38,7 @@ export const getZabo = ash (async (req, res) => {
     });
   }
 
-  let result;
+  const result = {};
   if (sid) {
     const user = await User.findOne ({ sso_sid: sid });
     if (!user.currentGroup) {
