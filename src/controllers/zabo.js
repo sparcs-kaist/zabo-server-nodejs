@@ -205,7 +205,7 @@ export const listNextZabos = ash (async (req, res) => {
 });
 
 export const pinZabo = ash (async (req, res) => {
-  const { zaboId } = req.body;
+  const { zaboId } = req.params;
   const { sid } = req.decoded;
   logger.zabo.info ('post /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
@@ -261,7 +261,7 @@ export const pinZabo = ash (async (req, res) => {
 });
 
 export const deletePin = ash (async (req, res) => {
-  const { zaboId } = req.body;
+  const { zaboId } = req.params;
   const { sid } = req.decoded;
   logger.zabo.info ('delete /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
@@ -310,7 +310,7 @@ export const deletePin = ash (async (req, res) => {
 });
 
 export const likeZabo = ash (async (req, res) => {
-  const { zaboId } = req.body;
+  const { zaboId } = req.params;
   const { sid } = req.decoded;
   logger.zabo.info ('post /zabo/like request; zaboId: %s, sid: %s', zaboId, sid);
 
