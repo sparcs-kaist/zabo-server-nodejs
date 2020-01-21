@@ -11,7 +11,6 @@ router.get ('/list', zc.listZabos, zc.listNextZabos);
 router.post ('/pin', authMiddleware, zc.pinZabo);
 router.delete ('/pin', authMiddleware, zc.deletePin);
 router.post ('/like', authMiddleware, zc.likeZabo);
-router.delete ('/like', authMiddleware, zc.deleteLike);
 router.get ('/:zaboId', jwtParseMiddleware, zc.getZabo);
 router.post ('/', authMiddleware, zaboUpload.array ('img', 20), zc.postNewZabo);
 router.patch ('/:zaboId', authMiddleware, isZaboOwner, zc.editZabo);
