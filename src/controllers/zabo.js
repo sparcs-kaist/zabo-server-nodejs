@@ -21,13 +21,6 @@ export const getZabo = ash (async (req, res) => {
   }
   stat.GET_ZABO (req);
 
-  const user = await User.findOne ({ sso_sid: sid });
-  if (!user.currentGroup) {
-    return res.status (403).json ({
-      error: 'Requested User Is Not Currently Belonging to Any Group',
-    });
-  }
-
   if (!mongoose.Types.ObjectId.isValid (zaboId)) {
     logger.zabo.error ('get /zabo/ request error; 400 - invalid id');
     return res.status (400).json ({
@@ -38,18 +31,28 @@ export const getZabo = ash (async (req, res) => {
     .populate ('owner', 'name profilePhoto')
     .populate ('likes');
 
-  // zabo.likes
-  const isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
-
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
     return res.status (404).json ({
       error: 'not found: zabo does not exist',
     });
   }
+
+  let result;
+  if (sid) {
+    const user = await User.findOne ({ sso_sid: sid });
+    if (!user.currentGroup) {
+      return res.status (403).json ({
+        error: 'Requested User Is Not Currently Belonging to Any Group',
+      });
+    }
+
+    // zabo.likes
+    result.isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
+  }
   return res.json ({
     ...zabo.toJSON (),
-    isLiked,
+    ...result,
   });
 });
 
