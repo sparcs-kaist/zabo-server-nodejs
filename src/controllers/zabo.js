@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import ash from 'express-async-handler';
+import moment from 'moment';
 import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
@@ -13,13 +14,6 @@ export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
   const { sid } = req.decoded;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
-  if (!zaboId) {
-    logger.zabo.error ('get /zabo/ request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'bad request: null id',
-    });
-  }
-  stat.GET_ZABO (req);
 
   if (!mongoose.Types.ObjectId.isValid (zaboId)) {
     logger.zabo.error ('get /zabo/ request error; 400 - invalid id');
@@ -27,9 +21,24 @@ export const getZabo = ash (async (req, res) => {
       error: 'bad request: invalid id',
     });
   }
-  const zabo = await Zabo.findOne ({ _id: zaboId })
-    .populate ('owner', 'name profilePhoto')
-    .populate ('likes');
+
+  let newVisit;
+  if (!req.session[zaboId] || moment ().isAfter (req.session[zaboId])) {
+    newVisit = true;
+    req.session[zaboId] = moment ().add (30, 'seconds');
+  }
+
+  let zabo;
+  if (newVisit) {
+    stat.GET_ZABO (req);
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
+      .populate ('owner', 'name profilePhoto')
+      .populate ('likes');
+  } else {
+    zabo = await Zabo.findOne ({ _id: zaboId })
+      .populate ('owner', 'name profilePhoto')
+      .populate ('likes');
+  }
 
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');

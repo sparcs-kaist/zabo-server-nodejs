@@ -98,6 +98,11 @@ export const zaboSchema = new mongoose.Schema ({
     type: String,
     // enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
   }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+  views: Number,
+  endAt: {
+    type: Date,
+    required: true,
+  },
   pins: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Pin',
@@ -106,10 +111,6 @@ export const zaboSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Like',
   }], // Like
-  endAt: {
-    type: Date,
-    required: true,
-  },
 }, {
   timestamps: true,
   autoIndex: true,
