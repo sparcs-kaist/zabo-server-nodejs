@@ -2,7 +2,7 @@ import path from 'path';
 import createError from 'http-errors';
 import express from 'express';
 import session from 'express-session';
-import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import connectRedis from 'connect-redis';
@@ -17,6 +17,7 @@ import { logger } from './utils/logger';
 const app = express ();
 const RedisStore = connectRedis (session);
 
+app.use (express.static (path.join (__dirname, 'public')));
 app.use (session ({
   secret: process.env.SESSION_SECRET,
   cookie: { maxAge: 60000 },
@@ -25,23 +26,14 @@ app.use (session ({
   saveUninitialized: true,
 }));
 
-app.use ((req, res, next) => {
-  res.header ('Access-Control-Allow-Origin', '*');
-  res.header ('Access-Control-Allow-Headers', 'Authorization, X-Requested-With, Content-Type, Accept');
-  res.header ('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-  if (req.method === 'OPTIONS') {
-    res.send (200);
-  } else {
-    next ();
-  }
-});
+app.use (cors ({
+  origin: [/sparcs\.org$/, /kaist\.ac\.kr$/],
+}));
 
 app.use (helmet ());
 app.use (morgan ('dev'));
 app.use (express.json ());
 app.use (express.urlencoded ({ extended: false }));
-app.use (cookieParser ());
-app.use (express.static (path.join (__dirname, 'public')));
 app.set ('jwt-secret', process.env.JWT_SECRET);
 
 

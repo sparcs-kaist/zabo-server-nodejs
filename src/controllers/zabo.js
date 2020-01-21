@@ -10,13 +10,6 @@ import { Pin, User, Zabo } from '../db';
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
-  if (!zaboId) {
-    logger.zabo.error ('get /zabo/ request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'bad request: null id',
-    });
-  }
-  stat.GET_ZABO (req);
 
   if (!mongoose.Types.ObjectId.isValid (zaboId)) {
     logger.zabo.error ('get /zabo/ request error; 400 - invalid id');
@@ -24,8 +17,24 @@ export const getZabo = ash (async (req, res) => {
       error: 'bad request: invalid id',
     });
   }
-  const zabo = await Zabo.findOne ({ _id: zaboId })
-    .populate ('owner', 'name profilePhoto');
+
+  let newVisit;
+  if (req.session[zaboId]) {
+    req.session[zaboId] += 1;
+  } else {
+    req.session[zaboId] = 1;
+    newVisit = true;
+  }
+
+  let zabo;
+  if (newVisit) {
+    stat.GET_ZABO (req);
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
+      .populate ('owner', 'name profilePhoto');
+  } else {
+    zabo = await Zabo.findOne ({ _id: zaboId })
+      .populate ('owner', 'name profilePhoto');
+  }
 
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
