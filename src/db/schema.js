@@ -45,6 +45,10 @@ export const userSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   }], // Only one can be created for current plan, array for probable extensions
+  likes: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Like',
+  }], // Like
   groups: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Group',
@@ -98,6 +102,10 @@ export const zaboSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Pin',
   }], // Pin
+  likes: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Like',
+  }], // Like
   endAt: {
     type: Date,
     required: true,
@@ -142,6 +150,17 @@ operations it's the only way to make it scalable. */
   },
 }, {
   timestamps: true,
+});
+
+export const likeSchema = new mongoose.Schema ({
+  likedBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+  zaboId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Zabo',
+  },
 });
 
 const revisionHistorySchema = new mongoose.Schema ({

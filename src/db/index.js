@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import {
-  userSchema, zaboSchema, boardSchema, pinSchema, groupSchema, statisticsSchema, feedbackSchema,
+  userSchema, zaboSchema, boardSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema,
 } from './methods';
 import { logger } from '../utils/logger';
 
@@ -24,6 +24,7 @@ export const User = mongoose.model ('User', userSchema);
 export const Zabo = mongoose.model ('Zabo', zaboSchema);
 export const Board = mongoose.model ('Board', boardSchema);
 export const Pin = mongoose.model ('Pin', pinSchema);
+export const Like = mongoose.model ('Like', likeSchema);
 export const Group = mongoose.model ('Group', groupSchema);
 export const Statistic = mongoose.model ('Statistic', statisticsSchema);
 export const Feedback = mongoose.model ('Feedback', feedbackSchema);
