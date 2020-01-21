@@ -213,20 +213,6 @@ export const pinZabo = ash (async (req, res) => {
   logger.zabo.info ('post /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
 
-  if (!zaboId) {
-    logger.zabo.error ('post /zabo/pin request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'null id',
-    });
-  }
-
-  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
-    logger.zabo.error ('post /zabo/pin request error; 400 - invalid id');
-    return res.status (400).json ({
-      error: 'invalid id',
-    });
-  }
-
   // find boardId of user
   const user = await User.findOne ({ sso_sid: sid });
   if (user === null) {
@@ -269,20 +255,6 @@ export const deletePin = ash (async (req, res) => {
   logger.zabo.info ('delete /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
 
-  if (!zaboId) {
-    logger.zabo.error ('delete /zabo/pin request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'bad request: null id',
-    });
-  }
-
-  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
-    logger.zabo.error ('delete /zabo/pin request error; 400 - invalid id');
-    return res.status (400).json ({
-      error: 'bad request: invalid id',
-    });
-  }
-
   // find boardId of user
   const user = await User.findOne ({ sso_sid: sid });
   if (!user) {
@@ -295,7 +267,6 @@ export const deletePin = ash (async (req, res) => {
 
   // delete the pin
   const deletedPin = await Pin.findOneAndDelete ({ zaboId, boardId });
-  logger.zabo.info ('delete /zabo/pin request; deleted pin: %s', deletedPin);
 
   // edit zabo pins
   const zabo = await Zabo.findById (zaboId);
@@ -317,22 +288,9 @@ export const likeZabo = ash (async (req, res) => {
   const { sid } = req.decoded;
   logger.zabo.info ('post /zabo/like request; zaboId: %s, sid: %s', zaboId, sid);
 
-  if (!zaboId) {
-    logger.zabo.error ('post /zabo/like request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'null id',
-    });
-  }
-
-  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
-    logger.zabo.error ('post /zabo/like request error; 400 0 invalid id');
-    return res.status (400).json ({
-      error: 'invalid id',
-    });
-  }
-
   const user = await User.findOne ({ sso_sid: sid })
     .populate ('likes');
+
   if (user === null) {
     logger.zabo.error ('post /zabo/like request error; 404 - user does not exist');
     return res.status (404).json ({
