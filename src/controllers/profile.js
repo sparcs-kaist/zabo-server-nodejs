@@ -13,8 +13,14 @@ export const getProfile = ash (async (req, res) => {
       .populate ('currentGroup')
       .populate ('currentGroup.members')
       .populate ('boards')
+      .populate ('likes')
       .execPopulate ();
-    return res.json (result);
+
+    const likesNum = result.likes.length;
+    return res.json ({
+      ...result.toJSON (),
+      likesNum,
+    });
   }
   if (group) {
     return res.json (group);

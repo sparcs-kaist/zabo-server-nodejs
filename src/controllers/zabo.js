@@ -6,10 +6,13 @@ import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import { isValidId } from '../utils';
 
-import { Pin, User, Zabo } from '../db';
+import {
+  Pin, User, Zabo, Like,
+} from '../db';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
+  const { sid } = req.decoded;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
 
   if (!mongoose.Types.ObjectId.isValid (zaboId)) {
@@ -29,10 +32,12 @@ export const getZabo = ash (async (req, res) => {
   if (newVisit) {
     stat.GET_ZABO (req);
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
-      .populate ('owner', 'name profilePhoto');
+      .populate ('owner', 'name profilePhoto')
+      .populate ('likes');
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
-      .populate ('owner', 'name profilePhoto');
+      .populate ('owner', 'name profilePhoto')
+      .populate ('likes');
   }
 
   if (!zabo) {
@@ -41,7 +46,23 @@ export const getZabo = ash (async (req, res) => {
       error: 'not found: zabo does not exist',
     });
   }
-  return res.json (zabo);
+
+  const result = {};
+  if (sid) {
+    const user = await User.findOne ({ sso_sid: sid });
+    if (!user.currentGroup) {
+      return res.status (403).json ({
+        error: 'Requested User Is Not Currently Belonging to Any Group',
+      });
+    }
+
+    // zabo.likes
+    result.isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
+  }
+  return res.json ({
+    ...zabo.toJSON (),
+    ...result,
+  });
 });
 
 export const postNewZabo = ash (async (req, res) => {
@@ -196,24 +217,10 @@ export const listNextZabos = ash (async (req, res) => {
 });
 
 export const pinZabo = ash (async (req, res) => {
-  const { zaboId } = req.body;
+  const { zaboId } = req.params;
   const { sid } = req.decoded;
   logger.zabo.info ('post /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
-
-  if (!zaboId) {
-    logger.zabo.error ('post /zabo/pin request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'null id',
-    });
-  }
-
-  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
-    logger.zabo.error ('post /zabo/pin request error; 400 - invalid id');
-    return res.status (400).json ({
-      error: 'invalid id',
-    });
-  }
 
   // find boardId of user
   const user = await User.findOne ({ sso_sid: sid });
@@ -252,24 +259,10 @@ export const pinZabo = ash (async (req, res) => {
 });
 
 export const deletePin = ash (async (req, res) => {
-  const { zaboId } = req.body;
+  const { zaboId } = req.params;
   const { sid } = req.decoded;
   logger.zabo.info ('delete /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
-
-  if (!zaboId) {
-    logger.zabo.error ('delete /zabo/pin request error; 400 - null id');
-    return res.status (400).json ({
-      error: 'bad request: null id',
-    });
-  }
-
-  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
-    logger.zabo.error ('delete /zabo/pin request error; 400 - invalid id');
-    return res.status (400).json ({
-      error: 'bad request: invalid id',
-    });
-  }
 
   // find boardId of user
   const user = await User.findOne ({ sso_sid: sid });
@@ -283,7 +276,6 @@ export const deletePin = ash (async (req, res) => {
 
   // delete the pin
   const deletedPin = await Pin.findOneAndDelete ({ zaboId, boardId });
-  logger.zabo.info ('delete /zabo/pin request; deleted pin: %s', deletedPin);
 
   // edit zabo pins
   const zabo = await Zabo.findById (zaboId);
@@ -293,9 +285,71 @@ export const deletePin = ash (async (req, res) => {
       error: 'not found: zabo does not exist',
     });
   }
-  const newPins = zabo.pins.filter (pin => pin.toString () !== deletedPin._id.toString ());
+  const newPins = zabo.pins.filter (pin => !pin.equals (deletedPin._id));
   logger.zabo.info ('delete /zabo/pin request; edited zabo pins: %s', newPins);
   zabo.pins = newPins;
   await zabo.save ();
   return res.send ({ zabo });
+});
+
+export const likeZabo = ash (async (req, res) => {
+  const { zaboId } = req.params;
+  const { sid } = req.decoded;
+  logger.zabo.info ('post /zabo/like request; zaboId: %s, sid: %s', zaboId, sid);
+
+  const user = await User.findOne ({ sso_sid: sid })
+    .populate ('likes');
+
+  if (user === null) {
+    logger.zabo.error ('post /zabo/like request error; 404 - user does not exist');
+    return res.status (404).json ({
+      error: 'user does not exist',
+    });
+  }
+  const userId = user._id;
+
+  // edit zabo likes
+  const zabo = await Zabo.findById (zaboId)
+    .populate ('likes');
+  if (zabo === null) {
+    logger.zabo.error ('post /zabo/pin request error; 404 - zabo does not exist');
+    return res.status (404).json ({
+      error: 'zabo does not exist',
+    });
+  }
+
+  const isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
+
+  if (!isLiked) {
+    // create zabo like
+    const newLike = new Like ({
+      likedBy: userId,
+      zaboId,
+    });
+
+    const like = await newLike.save ();
+
+    // update user.likes info
+    user.likes.push (like._id);
+    await user.save ();
+    // update zabo.likes info
+    zabo.likes.push (like._id);
+    await zabo.save ();
+
+    // return res.send ({ zabo, newLike });
+    return res.send (true);
+  }
+
+  // delete zabo like
+  const deletedLike = await Like.findOneAndDelete ({ likedBy: userId, zaboId });
+  logger.zabo.info ('post /zabo/like request; deleted like: %s', deletedLike);
+
+  const newLikes = zabo.likes.filter (like => !like.equals (deletedLike._id));
+  logger.zabo.info ('post /zabo/like request; edited user,zabo likes: %s', newLikes);
+  user.likes = newLikes;
+  zabo.likes = newLikes;
+  await zabo.save ();
+
+  // return res.send ({ zabo });
+  return res.send (false);
 });
