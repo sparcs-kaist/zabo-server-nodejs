@@ -328,14 +328,14 @@ export const likeZabo = ash (async (req, res) => {
     });
   }
 
-  const user = await User.findOne ({ sso_sid: sid });
+  const user = await User.findOne ({ sso_sid: sid })
+    .populate ('likes');
   if (user === null) {
     logger.zabo.error ('post /zabo/like request error; 404 - user does not exist');
     return res.status (404).json ({
       error: 'user does not exist',
     });
   }
-
   const userId = user._id;
 
   // edit zabo likes
@@ -359,6 +359,9 @@ export const likeZabo = ash (async (req, res) => {
 
     const like = await newLike.save ();
 
+    // update user.likes info
+    user.likes.push (like._id);
+    await user.save ();
     // update zabo.likes info
     zabo.likes.push (like._id);
     await zabo.save ();
@@ -372,7 +375,8 @@ export const likeZabo = ash (async (req, res) => {
   logger.zabo.info ('post /zabo/like request; deleted like: %s', deletedLike);
 
   const newLikes = zabo.likes.filter (like => !like.equals (deletedLike._id));
-  logger.zabo.info ('post /zabo/like request; edited zabo likes: %s', newLikes);
+  logger.zabo.info ('post /zabo/like request; edited user,zabo likes: %s', newLikes);
+  user.likes = newLikes;
   zabo.likes = newLikes;
   await zabo.save ();
 
