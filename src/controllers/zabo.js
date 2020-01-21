@@ -5,10 +5,13 @@ import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import { isValidId } from '../utils';
 
-import { Pin, User, Zabo } from '../db';
+import {
+  Pin, User, Zabo, Like,
+} from '../db';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
+  const { sid } = req.decoded;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   if (!zaboId) {
     logger.zabo.error ('get /zabo/ request error; 400 - null id');
@@ -18,6 +21,13 @@ export const getZabo = ash (async (req, res) => {
   }
   stat.GET_ZABO (req);
 
+  const user = await User.findOne ({ sso_sid: sid });
+  if (!user.currentGroup) {
+    return res.status (403).json ({
+      error: 'Requested User Is Not Currently Belonging to Any Group',
+    });
+  }
+
   if (!mongoose.Types.ObjectId.isValid (zaboId)) {
     logger.zabo.error ('get /zabo/ request error; 400 - invalid id');
     return res.status (400).json ({
@@ -25,7 +35,11 @@ export const getZabo = ash (async (req, res) => {
     });
   }
   const zabo = await Zabo.findOne ({ _id: zaboId })
-    .populate ('owner', 'name profilePhoto');
+    .populate ('owner', 'name profilePhoto')
+    .populate ('likes');
+
+  // zabo.likes
+  const isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
 
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
@@ -33,7 +47,10 @@ export const getZabo = ash (async (req, res) => {
       error: 'not found: zabo does not exist',
     });
   }
-  return res.json (zabo);
+  return res.json ({
+    ...zabo.toJSON (),
+    isLiked,
+  });
 });
 
 export const postNewZabo = ash (async (req, res) => {
@@ -288,6 +305,106 @@ export const deletePin = ash (async (req, res) => {
   const newPins = zabo.pins.filter (pin => pin.toString () !== deletedPin._id.toString ());
   logger.zabo.info ('delete /zabo/pin request; edited zabo pins: %s', newPins);
   zabo.pins = newPins;
+  await zabo.save ();
+  return res.send ({ zabo });
+});
+
+export const likeZabo = ash (async (req, res) => {
+  const { zaboId } = req.body;
+  const { sid } = req.decoded;
+  logger.zabo.info ('post /zabo/like request; zaboId: %s, sid: %s', zaboId, sid);
+
+  if (!zaboId) {
+    logger.zabo.error ('post /zabo/like request error; 400 - null id');
+    return res.status (400).json ({
+      error: 'null id',
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
+    logger.zabo.error ('post /zabo/like request error; 400 0 invalid id');
+    return res.status (400).json ({
+      error: 'invalid id',
+    });
+  }
+
+  const user = await User.findOne ({ sso_sid: sid });
+  if (user === null) {
+    logger.zabo.error ('post /zabo/like request error; 404 - user does not exist');
+    return res.status (404).json ({
+      error: 'user does not exist',
+    });
+  }
+
+  const userId = user._id;
+
+  // edit zabo likes
+  const zabo = await Zabo.findById (zaboId);
+  if (zabo === null) {
+    logger.zabo.error ('post /zabo/pin request error; 404 - zabo does not exist');
+    return res.status (404).json ({
+      error: 'zabo does not exist',
+    });
+  }
+
+  const newLike = new Like ({
+    likedBy: userId,
+    zaboId,
+  });
+
+  const like = await newLike.save ();
+
+  // update zabo.likes info
+  zabo.likes.push (like._id);
+  await zabo.save ();
+
+  return res.send ({ zabo, newLike });
+});
+
+export const deleteLike = ash (async (req, res) => {
+  const { zaboId } = req.body;
+  const { sid } = req.decoded;
+  logger.zabo.info ('post /zabo/like request; zaboId: %s, sid: %s', zaboId, sid);
+
+  if (!zaboId) {
+    logger.zabo.error ('post /zabo/like request error; 400 - null id');
+    return res.status (400).json ({
+      error: 'null id',
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
+    logger.zabo.error ('post /zabo/like request error; 400 0 invalid id');
+    return res.status (400).json ({
+      error: 'invalid id',
+    });
+  }
+
+  const user = await User.findOne ({ sso_sid: sid });
+  if (user === null) {
+    logger.zabo.error ('post /zabo/like request error; 404 - user does not exist');
+    return res.status (404).json ({
+      error: 'user does not exist',
+    });
+  }
+
+  const userId = user._id;
+
+  // delete the like
+  const deletedLike = await Like.findOneAndDelete ({ likedBy: userId, zaboId });
+  logger.zabo.info ('delete /zabo/like request; deleted like: %s', deletedLike);
+
+  // edit zabo likes
+  const zabo = await Zabo.findById (zaboId);
+  if (zabo === null) {
+    logger.zabo.error ('post /zabo/like request error; 404 - zabo does not exist');
+    return res.status (404).json ({
+      error: 'zabo does not exist',
+    });
+  }
+  const newLikes = zabo.likes.filter (like => like.toString () !== deletedLike._id.toString ());
+  logger.zabo.info ('delete /zabo/like request; edited zabo likes: %s', newLikes);
+  zabo.likes = newLikes;
   await zabo.save ();
   return res.send ({ zabo });
 });
