@@ -19,6 +19,8 @@ export const validateName = (name) => {
   // ._- 한글 알파벳 숫자 입력 가능
   const patt = new RegExp (/^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9_][ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9._-]*$/);
   if (!patt.test (name)) return false;
+  const doubleCharPatt = /(--)|(\.\.)|(__)/;
+  if (doubleCharPatt.test (name)) return false;
   const match = RESERVED_ROUTES_USERNAME_EXCEPTIONS.find (exception => exception === name.toLowerCase ());
   return !match;
 };
