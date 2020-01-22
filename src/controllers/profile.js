@@ -1,5 +1,5 @@
 import ash from 'express-async-handler';
-import { User, Group } from '../db';
+import { User, Group, Board } from '../db';
 
 export const getProfile = ash (async (req, res) => {
   const { name } = req.params;
@@ -16,10 +16,16 @@ export const getProfile = ash (async (req, res) => {
       .populate ('likes')
       .execPopulate ();
 
+    const [boardId] = user.boards;
+    const board = await Board.findById (boardId)
+      .populate ('pins');
+
     const likesNum = result.likes.length;
+    const pinsNum = board.pins.length;
     return res.json ({
       ...result.toJSON (),
       likesNum,
+      pinsNum,
     });
   }
   if (group) {
