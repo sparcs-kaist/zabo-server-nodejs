@@ -1,6 +1,7 @@
 import ash from 'express-async-handler';
 import { Group, User } from '../db';
 import { logger } from '../utils/logger';
+import { validateNameAndRes } from '../utils';
 
 // get /user/
 export const getUserInfo = ash (async (req, res) => {
@@ -25,23 +26,11 @@ export const updateUserInfo = ash (async (req, res) => {
     username,
     description,
   );
-  if (!username) {
-    return res.status (400).json ({
-      error: 'username required',
-    });
-  }
   const updateParams = { description };
   const self = await User.findOne ({ sso_sid: sid });
   if (self.username !== username) {
-    const [userTaken, groupTaken] = await Promise.all ([
-      User.findOne ({ username }),
-      Group.findOne ({ name: username }),
-    ]);
-    if (userTaken || groupTaken) {
-      return res.status (400).json ({
-        error: `'${username}' has already been taken.`,
-      });
-    }
+    const error = await validateNameAndRes (username, req, res);
+    if (error) return error;
     updateParams.username = username;
   }
   // Ignore very rare timing issue which is unlikely to happen.

@@ -1,6 +1,7 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
 import { Group, User } from '../db';
+import { validateNameAndRes } from '../utils';
 
 // get /group/:groupId
 export const getGroupInfo = ash (async (req, res) => {
@@ -13,21 +14,10 @@ export const updateGroupInfo = ash (async (req, res) => {
   const { groupName, group } = req;
   const { name, description } = req.body;
   logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description}`);
-  if (!name) {
-    return res.status (400).json ({
-      error: 'group name required',
-    });
-  }
   if (group.name !== name) {
-    const [userTaken, groupTaken] = await Promise.all ([
-      User.findOne ({ username: name }),
-      Group.findOne ({ name }),
-    ]);
-    if (userTaken || groupTaken) {
-      return res.status (400).json ({
-        error: `'${name}' has already been taken.`,
-      });
-    }
+    const error = await validateNameAndRes (name, req, res);
+    if (error) return error;
+
     group.revisionHistory.push ({
       prev: group.name,
       next: name,
