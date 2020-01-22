@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import {
-  userSchema, zaboSchema, boardSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema,
+  adminUserSchema, userSchema, zaboSchema, boardSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema,
 } from './methods';
 import { logger } from '../utils/logger';
 
@@ -10,7 +10,8 @@ mongoose.connect ('mongodb://localhost/zabo-develop', {
   useFindAndModify: false,
   useCreateIndex: true,
   // sets how many times to try reconnecting (default: 30)
-  reconnectTries: Number.MAX_VALUE,
+  // reconnectTries: Number.MAX_VALUE, // incompatible with the unified topology. http://bit.ly/2D8WfT6
+  useUnifiedTopology: true,
 });
 
 const db = mongoose.connection;
@@ -20,6 +21,7 @@ db.once ('open', () => {
   logger.info (`${boldBlue ('Mongo db successfully connected!!')}`);
 });
 
+export const AdminUser = mongoose.model ('AdminUser', adminUserSchema);
 export const User = mongoose.model ('User', userSchema);
 export const Zabo = mongoose.model ('Zabo', zaboSchema);
 export const Board = mongoose.model ('Board', boardSchema);

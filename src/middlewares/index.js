@@ -1,6 +1,8 @@
 import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
-import { Group, User, Zabo } from '../db';
+import {
+  AdminUser, Group, User, Zabo,
+} from '../db';
 import { logger } from '../utils/logger';
 
 export const authMiddleware = (req, res, next) => {
@@ -54,6 +56,20 @@ export const findUserWithKey = (queryKey, reqKey) => ash (async (req, res, next)
   return next ();
 });
 
+export const isAdmin = ash (async (req, res, next) => {
+  const { sid } = req.decoded;
+  const self = await User.findOne ({ sso_sid: sid });
+  const adminUser = await AdminUser.findOne ({ user: self._id });
+  if (!adminUser) {
+    return res.status (403).json ({
+      error: 'Permission Denied',
+    });
+  }
+  req.adminUser = adminUser;
+  req.self = self;
+  return next ();
+});
+
 export const isZaboOwner = ash (async (req, res, next) => {
   const { sid } = req.decoded;
   const { zaboId } = req.params;
@@ -61,14 +77,14 @@ export const isZaboOwner = ash (async (req, res, next) => {
     User.findOne ({ sso_sid: sid }),
     Zabo.findById (zaboId),
   ]);
-  req.self = self;
-  req.zabo = zabo;
   const found = self.groups.find (group => zabo.owner.equals (group));
   if (!found) {
     return res.status (403).json ({
       error: 'Permission Denied',
     });
   }
+  req.self = self;
+  req.zabo = zabo;
   return next ();
 });
 

@@ -6,7 +6,7 @@ import { logger } from '../utils/logger';
 // TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
-  const { user, studentId } = req;
+  const { user, studentId, adminUser } = req;
   const { name } = req.body;
   logger.api.info ('post /admin/group request; name: %s, studentId: %s', name, studentId);
   if (!name) {
@@ -26,8 +26,15 @@ export const createGroup = ash (async (req, res) => {
   // Ignore very rare timing issue which is unlikely to happen.
   const group = await Group.create ({ name, members: [{ user: user._id, isAdmin: true }] });
   user.groups.push (group._id);
-  await user.save ();
-  console.log ({ user });
+  adminUser.actionHistory.push ({
+    name: 'createGroup',
+    target: group._id,
+    info: { name, studentId },
+  });
+  await Promise.all ([
+    user.save (),
+    adminUser.save (),
+  ]);
   return res.json (group);
 });
 

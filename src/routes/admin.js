@@ -1,6 +1,6 @@
 import express from 'express';
 import * as adminControllers from '../controllers/admin';
-import { authMiddleware, findUserWithStudentId } from '../middlewares';
+import { authMiddleware as auth, isAdmin, findUserWithStudentId } from '../middlewares';
 
 const router = express.Router ();
 
@@ -9,11 +9,11 @@ const findUser = (req, res, next) => {
   return findUserWithStudentId (req, res, next);
 };
 
-router.get ('/user/:studentId', findUser, adminControllers.getUserInfo);
-router.post ('/group', findUser, adminControllers.createGroup);
+router.get ('/user/:studentId', auth, isAdmin, findUser, adminControllers.getUserInfo);
+router.post ('/group', auth, isAdmin, findUser, adminControllers.createGroup);
 
 /* Temporary Routes */
-router.post ('/fakeRegister', adminControllers.fakeRegister);
-router.post ('/fakeLogin', adminControllers.fakeLogin);
+router.post ('/fakeRegister', auth, isAdmin, adminControllers.fakeRegister);
+router.post ('/fakeLogin', auth, isAdmin, adminControllers.fakeLogin);
 
 module.exports = router;
