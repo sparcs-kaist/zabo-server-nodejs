@@ -18,21 +18,21 @@ export const updateGroupInfo = ash (async (req, res) => {
       error: 'group name required',
     });
   }
-  if (group.name !== groupName) {
+  if (group.name !== name) {
     const [userTaken, groupTaken] = await Promise.all ([
-      User.findOne ({ username: groupName }),
-      Group.findOne ({ name: groupName }),
+      User.findOne ({ username: name }),
+      Group.findOne ({ name }),
     ]);
     if (userTaken || groupTaken) {
       return res.status (400).json ({
-        error: `'${groupName}' has already been taken.`,
+        error: `'${name}' has already been taken.`,
       });
     }
     group.revisionHistory.push ({
       prev: group.name,
-      next: groupName,
+      next: name,
     });
-    group.name = groupName;
+    group.name = name;
   }
   group.description = description;
   await group.save ();
