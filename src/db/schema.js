@@ -127,6 +127,10 @@ export const boardSchema = new mongoose.Schema ({
   description: String,
   category: String,
   isPrivate: Boolean,
+  pins: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Pin',
+  }],
 }, {
   timestamps: true,
 });

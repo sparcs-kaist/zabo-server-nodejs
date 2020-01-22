@@ -7,7 +7,7 @@ import { stat } from '../utils/statistic';
 import { isValidId } from '../utils';
 
 import {
-  Pin, User, Zabo, Like,
+  Pin, User, Zabo, Like, Board,
 } from '../db';
 
 export const getZabo = ash (async (req, res) => {
@@ -33,11 +33,13 @@ export const getZabo = ash (async (req, res) => {
     stat.GET_ZABO (req);
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto')
-      .populate ('likes');
+      .populate ('likes')
+      .populate ('pins');
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
       .populate ('owner', 'name profilePhoto')
-      .populate ('likes');
+      .populate ('likes')
+      .populate ('pins');
   }
 
   if (!zabo) {
@@ -58,6 +60,8 @@ export const getZabo = ash (async (req, res) => {
 
     // zabo.likes
     result.isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
+    // zabo.pins
+    result.isPinned = !!zabo.pins.find (pin => pin.pinnedBy.equals (user._id));
   }
   return res.json ({
     ...zabo.toJSON (),
@@ -223,19 +227,21 @@ export const pinZabo = ash (async (req, res) => {
   let boardId;
 
   // find boardId of user
-  const user = await User.findOne ({ sso_sid: sid });
+  const user = await User.findOne ({ sso_sid: sid })
+    .populate ('boards');
+
   if (user === null) {
     logger.zabo.error ('post /zabo/pin request error; 404 - user does not exist');
     return res.status (404).json ({
       error: 'user does not exist',
     });
   }
-  [boardId] = user.boards;
 
   const userId = user._id;
 
   // edit zabo pins
-  const zabo = await Zabo.findById (zaboId);
+  const zabo = await Zabo.findById (zaboId)
+    .populate ('pins');
   if (zabo === null) {
     logger.zabo.error ('post /zabo/pin request error; 404 - zabo does not exist');
     return res.status (404).json ({
@@ -243,19 +249,47 @@ export const pinZabo = ash (async (req, res) => {
     });
   }
 
-  const newPin = new Pin ({
-    pinnedBy: userId,
-    zaboId,
-    boardId,
-  });
+  // currently user has only 1 boardObject!
+  [boardId] = user.boards;
 
-  // save new pin
-  const pin = await newPin.save ();
+  const board = await Board.findById (boardId)
+    .populate ('pins');
 
-  zabo.pins.push (pin._id);
+  const isPinned = !!board.pins.find (pin => pin.zaboId.equals (zaboId));
+
+  if (!isPinned) {
+    // create zabo pin
+    const newPin = new Pin ({
+      pinnedBy: userId,
+      zaboId,
+      boardId,
+    });
+
+    // save new pin
+    const pin = await newPin.save ();
+
+    // update board.pins info
+    board.pins.push (pin._id);
+    await board.save ();
+    // update zabo.pins info
+    zabo.pins.push (pin._id);
+    await zabo.save ();
+
+    return res.send (true);
+  }
+
+  // delete zabo pin
+  const deletedPin = await Pin.findOneAndDelete ({ zaboId, boardId });
+  logger.zabo.info ('post /zabo/pin request; deleted zabo pins: %s', deletedPin);
+
+  const boardNewPins = board.pins.filter (pin => !pin.equals (deletedPin._id));
+  const zaboNewPins = zabo.pins.filter (pin => !pin.equals (deletedPin._id));
+  logger.zabo.info ('delete /zabo/pin request; edited board,zabo pins: %s');
+  board.pins = boardNewPins;
+  zabo.pins = zaboNewPins;
+  await board.save ();
   await zabo.save ();
-
-  return res.send ({ zabo, newPin });
+  return res.send (false);
 });
 
 export const deletePin = ash (async (req, res) => {
@@ -336,7 +370,6 @@ export const likeZabo = ash (async (req, res) => {
     zabo.likes.push (like._id);
     await zabo.save ();
 
-    // return res.send ({ zabo, newLike });
     return res.send (true);
   }
 
@@ -344,12 +377,13 @@ export const likeZabo = ash (async (req, res) => {
   const deletedLike = await Like.findOneAndDelete ({ likedBy: userId, zaboId });
   logger.zabo.info ('post /zabo/like request; deleted like: %s', deletedLike);
 
-  const newLikes = zabo.likes.filter (like => !like.equals (deletedLike._id));
-  logger.zabo.info ('post /zabo/like request; edited user,zabo likes: %s', newLikes);
-  user.likes = newLikes;
-  zabo.likes = newLikes;
+  const userNewLikes = user.likes.filter (like => !like.equals (deletedLike._id));
+  const zaboNewLikes = zabo.likes.filter (like => !like.equals (deletedLike._id));
+  logger.zabo.info ('post /zabo/like request; edited user,zabo likes');
+  user.likes = userNewLikes;
+  zabo.likes = zaboNewLikes;
+  await user.save ();
   await zabo.save ();
 
-  // return res.send ({ zabo });
   return res.send (false);
 });
