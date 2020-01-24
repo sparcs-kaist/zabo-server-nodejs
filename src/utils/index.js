@@ -33,8 +33,8 @@ export const validateName = (name) => {
  */
 export const nameUsabilityCheck = async (name) => {
   const [user, group] = await Promise.all ([
-    User.findOne ({ username: { $regex: new RegExp (name, 'i') } }),
-    Group.findOne ({ name: { $regex: new RegExp (name, 'i') } }),
+    User.findOne ({ username: { $regex: new RegExp (`^${name}$`, 'i') } }),
+    Group.findOne ({ name: { $regex: new RegExp (`^${name}$`, 'i') } }),
   ]);
   return [user, group, (!user && !group)];
 };
