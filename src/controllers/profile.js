@@ -20,12 +20,12 @@ export const getProfile = ash (async (req, res) => {
     const board = await Board.findById (boardId)
       .populate ('pins');
 
-    const likesNum = result.likes.length;
-    const pinsNum = board.pins.length;
+    const likesCount = result.likes.length;
+    const pinsCount = board.pins.length;
     return res.json ({
       ...result.toJSON (),
-      likesNum,
-      pinsNum,
+      likesCount,
+      pinsCount,
     });
   }
   if (group) {
