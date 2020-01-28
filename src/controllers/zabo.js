@@ -228,9 +228,7 @@ export const pinZabo = ash (async (req, res) => {
   logger.zabo.info ('post /zabo/pin request; zaboId: %s, sid: %s', zaboId, sid);
   let boardId;
 
-  // find boardId of user
-  const user = await User.findOne ({ sso_sid: sid })
-    .populate ('boards');
+  const user = await User.findOne ({ sso_sid: sid });
 
   if (user === null) {
     logger.zabo.error ('post /zabo/pin request error; 404 - user does not exist');
@@ -242,8 +240,7 @@ export const pinZabo = ash (async (req, res) => {
   const userId = user._id;
 
   // edit zabo pins
-  const zabo = await Zabo.findById (zaboId)
-    .populate ('pins');
+  const zabo = await Zabo.findById (zaboId);
   if (zabo === null) {
     logger.zabo.error ('post /zabo/pin request error; 404 - zabo does not exist');
     return res.status (404).json ({
@@ -262,21 +259,15 @@ export const pinZabo = ash (async (req, res) => {
 
   if (!wasPinned) {
     // create zabo pin
-    const newPin = new Pin ({
+    const pin = await Pin.create ({
       pinnedBy: userId,
       zaboId,
       boardId,
     });
 
-    // save new pin
-    const pin = await newPin.save ();
-
-    // update board.pins info
     board.pins.push (pin._id);
-    await board.save ();
-    // update zabo.pins info
     zabo.pins.push (pin._id);
-    await zabo.save ();
+    await Promise.all ([board.save (), zabo.save ()]);
 
     result.isPinned = true;
     result.pinnedCount = zabo.pins.length;
@@ -292,8 +283,7 @@ export const pinZabo = ash (async (req, res) => {
   logger.zabo.info ('delete /zabo/pin request; edited board,zabo pins: %s');
   board.pins = boardNewPins;
   zabo.pins = zaboNewPins;
-  await board.save ();
-  await zabo.save ();
+  await Promise.all ([board.save (), zabo.save ()]);
 
   result.isPinned = false;
   result.pinnedCount = zabo.pins.length;
@@ -364,19 +354,14 @@ export const likeZabo = ash (async (req, res) => {
 
   if (!wasLiked) {
     // create zabo like
-    const newLike = new Like ({
+    const like = await Like.create ({
       likedBy: userId,
       zaboId,
     });
 
-    const like = await newLike.save ();
-
-    // update user.likes info
     user.likes.push (like._id);
-    await user.save ();
-    // update zabo.likes info
     zabo.likes.push (like._id);
-    await zabo.save ();
+    await Promise.all ([user.save (), zabo.save ()]);
 
     result.isLiked = true;
     result.likedCount = zabo.likes.length;
@@ -392,8 +377,7 @@ export const likeZabo = ash (async (req, res) => {
   logger.zabo.info ('post /zabo/like request; edited user,zabo likes');
   user.likes = userNewLikes;
   zabo.likes = zaboNewLikes;
-  await user.save ();
-  await zabo.save ();
+  await Promise.all ([user.save (), zabo.save ()]);
 
   result.isLiked = false;
   result.likedCount = zabo.likes.length;

@@ -17,8 +17,7 @@ export const getProfile = ash (async (req, res) => {
       .execPopulate ();
 
     const [boardId] = user.boards;
-    const board = await Board.findById (boardId)
-      .populate ('pins');
+    const board = await Board.findById (boardId);
 
     const likesCount = result.likes.length;
     const pinsCount = board.pins.length;
