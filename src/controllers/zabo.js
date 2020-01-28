@@ -58,10 +58,12 @@ export const getZabo = ash (async (req, res) => {
       });
     }
 
-    // zabo.likes
-    result.isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
-    // zabo.pins
-    result.isPinned = !!zabo.pins.find (pin => pin.pinnedBy.equals (user._id));
+    const zaboLikes = zabo.likes; const
+      zaboPins = zabo.pins;
+    result.isLiked = !!zaboLikes.find (like => like.likedBy.equals (user._id));
+    result.likedCount = zaboLikes.length;
+    result.isPinned = !!zaboPins.find (pin => pin.pinnedBy.equals (user._id));
+    result.pinnedCount = zaboPins.length;
   }
   return res.json ({
     ...zabo.toJSON (),
@@ -255,9 +257,10 @@ export const pinZabo = ash (async (req, res) => {
   const board = await Board.findById (boardId)
     .populate ('pins');
 
-  const isPinned = !!board.pins.find (pin => pin.zaboId.equals (zaboId));
+  const result = {};
+  const wasPinned = !!board.pins.find (pin => pin.zaboId.equals (zaboId));
 
-  if (!isPinned) {
+  if (!wasPinned) {
     // create zabo pin
     const newPin = new Pin ({
       pinnedBy: userId,
@@ -275,7 +278,9 @@ export const pinZabo = ash (async (req, res) => {
     zabo.pins.push (pin._id);
     await zabo.save ();
 
-    return res.send (true);
+    result.isPinned = true;
+    result.pinnedCount = zabo.pins.length;
+    return res.send (result);
   }
 
   // delete zabo pin
@@ -289,7 +294,10 @@ export const pinZabo = ash (async (req, res) => {
   zabo.pins = zaboNewPins;
   await board.save ();
   await zabo.save ();
-  return res.send (false);
+
+  result.isPinned = false;
+  result.pinnedCount = zabo.pins.length;
+  return res.send (result);
 });
 
 export const deletePin = ash (async (req, res) => {
@@ -351,10 +359,10 @@ export const likeZabo = ash (async (req, res) => {
       error: 'zabo does not exist',
     });
   }
+  const result = {};
+  const wasLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
 
-  const isLiked = !!zabo.likes.find (like => like.likedBy.equals (user._id));
-
-  if (!isLiked) {
+  if (!wasLiked) {
     // create zabo like
     const newLike = new Like ({
       likedBy: userId,
@@ -370,7 +378,9 @@ export const likeZabo = ash (async (req, res) => {
     zabo.likes.push (like._id);
     await zabo.save ();
 
-    return res.send (true);
+    result.isLiked = true;
+    result.likedCount = zabo.likes.length;
+    return res.send (result);
   }
 
   // delete zabo like
@@ -385,5 +395,7 @@ export const likeZabo = ash (async (req, res) => {
   await user.save ();
   await zabo.save ();
 
-  return res.send (false);
+  result.isLiked = false;
+  result.likedCount = zabo.likes.length;
+  return res.send (result);
 });
