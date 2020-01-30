@@ -57,6 +57,7 @@ export const zaboSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Like',
   }], // Like
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
@@ -127,9 +128,19 @@ export const userSchema = new mongoose.Schema ({
     type: String,
     enum: [],
   },
+  followings: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Follow',
+  }],
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Follow',
+  }],
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
+  toJSON: { virtuals: true },
 });
 
 export const boardSchema = new mongoose.Schema ({
@@ -146,8 +157,10 @@ export const boardSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Pin',
   }],
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
 });
 
 export const pinSchema = new mongoose.Schema ({
@@ -168,6 +181,7 @@ operations it's the only way to make it scalable. */
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   },
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
 });
@@ -191,6 +205,7 @@ export const groupSchema = new mongoose.Schema ({
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
+  recentUpload: Date,
   members: [{
     user: {
       type: mongoose.Schema.ObjectId,
@@ -198,9 +213,34 @@ export const groupSchema = new mongoose.Schema ({
     },
     isAdmin: Boolean,
   }], // sso_sid of users
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Follow',
+    default: [],
+  }],
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
+});
+
+export const followSchema = new mongoose.Schema ({
+  followee: {
+    required: true,
+    type: mongoose.Schema.ObjectId,
+    refPath: 'onModel',
+  },
+  follower: {
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  onModel: {
+    type: String,
+    required: true,
+    enum: ['User', 'Group'],
+  },
+  __v: { type: Number, select: false },
 });
 
 export const statisticsSchema = new mongoose.Schema ({
@@ -216,6 +256,7 @@ export const statisticsSchema = new mongoose.Schema ({
   data: {
     type: Map,
   },
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
 });
@@ -228,6 +269,7 @@ export const feedbackSchema = new mongoose.Schema ({
   feedback: {
     type: String,
   },
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
 });
@@ -239,6 +281,7 @@ const actionHistory = new mongoose.Schema ({
   },
   target: String,
   info: Map,
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
 });
@@ -249,6 +292,7 @@ export const adminUserSchema = new mongoose.Schema ({
     ref: 'User',
   },
   actionHistory: [actionHistory],
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
 });
