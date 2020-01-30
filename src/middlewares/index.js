@@ -1,6 +1,8 @@
 import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
-import { Group, User, Zabo } from '../db';
+import {
+  AdminUser, Group, User, Zabo,
+} from '../db';
 import { logger } from '../utils/logger';
 
 export const authMiddleware = (req, res, next) => {
@@ -34,6 +36,20 @@ export const jwtParseMiddleware = (req, res, next) => {
     next ();
   });
 };
+
+export const isAdmin = ash (async (req, res, next) => {
+  const { sid } = req.decoded;
+  const self = await User.findOne ({ sso_sid: sid });
+  const adminUser = await AdminUser.findOne ({ user: self._id });
+  if (!adminUser) {
+    return res.status (403).json ({
+      error: 'Permission Denied',
+    });
+  }
+  req.adminUser = adminUser;
+  req.self = self;
+  return next ();
+});
 
 export const findSelfMiddleware = ash (async (req, res, next) => {
   const { sid } = req.decoded;

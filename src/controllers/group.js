@@ -1,6 +1,7 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
 import { Group, User } from '../db';
+import { validateNameAndRes } from '../utils';
 
 // get /group/:groupId
 export const getGroupInfo = ash (async (req, res) => {
@@ -13,28 +14,17 @@ export const updateGroupInfo = ash (async (req, res) => {
   const { groupName, group } = req;
   const { name, description } = req.body;
   logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description}`);
-  if (!name) {
-    return res.status (400).json ({
-      error: 'group name required',
-    });
-  }
-  if (group.name !== groupName) {
-    const [userTaken, groupTaken] = await Promise.all ([
-      User.findOne ({ username: groupName }),
-      Group.findOne ({ name: groupName }),
-    ]);
-    if (userTaken || groupTaken) {
-      return res.status (400).json ({
-        error: `'${groupName}' has already been taken.`,
-      });
-    }
+  if (group.name !== name) {
+    const error = await validateNameAndRes (name, req, res);
+    if (error) return error;
+
     // Use post save hook instead? What if someone use update instead of save while refactoring.
     // Seems bug prune to me. Thus, just explicitly add history in controller
     group.revisionHistory.push ({
       prev: group.name,
-      next: groupName,
+      next: name,
     });
-    group.name = groupName;
+    group.name = name;
   }
   group.description = description;
   await group.save ();

@@ -1,6 +1,27 @@
 import mongoose from 'mongoose';
 import { CATEGORIES, EVENTS } from '../utils/variables';
 
+const actionHistory = new mongoose.Schema ({
+  name: {
+    type: String,
+    required: true,
+  },
+  target: String,
+  info: Map,
+}, {
+  timestamps: true,
+});
+
+export const adminUserSchema = new mongoose.Schema ({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+  actionHistory: [actionHistory],
+}, {
+  timestamps: true,
+});
+
 export const userSchema = new mongoose.Schema ({
   sso_uid: { type: String, unique: true },
   sso_sid: {
@@ -24,6 +45,10 @@ export const userSchema = new mongoose.Schema ({
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
+  isAdmin: { // Only for usage in front.
+    type: Boolean,
+    default: false,
+  },
   /* From SSO */
   gender: String,
   birthday: Date,

@@ -2,32 +2,30 @@ import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import { Board, Group, User } from '../db';
 import { logger } from '../utils/logger';
+import { validateNameAndRes } from '../utils';
 
 // TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
-  const { user, studentId } = req;
+  const { user, studentId, adminUser } = req;
   const { name } = req.body;
   logger.api.info ('post /admin/group request; name: %s, studentId: %s', name, studentId);
-  if (!name) {
-    return res.status (400).json ({
-      error: 'bad request: null name',
-    });
-  }
-  const [userTaken, groupTaken] = await Promise.all ([
-    User.findOne ({ username: name }),
-    Group.findOne ({ name }),
-  ]);
-  if (userTaken || groupTaken) {
-    return res.status (400).json ({
-      error: `'${name}' has already been taken.`,
-    });
-  }
-  // Ignore very rare timing issue which is unlikely to happen.
+
+  const error = await validateNameAndRes (name, req, res);
+  if (error) return error;
+
+  // Ignore very small delay after name usability check
   const group = await Group.create ({ name, members: [{ user: user._id, isAdmin: true }] });
   user.groups.push (group._id);
-  await user.save ();
-  console.log ({ user });
+  adminUser.actionHistory.push ({
+    name: 'createGroup',
+    target: group._id,
+    info: { name, studentId },
+  });
+  await Promise.all ([
+    user.save (),
+    adminUser.save (),
+  ]);
   return res.json (group);
 });
 
