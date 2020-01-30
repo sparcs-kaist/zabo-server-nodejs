@@ -111,7 +111,10 @@ export const listPins = ash (async (req, res, next) => {
     })
     .execPopulate ();
   const zaboIds = self.boards[0].pins.map (pin => pin.zabo).slice (0, 30);
-  const zabos = await Zabo.find ({ _id: { $in: zaboIds } });
+  const zabos = await Zabo.find ({ _id: { $in: zaboIds } })
+    .populate ('owner', 'name profilePhoto')
+    .populate ('likes')
+    .populate ('pins', 'pinnedBy board');
   res.send (zabos);
 });
 
@@ -129,6 +132,9 @@ export const listNextPins = ash (async (req, res) => {
   lastSeenIndex = Math.max (0, lastSeenIndex);
   const lastIndex = Math.min (lastSeenIndex + 30, pins.length - 1);
   const zaboIds = pins.map (pin => pin.zabo).slice (lastSeenIndex, lastIndex);
-  const zabos = await Zabo.find ({ _id: { $in: zaboIds } });
+  const zabos = await Zabo.find ({ _id: { $in: zaboIds } })
+    .populate ('owner', 'name profilePhoto')
+    .populate ('likes')
+    .populate ('pins', 'pinnedBy board');
   res.send (zabos);
 });
