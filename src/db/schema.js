@@ -1,25 +1,66 @@
 import mongoose from 'mongoose';
 import { CATEGORIES, EVENTS } from '../utils/variables';
 
-const actionHistory = new mongoose.Schema ({
-  name: {
-    type: String,
-    required: true,
-  },
-  target: String,
-  info: Map,
-}, {
-  timestamps: true,
-});
-
-export const adminUserSchema = new mongoose.Schema ({
-  user: {
+export const likeSchema = new mongoose.Schema ({
+  likedBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  actionHistory: [actionHistory],
+  zabo: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Zabo',
+  },
+});
+
+export const zaboSchema = new mongoose.Schema ({
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+  owner: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Group',
+  },
+  photos: [{
+    url: String,
+    width: Number,
+    height: Number,
+    // Caution : Pay attention when you add getter into array
+  }],
+  meta: {
+    w: { type: Number, alias: 'meta.mainImageWidth' },
+    h: { type: Number, alias: 'meta.mainImageHeight' },
+  },
+  title: {
+    type: String,
+    required: [true, 'New Post Must Have Title'],
+    maxLength: 100,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  category: [{
+    type: String,
+    // enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
+  }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+  views: Number,
+  endAt: {
+    type: Date,
+    required: true,
+  },
+  pins: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Pin',
+  }], // Pin
+  likes: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Like',
+  }], // Like
 }, {
   timestamps: true,
+  autoIndex: true,
+  toJSON: { virtuals: true },
 });
 
 export const userSchema = new mongoose.Schema ({
@@ -91,58 +132,6 @@ export const userSchema = new mongoose.Schema ({
   autoIndex: true,
 });
 
-export const zaboSchema = new mongoose.Schema ({
-  createdBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  },
-  owner: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Group',
-  },
-  photos: [{
-    url: String,
-    width: Number,
-    height: Number,
-    // Caution : Pay attention when you add getter into array
-  }],
-  meta: {
-    w: { type: Number, alias: 'meta.mainImageWidth' },
-    h: { type: Number, alias: 'meta.mainImageHeight' },
-  },
-  title: {
-    type: String,
-    required: [true, 'New Post Must Have Title'],
-    maxLength: 100,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  category: [{
-    type: String,
-    // enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
-  }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
-  views: Number,
-  endAt: {
-    type: Date,
-    required: true,
-  },
-  pins: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'Pin',
-  }], // Pin
-  likes: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'Like',
-  }], // Like
-}, {
-  timestamps: true,
-  autoIndex: true,
-  toJSON: { virtuals: true },
-});
-
-
 export const boardSchema = new mongoose.Schema ({
   title: {
     type: String,
@@ -181,17 +170,6 @@ operations it's the only way to make it scalable. */
   },
 }, {
   timestamps: true,
-});
-
-export const likeSchema = new mongoose.Schema ({
-  likedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  },
-  zabo: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Zabo',
-  },
 });
 
 const revisionHistorySchema = new mongoose.Schema ({
@@ -250,6 +228,27 @@ export const feedbackSchema = new mongoose.Schema ({
   feedback: {
     type: String,
   },
+}, {
+  timestamps: true,
+});
+
+const actionHistory = new mongoose.Schema ({
+  name: {
+    type: String,
+    required: true,
+  },
+  target: String,
+  info: Map,
+}, {
+  timestamps: true,
+});
+
+export const adminUserSchema = new mongoose.Schema ({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+  actionHistory: [actionHistory],
 }, {
   timestamps: true,
 });
