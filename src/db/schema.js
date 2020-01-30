@@ -139,6 +139,7 @@ export const zaboSchema = new mongoose.Schema ({
 }, {
   timestamps: true,
   autoIndex: true,
+  toJSON: { virtuals: true },
 });
 
 
@@ -152,6 +153,10 @@ export const boardSchema = new mongoose.Schema ({
   description: String,
   category: String,
   isPrivate: Boolean,
+  pins: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Pin',
+  }],
 }, {
   timestamps: true,
 });
@@ -166,11 +171,11 @@ operations it's the only way to make it scalable. */
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   }, // _id of user
-  zaboId: {
+  zabo: {
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
   },
-  boardId: {
+  board: {
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   },
@@ -183,7 +188,7 @@ export const likeSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  zaboId: {
+  zabo: {
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
   },

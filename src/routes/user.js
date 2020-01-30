@@ -1,18 +1,18 @@
 import express from 'express';
 import * as uc from '../controllers/user';
 import {
-  findGroup as fg,
+  findGroupMiddleware,
   authMiddleware as auth,
-  isGroupMember as gm,
+  isGroupMemberMiddleware,
 } from '../middlewares';
 import { userBakupload, userProfileUpload } from '../utils/aws';
 
 const router = express.Router ();
 
 // params validator
-const findGroup = (req, res, next) => {
+const findGroupWithParams = (req, res, next) => {
   req.groupName = req.params.groupName;
-  return fg (req, res, next);
+  return findGroupMiddleware (req, res, next);
 };
 
 /* GET users listing. */
@@ -20,6 +20,6 @@ router.get ('/', auth, uc.getUserInfo);
 router.post ('/', auth, uc.updateUserInfo);
 router.post ('/profile', auth, userProfileUpload.single ('img'), uc.updateProfilePhoto);
 router.post ('/background', auth, userBakupload.single ('img'), uc.updateBakPhoto);
-router.post ('/currentGroup/:groupName', auth, findGroup, gm, uc.setCurrentGroup);
+router.post ('/currentGroup/:groupName', auth, findGroupWithParams, isGroupMemberMiddleware, uc.setCurrentGroup);
 
 module.exports = router;

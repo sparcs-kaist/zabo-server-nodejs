@@ -44,6 +44,16 @@ groupSchema.index ({
   },
 });
 
+zaboSchema.virtual ('likesCount')
+  .get (function () {
+    return this.likes.length;
+  });
+
+zaboSchema.virtual ('pinsCount')
+  .get (function () {
+    return this.pins.length;
+  });
+
 zaboSchema.statics = {
   async searchPartial (q) {
     return this.find ({

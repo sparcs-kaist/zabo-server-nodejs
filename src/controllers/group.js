@@ -18,6 +18,8 @@ export const updateGroupInfo = ash (async (req, res) => {
     const error = await validateNameAndRes (name, req, res);
     if (error) return error;
 
+    // Use post save hook instead? What if someone use update instead of save while refactoring.
+    // Seems bug prune to me. Thus, just explicitly add history in controller
     group.revisionHistory.push ({
       prev: group.name,
       next: name,
