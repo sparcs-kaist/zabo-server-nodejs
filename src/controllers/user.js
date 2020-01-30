@@ -1,7 +1,9 @@
 import ash from 'express-async-handler';
-import { Group, User } from '../db';
+import {
+  Group, Pin, User, Zabo,
+} from '../db';
 import { logger } from '../utils/logger';
-import { validateNameAndRes } from '../utils';
+import { isValidId, validateNameAndRes } from '../utils';
 
 // get /user/
 export const getUserInfo = ash (async (req, res) => {
@@ -96,4 +98,38 @@ export const setCurrentGroup = ash (async (req, res) => {
   self.currentGroup = group._id;
   await self.save ();
   res.json (group);
+});
+
+export const listPins = ash (async (req, res, next) => {
+  const { self } = req;
+  const { lastSeen } = req.query;
+  if (lastSeen) return next ();
+  await self
+    .populate ({
+      path: 'boards',
+      populate: 'pins',
+    })
+    .execPopulate ();
+  console.log (self);
+  const zaboIds = self.boards[0].pins.map (pin => pin.zabo).slice (0, 30);
+  const zabos = await Zabo.find ({ _id: { $in: zaboIds } });
+  res.send (zabos);
+});
+
+export const listNextPins = ash (async (req, res) => {
+  const { self } = req;
+  const { lastSeen } = req.query;
+  await self
+    .populate ({
+      path: 'boards',
+      populate: 'pins',
+    })
+    .execPopulate ();
+  const { pins } = self.boards[0];
+  let lastSeenIndex = pins.findIndex (pin => pin.zabo.equals (lastSeen));
+  lastSeenIndex = Math.max (0, lastSeenIndex);
+  const lastIndex = Math.min (lastSeenIndex + 30, pins.length - 1);
+  const zaboIds = pins.map (pin => pin.zabo).slice (lastSeenIndex, lastIndex);
+  const zabos = await Zabo.find ({ _id: { $in: zaboIds } });
+  res.send (zabos);
 });
