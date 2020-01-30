@@ -110,7 +110,6 @@ export const listPins = ash (async (req, res, next) => {
       populate: 'pins',
     })
     .execPopulate ();
-  console.log (self);
   const zaboIds = self.boards[0].pins.map (pin => pin.zabo).slice (0, 30);
   const zabos = await Zabo.find ({ _id: { $in: zaboIds } });
   res.send (zabos);
