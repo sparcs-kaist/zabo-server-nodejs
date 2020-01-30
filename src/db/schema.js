@@ -146,11 +146,11 @@ operations it's the only way to make it scalable. */
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   }, // _id of user
-  zaboId: {
+  zabo: {
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
   },
-  boardId: {
+  board: {
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   },
@@ -163,7 +163,7 @@ export const likeSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  zaboId: {
+  zabo: {
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
   },

@@ -35,7 +35,20 @@ export const jwtParseMiddleware = (req, res, next) => {
   });
 };
 
-export const findUserWithKey = (queryKey, reqKey) => ash (async (req, res, next) => {
+export const findSelfMiddleware = ash (async (req, res, next) => {
+  const { sid } = req.decoded;
+  const user = await User.findOne ({ sso_sid: sid });
+  if (user === null) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 404 - user does not exist`);
+    return res.status (404).json ({
+      error: 'user does not exist',
+    });
+  }
+  req.self = user;
+  return next ();
+});
+
+export const findUserWithKeyMiddleware = (queryKey, reqKey) => ash (async (req, res, next) => {
   const value = req[reqKey || queryKey];
   if (!value) {
     logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty ${reqKey}`);
@@ -53,16 +66,30 @@ export const findUserWithKey = (queryKey, reqKey) => ash (async (req, res, next)
   req.user = user;
   return next ();
 });
+export const findUserWithUsernameMiddleware = findUserWithKeyMiddleware ('username');
+export const findUserWithStudentIdMiddleware = findUserWithKeyMiddleware ('studentId');
 
-export const isZaboOwner = ash (async (req, res, next) => {
-  const { sid } = req.decoded;
-  const { zaboId } = req.params;
-  const [self, zabo] = await Promise.all ([
-    User.findOne ({ sso_sid: sid }),
-    Zabo.findById (zaboId),
-  ]);
-  req.self = self;
+export const findZaboMiddleware = ash (async (req, res, next) => {
+  const { zaboId } = req;
+  if (!zaboId) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty zabo id`);
+    return res.status (400).json ({
+      error: 'bad request: zabo id required',
+    });
+  }
+  const zabo = await Zabo.findById (zaboId);
+  if (!zabo) {
+    logger.api.error (`[${req.method}] ${req.originalUrl}  request error; 404 - zabo id : ${zaboId}`);
+    return res.status (404).json ({
+      error: 'zabo not found',
+    });
+  }
   req.zabo = zabo;
+  return next ();
+});
+
+export const isZaboOwnerMiddleware = ash (async (req, res, next) => {
+  const { zabo, self } = req;
   const found = self.groups.find (group => zabo.owner.equals (group));
   if (!found) {
     return res.status (403).json ({
@@ -72,10 +99,7 @@ export const isZaboOwner = ash (async (req, res, next) => {
   return next ();
 });
 
-export const findUserWithUsername = findUserWithKey ('username');
-export const findUserWithStudentId = findUserWithKey ('studentId');
-
-export const findGroup = ash (async (req, res, next) => {
+export const findGroupMiddleware = ash (async (req, res, next) => {
   const { groupName } = req;
   if (!groupName) {
     logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - null groupName`);
@@ -94,12 +118,9 @@ export const findGroup = ash (async (req, res, next) => {
   return next ();
 });
 
-export const isGroupAdmin = ash (async (req, res, next) => {
-  const { sid } = req.decoded;
-  const { group } = req;
-  const user = await User.findOne ({ sso_sid: sid });
-  req.self = user;
-  if (group.members.find (m => m.isAdmin && (m.user.equals (user._id)))) {
+export const isGroupAdminMiddleware = ash (async (req, res, next) => {
+  const { group, self } = req;
+  if (group.members.find (m => m.isAdmin && (m.user.equals (self._id)))) {
     return next ();
   }
   return res.status (403).json ({
@@ -107,12 +128,9 @@ export const isGroupAdmin = ash (async (req, res, next) => {
   });
 });
 
-export const isGroupMember = ash (async (req, res, next) => {
-  const { sid } = req.decoded;
-  const { group } = req;
-  const user = await User.findOne ({ sso_sid: sid });
-  req.self = user;
-  if (group.members.find (m => (m.user.equals (user._id)))) {
+export const isGroupMemberMiddleware = ash (async (req, res, next) => {
+  const { group, self } = req;
+  if (group.members.find (m => (m.user.equals (self._id)))) {
     return next ();
   }
   return res.status (403).json ({

@@ -1,12 +1,12 @@
 import express from 'express';
 import * as adminControllers from '../controllers/admin';
-import { authMiddleware, findUserWithStudentId } from '../middlewares';
+import { authMiddleware, findUserWithStudentIdMiddleware } from '../middlewares';
 
 const router = express.Router ();
 
 const findUser = (req, res, next) => {
   req.studentId = req.params.studentId || req.body.studentId;
-  return findUserWithStudentId (req, res, next);
+  return findUserWithStudentIdMiddleware (req, res, next);
 };
 
 router.get ('/user/:studentId', findUser, adminControllers.getUserInfo);
