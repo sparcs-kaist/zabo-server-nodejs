@@ -85,6 +85,24 @@ export const findUserWithKeyMiddleware = (queryKey, reqKey) => ash (async (req, 
 export const findUserWithUsernameMiddleware = findUserWithKeyMiddleware ('username');
 export const findUserWithStudentIdMiddleware = findUserWithKeyMiddleware ('studentId');
 
+export const findProfileMiddleware = ash (async (req, res, next) => {
+  const { name } = req;
+  const [user, group] = await Promise.all ([
+    User.findOne ({ username: name }),
+    Group.findOne ({ name }),
+  ]);
+  if (!user && !group) {
+    return res.status (404).json ({
+      error: 'user and group with given name does not exist',
+    });
+  }
+  req.user = user;
+  req.group = group;
+  if (user) req.profile = user;
+  else if (group) req.profile = group;
+  return next ();
+});
+
 export const findZaboMiddleware = ash (async (req, res, next) => {
   const { zaboId } = req;
   if (!zaboId) {
