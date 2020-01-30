@@ -131,7 +131,7 @@ export const listNextPins = ash (async (req, res) => {
   let lastSeenIndex = pins.findIndex (pin => pin.zabo.equals (lastSeen));
   lastSeenIndex = Math.max (0, lastSeenIndex);
   const lastIndex = Math.min (lastSeenIndex + 30, pins.length - 1);
-  const zaboIds = pins.map (pin => pin.zabo).slice (lastSeenIndex, lastIndex);
+  const zaboIds = pins.map (pin => pin.zabo).slice (lastSeenIndex + 1, lastIndex);
   const zabos = await Zabo.find ({ _id: { $in: zaboIds } })
     .populate ('owner', 'name profilePhoto')
     .populate ('likes')
