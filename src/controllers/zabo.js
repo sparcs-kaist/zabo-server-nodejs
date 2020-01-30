@@ -223,7 +223,7 @@ export const pinZabo = ash (async (req, res) => {
   zabo.pins = zabo.pins.filter (pinId => !pinId.equals (deletedPin._id));
   await Promise.all ([board.save (), zabo.save ()]);
   return res.send ({
-    isPinned: true,
+    isPinned: false,
     pinsCount: zabo.pins.length,
   });
 });
