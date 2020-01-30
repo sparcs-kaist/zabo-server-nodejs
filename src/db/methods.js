@@ -1,5 +1,5 @@
 import {
-  adminUserSchema, boardSchema, userSchema, zaboSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema,
+  adminUserSchema, boardSchema, userSchema, zaboSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
 } from './schema';
 
 userSchema.virtual ('name')
@@ -9,6 +9,15 @@ userSchema.virtual ('name')
   .set (function (v) {
     this.lastName = v.substr (0, v.indexOf (' '));
     this.firstName = v.substr (v.indexOf (' ') + 1);
+  });
+
+userSchema.virtual ('stats')
+  .get (function () {
+    return {
+      likesCount: this.likes.length,
+      followingsCount: this.followings.length,
+      followersCount: this.followers.length,
+    };
   });
 
 userSchema.statics.findByName = function (name, cb) {
@@ -23,6 +32,26 @@ userSchema.post ('save', (doc, next) => {
   // console.log("post save user")
   next ();
 });
+
+groupSchema.virtual ('followersCount')
+  .get (function () {
+    return this.followers.length;
+  });
+
+boardSchema.virtual ('pinsCount')
+  .get (function () {
+    return this.pins.length;
+  });
+
+zaboSchema.virtual ('likesCount')
+  .get (function () {
+    return this.likes.length;
+  });
+
+zaboSchema.virtual ('pinsCount')
+  .get (function () {
+    return this.pins.length;
+  });
 
 zaboSchema.index ({
   title: 'text',
@@ -43,16 +72,6 @@ groupSchema.index ({
     description: 1,
   },
 });
-
-zaboSchema.virtual ('likesCount')
-  .get (function () {
-    return this.likes.length;
-  });
-
-zaboSchema.virtual ('pinsCount')
-  .get (function () {
-    return this.pins.length;
-  });
 
 zaboSchema.statics = {
   async searchPartial (q) {
@@ -125,5 +144,5 @@ groupSchema.statics = {
 // })
 
 export {
-  adminUserSchema, userSchema, zaboSchema, boardSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema,
+  adminUserSchema, userSchema, zaboSchema, boardSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
 };
