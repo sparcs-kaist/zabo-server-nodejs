@@ -1,13 +1,10 @@
-import mongoose from 'mongoose';
 import ash from 'express-async-handler';
 import moment from 'moment';
 import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
-import { isValidId } from '../utils';
-
 import {
-  Pin, User, Zabo, Like, Board,
+  Pin, User, Zabo, Like, Group,
 } from '../db';
 
 export const getZabo = ash (async (req, res) => {
@@ -97,7 +94,10 @@ export const postNewZabo = ash (async (req, res) => {
     height: dimensions.height,
   }));
   newZabo.photos = newZabo.photos.concat (photos);
-  await newZabo.save ();
+  await Promise.all ([
+    newZabo.save (),
+    Group.findByIdAndUpdate (self.currentGroup, { $set: { recentUpload: new Date () } }),
+  ]);
   return res.send (newZabo);
 });
 
@@ -197,33 +197,31 @@ export const pinZabo = ash (async (req, res) => {
     })
     .execPopulate ();
   const [board] = self.boards;
-  const wasPinned = !!board.pins.find (pin => pin.zabo.equals (zaboId));
+  const prevPin = board.pins.find (pin => pin.zabo.equals (zaboId));
 
-  if (!wasPinned) {
-    // create zabo pin
-    const pin = await Pin.create ({
-      pinnedBy: self._id,
-      zabo: zaboId,
-      board: board._id,
-    });
-
-    board.pins.push (pin._id);
-    zabo.pins.push (pin._id);
-    await Promise.all ([board.save (), zabo.save ()]);
-
+  if (prevPin) {
+    await Promise.all ([
+      Pin.deleteOne ({ _id: prevPin._id }),
+      board.pins.pull ({ _id: prevPin._id }),
+      zabo.pins.pull ({ _id: prevPin._id }),
+    ]);
     return res.send ({
-      isPinned: true,
+      isPinned: false,
       pinsCount: zabo.pins.length,
     });
   }
+  const pin = await Pin.create ({
+    pinnedBy: self._id,
+    zabo: zaboId,
+    board: board._id,
+  });
 
-  // delete zabo pin
-  const deletedPin = await Pin.findOneAndDelete ({ zabo: zaboId, board: board._id });
-  board.pins = board.pins.filter (pinId => !pinId.equals (deletedPin._id));
-  zabo.pins = zabo.pins.filter (pinId => !pinId.equals (deletedPin._id));
+  board.pins.push (pin._id);
+  zabo.pins.push (pin._id);
   await Promise.all ([board.save (), zabo.save ()]);
+
   return res.send ({
-    isPinned: false,
+    isPinned: true,
     pinsCount: zabo.pins.length,
   });
 });
@@ -235,31 +233,31 @@ export const likeZabo = ash (async (req, res) => {
     self.populate ('likes').execPopulate (),
     zabo.populate ('likes').execPopulate (),
   ]);
-  const wasLiked = !!zabo.likes.find (like => like.likedBy.equals (self._id));
+  const prevLike = zabo.likes.find (like => like.likedBy.equals (self._id));
 
-  if (!wasLiked) {
-    const like = await Like.create ({
-      likedBy: self._id,
-      zabo: zaboId,
-    });
-
-    self.likes.push (like._id);
-    zabo.likes.push (like._id);
-    await Promise.all ([self.save (), zabo.save ()]);
-
+  if (prevLike) {
+    await Promise.all ([
+      Like.deleteOne ({ _id: prevLike._id }),
+      self.likes.pull ({ _id: prevLike._id }),
+      zabo.likes.pull ({ _id: prevLike._id }),
+    ]);
     return res.send ({
-      isLiked: true,
+      isLiked: false,
       likesCount: zabo.likes.length,
     });
   }
 
-  // delete zabo like
-  const deletedLike = await Like.findOneAndDelete ({ likedBy: self._id, zabo: zaboId });
-  self.likes = self.likes.filter (like => !like.equals (deletedLike._id));
-  zabo.likes = zabo.likes.filter (like => !like.equals (deletedLike._id));
+  const like = await Like.create ({
+    likedBy: self._id,
+    zabo: zaboId,
+  });
+
+  self.likes.push (like._id);
+  zabo.likes.push (like._id);
   await Promise.all ([self.save (), zabo.save ()]);
+
   return res.send ({
-    isLiked: false,
+    isLiked: true,
     likesCount: zabo.likes.length,
   });
 });
