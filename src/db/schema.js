@@ -114,6 +114,7 @@ export const zaboSchema = new mongoose.Schema ({
 }, {
   timestamps: true,
   autoIndex: true,
+  toJSON: { virtuals: true },
 });
 
 

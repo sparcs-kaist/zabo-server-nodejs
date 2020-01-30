@@ -13,21 +13,11 @@ import {
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
   const { sid } = req.decoded;
-  logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
-
-  if (!mongoose.Types.ObjectId.isValid (zaboId)) {
-    logger.zabo.error ('get /zabo/ request error; 400 - invalid id');
-    return res.status (400).json ({
-      error: 'bad request: invalid id',
-    });
-  }
-
   let newVisit;
   if (!req.session[zaboId] || moment ().isAfter (req.session[zaboId])) {
     newVisit = true;
     req.session[zaboId] = moment ().add (30, 'seconds');
   }
-
   let zabo;
   if (newVisit) {
     stat.GET_ZABO (req);
@@ -41,34 +31,20 @@ export const getZabo = ash (async (req, res) => {
       .populate ('likes')
       .populate ('pins');
   }
-
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
     return res.status (404).json ({
       error: 'not found: zabo does not exist',
     });
   }
-
-  const result = {};
+  const zaboJSON = zabo.toJSON ();
   if (sid) {
+    const { likes, pins } = zabo;
     const user = await User.findOne ({ sso_sid: sid });
-    if (!user.currentGroup) {
-      return res.status (403).json ({
-        error: 'Requested User Is Not Currently Belonging to Any Group',
-      });
-    }
-
-    const zaboLikes = zabo.likes; const
-      zaboPins = zabo.pins;
-    result.isLiked = !!zaboLikes.find (like => like.likedBy.equals (user._id));
-    result.likedCount = zaboLikes.length;
-    result.isPinned = !!zaboPins.find (pin => pin.pinnedBy.equals (user._id));
-    result.pinnedCount = zaboPins.length;
+    zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (user._id));
+    zaboJSON.isPinned = !!pins.find (pin => pin.pinnedBy.equals (user._id));
   }
-  return res.json ({
-    ...zabo.toJSON (),
-    ...result,
-  });
+  return res.json (zaboJSON);
 });
 
 export const postNewZabo = ash (async (req, res) => {
