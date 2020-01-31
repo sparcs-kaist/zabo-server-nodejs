@@ -107,7 +107,11 @@ export const listPins = ash (async (req, res, next) => {
       path: 'boards',
       populate: {
         path: 'pins',
-        populate: 'zabo',
+        populate: {
+          path: 'zabo',
+          populate: 'owner',
+          project: 'name',
+        },
       },
       options: {
         sort: { createdAt: -1 },
