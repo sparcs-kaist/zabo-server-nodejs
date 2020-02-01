@@ -9,7 +9,6 @@ import {
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
-  const { sid } = req.decoded;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   let newVisit;
   if (!req.session[zaboId] || moment ().isAfter (req.session[zaboId])) {
@@ -36,7 +35,8 @@ export const getZabo = ash (async (req, res) => {
     });
   }
   const zaboJSON = zabo.toJSON ();
-  if (sid) {
+  if (req.decoded) {
+    const { sid } = req.decoded;
     const { likes, pins } = zabo;
     const user = await User.findOne ({ sso_sid: sid });
     zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (user._id));
