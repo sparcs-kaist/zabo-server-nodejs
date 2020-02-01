@@ -115,29 +115,15 @@ zaboSchema.statics = {
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
   },
 
-  async search (q) {
+  async search (q, tags) {
     // Currently : tags are searched by 'or'
-    let tags = [];
-    let query;
-    const split = q.trim ().split ('#');
-    tags = split
-      .slice (1)
-      .map (trimmed => trimmed.split (' ')[0]);
-    query = [
-      split[0],
-      ...split
-        .slice (1)
-        .map (trimmed => trimmed.split (' ').slice (1).join (' ')),
-    ]
-      .join (' ')
-      .trim ();
-    const result = await this.searchFull (query, tags, (err, data) => {
+    const result = await this.searchFull (q, tags, (err, data) => {
       if (!err && data.length) {
         return this.callback (err, data);
       }
     });
     if (result.length < 10) {
-      return this.searchPartial (query, tags);
+      return this.searchPartial (q, tags);
     }
     return result;
   },

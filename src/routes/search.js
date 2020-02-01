@@ -18,17 +18,30 @@ router.get ('/', async (req, res) => {
     }
     stat.SEARCH (req);
 
+    let tags = [];
+    let q;
+    const split = query.trim ().split ('#');
+    tags = split
+      .slice (1)
+      .map (trimmed => trimmed.split (' ')[0]);
+    q = [
+      split[0],
+      ...split
+        .slice (1)
+        .map (trimmed => trimmed.split (' ').slice (1).join (' ')),
+    ]
+      .join (' ')
+      .trim ();
+
     // TODO : Cache search result using REDIS
     const results = await Promise.all ([
-      Zabo.search (query),
-      Group.search (query),
+      Zabo.search (q, tags),
+      Group.search (q),
     ]);
 
     results.push (
       TAGS.filter (item => item.indexOf (query) > -1),
     );
-
-    console.log ('results: ', results);
 
     res.json ({
       zabos: results[0],
