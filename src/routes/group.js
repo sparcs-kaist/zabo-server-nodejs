@@ -7,6 +7,8 @@ import {
   isGroupAdminMiddleware,
   isGroupMemberMiddleware,
   findUserWithUsernameMiddleware,
+  jwtParseMiddleware,
+  findSelfIfExist,
 } from '../middlewares';
 import { groupProfileUpload, groupBakUpload } from '../utils/aws';
 
@@ -26,6 +28,7 @@ const findUserWithBody = (req, res, next) => {
 
 const isGroupMember = [authMiddleware, findSelfMiddleware, findGroupWithParams, isGroupMemberMiddleware];
 const isGroupAdmin = [authMiddleware, findSelfMiddleware, findGroupWithParams, isGroupAdminMiddleware, findUserWithBody];
+const tryFindSelf = [jwtParseMiddleware, findSelfIfExist];
 
 router.get ('/:groupName', findGroupWithParams, gc.getGroupInfo);
 router.post ('/:groupName', isGroupMember, gc.updateGroupInfo);
@@ -34,6 +37,7 @@ router.post ('/:groupName/background', isGroupMember, groupBakUpload.single ('im
 router.put ('/:groupName/member', isGroupAdmin, gc.addMember);
 router.post ('/:groupName/member', isGroupAdmin, gc.updateMember);
 router.delete ('/:groupName/member', isGroupAdmin, gc.deleteMember);
+router.get ('/:groupName/zabo/list', tryFindSelf, findGroupWithParams, gc.listGroupZabos, gc.listNextGroupZabos);
 
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
-import { Group, User } from '../db';
+import { Group, User, Zabo } from '../db';
 import { validateNameAndRes } from '../utils';
 
 // get /group/:groupId
@@ -157,3 +157,31 @@ export const deleteMember = ash (async (req, res) => {
   await Promise.all ([group.save (), user.save ()]);
   return res.json (group);
 });
+
+export const listGroupZabos = ash (async (req, res, next) => {
+  const { group } = req;
+  const { lastSeen } = req.query;
+  if (lastSeen) return next ();
+  const zabos = await Zabo.find ({ owner: group._id }, { description: 0 })
+    .sort ({ createdAt: -1 })
+    // .limit (20) // TODO: optimize
+    .populate ('owner', 'name')
+    .populate ('likes')
+    .populate ('pins', 'pinnedBy board');
+  let result = zabos; // TODO: Refactor dups
+  const { self } = req;
+  if (self) {
+    result = zabos.map (zabo => {
+      const zaboJSON = zabo.toJSON ();
+      const { likes, pins } = zabo;
+      return {
+        ...zaboJSON,
+        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
+        isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
+      };
+    });
+  }
+  return res.json (result);
+});
+
+export const listNextGroupZabos = ash (async (req, res) => res.send ([])); // TODO

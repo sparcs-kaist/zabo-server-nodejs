@@ -4,7 +4,7 @@ import { Board, Follow, Zabo } from '../db';
 export const getProfile = ash (async (req, res) => {
   const { user, group } = req;
   if (group) {
-    const zabosCount = await Zabo.count ({ owner: group._id });
+    const zabosCount = await Zabo.countDocuments ({ owner: group._id });
     return res.json ({
       ...group.toJSON ({ virtuals: true }),
       zabosCount,

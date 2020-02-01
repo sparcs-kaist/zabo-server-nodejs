@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import {
-  Pin, User, Zabo, Like, Group,
+  Pin, Zabo, Like, Group,
 } from '../db';
 
 export const getZabo = ash (async (req, res) => {
