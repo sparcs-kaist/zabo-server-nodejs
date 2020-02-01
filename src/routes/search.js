@@ -1,6 +1,6 @@
 import express from 'express';
 import { Group, Zabo } from '../db';
-import { CATEGORIES } from '../utils/variables';
+import { TAGS } from '../utils/variables';
 import { logger } from '../utils/logger';
 import { stat } from '../utils/statistic';
 
@@ -25,8 +25,10 @@ router.get ('/', async (req, res) => {
     ]);
 
     results.push (
-      CATEGORIES.filter (item => item.indexOf (query) > -1),
+      TAGS.filter (item => item.indexOf (query) > -1),
     );
+
+    console.log ('results: ', results);
 
     res.json ({
       zabos: results[0],

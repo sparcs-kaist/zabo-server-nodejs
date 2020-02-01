@@ -74,32 +74,70 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  async searchPartial (q) {
+  async searchPartial (query, tags) {
+    if (tags.length === 0) {
+      return this.find ({
+        $or:
+        [
+          { title: new RegExp (query, 'gi') },
+          { description: new RegExp (query, 'gi') },
+        ],
+      }).limit (20);
+    }
     return this.find ({
       $or:
-  [
-    { title: new RegExp (q, 'gi') },
-    { description: new RegExp (q, 'gi') },
-  ],
+      [
+        {
+          title: new RegExp (query, 'gi'),
+          category: { $in: tags },
+        },
+        {
+          description: new RegExp (query, 'gi'),
+          category: { $in: tags },
+        },
+      ],
     }).limit (20);
   },
 
-  async searchFull (q) {
+  async searchFull (query, tags) {
+    if (tags.length === 0) {
+      return this.find ({
+        $text: { $search: '아주', $caseSensitive: false },
+      }, {
+        score: { $meta: 'textScore' },
+      }).sort ({ score: { $meta: 'textScore' } }).limit (20);
+    }
     return this.find ({
-      $text: { $search: q, $caseSensitive: false },
+      $text: { $search: '아주', $caseSensitive: false },
+      category: { $in: tags },
     }, {
       score: { $meta: 'textScore' },
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
   },
 
   async search (q) {
-    const result = await this.searchFull (q, (err, data) => {
+    // Currently : tags are searched by 'or'
+    let tags = [];
+    let query;
+    const split = q.trim ().split ('#');
+    tags = split
+      .slice (1)
+      .map (trimmed => trimmed.split (' ')[0]);
+    query = [
+      split[0],
+      ...split
+        .slice (1)
+        .map (trimmed => trimmed.split (' ').slice (1).join (' ')),
+    ]
+      .join (' ')
+      .trim ();
+    const result = await this.searchFull (query, tags, (err, data) => {
       if (!err && data.length) {
         return this.callback (err, data);
       }
     });
     if (result.length < 10) {
-      return this.searchPartial (q);
+      return this.searchPartial (query, tags);
     }
     return result;
   },
