@@ -13,8 +13,6 @@ export const getProfile = ash (async (req, res) => {
   if (user) {
     const result = await user
       .populate ('groups')
-      .populate ('currentGroup')
-      .populate ('currentGroup.members')
       .populate ('boards')
       .populate ('likes')
       .execPopulate ();

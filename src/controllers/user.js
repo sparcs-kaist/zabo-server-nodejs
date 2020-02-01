@@ -10,8 +10,6 @@ export const getUserInfo = ash (async (req, res) => {
 
   const user = await User.findOne ({ sso_sid: sid })
     .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
     .populate ('boards');
   res.json (user);
 });
@@ -39,11 +37,7 @@ export const updateUserInfo = ash (async (req, res) => {
   }, {
     upsert: true,
     new: true,
-  })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
+  });
 
   return res.json ({
     username: updatedUser.username,
@@ -62,11 +56,7 @@ export const updateProfilePhoto = ash (async (req, res) => {
     },
   }, {
     new: true,
-  })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
+  });
 
   res.json ({
     profilePhoto: updatedUser.profilePhoto,
@@ -84,11 +74,7 @@ export const updateBakPhoto = ash (async (req, res) => {
     },
   }, {
     new: true,
-  })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
+  });
 
   res.json ({
     backgroundPhoto: updatedUser.backgroundPhoto,

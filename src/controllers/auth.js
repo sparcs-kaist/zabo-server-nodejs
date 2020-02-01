@@ -24,8 +24,6 @@ export const authCheck = async (req, res) => {
     try {
       const user = await User.findOne ({ sso_sid: sid })
         .populate ('groups')
-        .populate ('currentGroup')
-        .populate ('currentGroup.members')
         .populate ('boards');
 
       res.json (user);
@@ -146,8 +144,6 @@ const updateOrCreateUserData = async (userData, create) => {
     setDefaultsOnInsert: true,
   })
     .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
     .populate ('boards');
 
   if (create) {

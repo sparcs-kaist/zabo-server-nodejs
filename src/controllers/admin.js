@@ -33,7 +33,6 @@ export const createGroup = ash (async (req, res) => {
 export const getUserInfo = ash (async (req, res) => {
   const { user } = req;
   const populated = await user
-    .populate ('currentGroup', '_id name profilePhoto')
     .populate ('groups', '_id name profilePhoto')
     .populate ('boards', '_id title isPrivate')
     .execPopulate ();
