@@ -184,7 +184,6 @@ export const listNextZabos = ash (async (req, res) => {
     }
     queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } };
   }
-
   queryOptions = {
     ...queryOptions,
     _id: {
@@ -192,11 +191,8 @@ export const listNextZabos = ash (async (req, res) => {
       $lt: lastSeen,
     },
   };
-  const nextZaboList = await Zabo.find (queryOptions)
-    .sort ({ createdAt: -1 })
-    .limit (30)
-    .populate ('owner', 'name');
-  return res.json (nextZaboList);
+  const result = await queryZabos (req, queryOptions);
+  return res.send (result);
 });
 
 export const pinZabo = ash (async (req, res) => {
@@ -214,10 +210,12 @@ export const pinZabo = ash (async (req, res) => {
   const prevPin = board.pins.find (pin => pin.zabo.equals (zaboId));
 
   if (prevPin) {
+    board.pins.pull ({ _id: prevPin._id });
+    zabo.pins.pull ({ _id: prevPin._id });
     await Promise.all ([
       Pin.deleteOne ({ _id: prevPin._id }),
-      board.pins.pull ({ _id: prevPin._id }),
-      zabo.pins.pull ({ _id: prevPin._id }),
+      board.save (),
+      zabo.save (),
     ]);
     return res.send ({
       isPinned: false,
@@ -250,10 +248,12 @@ export const likeZabo = ash (async (req, res) => {
   const prevLike = zabo.likes.find (like => like.likedBy.equals (self._id));
 
   if (prevLike) {
+    self.likes.pull ({ _id: prevLike._id });
+    zabo.likes.pull ({ _id: prevLike._id });
     await Promise.all ([
       Like.deleteOne ({ _id: prevLike._id }),
-      self.likes.pull ({ _id: prevLike._id }),
-      zabo.likes.pull ({ _id: prevLike._id }),
+      self.save (),
+      zabo.save (),
     ]);
     return res.send ({
       isLiked: false,
