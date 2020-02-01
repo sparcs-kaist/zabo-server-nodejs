@@ -35,12 +35,11 @@ export const getZabo = ash (async (req, res) => {
     });
   }
   const zaboJSON = zabo.toJSON ();
-  if (req.decoded) {
-    const { sid } = req.decoded;
+  const { self } = req;
+  if (self) {
     const { likes, pins } = zabo;
-    const user = await User.findOne ({ sso_sid: sid });
-    zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (user._id));
-    zaboJSON.isPinned = !!pins.find (pin => pin.pinnedBy.equals (user._id));
+    zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (self._id));
+    zaboJSON.isPinned = !!pins.find (pin => pin.pinnedBy.equals (self._id));
   }
   return res.json (zaboJSON);
 });
@@ -130,13 +129,34 @@ export const deleteZabo = ash (async (req, res) => {
   return res.send (true);
 });
 
+const queryZabos = async (req, queryOptions) => {
+  const zabos = await Zabo.find (queryOptions)
+    .sort ({ createdAt: -1 })
+    .limit (20)
+    .populate ('owner', 'name')
+    .populate ('likes')
+    .populate ('pins', 'pinnedBy board');
+
+  let result = zabos;
+  const { self } = req;
+  if (self) {
+    result = zabos.map (zabo => {
+      const zaboJSON = zabo.toJSON ();
+      const { likes, pins } = zabo;
+      return {
+        ...zaboJSON,
+        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
+        isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
+      };
+    });
+  }
+  return result;
+};
+
 export const listZabos = ash (async (req, res, next) => {
   const { lastSeen, relatedTo } = req.query;
-
   if (lastSeen) return next ();
-
   let queryOptions = {};
-
   if (relatedTo) {
     const zabo = await Zabo.findOne ({ _id: relatedTo });
     if (!zabo) {
@@ -147,19 +167,13 @@ export const listZabos = ash (async (req, res, next) => {
     }
     queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } };
   }
-
-  const zabos = await Zabo.find (queryOptions)
-    .sort ({ createdAt: -1 })
-    .limit (20)
-    .populate ('owner', 'name');
-  return res.send (zabos);
+  const result = await queryZabos (req, queryOptions);
+  return res.send (result);
 });
 
 export const listNextZabos = ash (async (req, res) => {
   const { lastSeen, relatedTo } = req.query;
-
   let queryOptions = {};
-
   if (relatedTo) {
     const zabo = await Zabo.findOne ({ _id: relatedTo });
     if (!zabo) {

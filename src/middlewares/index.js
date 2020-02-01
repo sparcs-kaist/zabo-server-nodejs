@@ -64,6 +64,11 @@ export const findSelfMiddleware = ash (async (req, res, next) => {
   return next ();
 });
 
+export const findSelfIfExist = ash (async (req, res, next) => {
+  if (!req.decoded) return next ();
+  return findSelfMiddleware (req, res, next);
+});
+
 export const findUserWithKeyMiddleware = (queryKey, reqKey) => ash (async (req, res, next) => {
   const value = req[reqKey || queryKey];
   if (!value) {
