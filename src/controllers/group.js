@@ -1,6 +1,6 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
-import { Group, User, Zabo } from '../db';
+import { Zabo } from '../db';
 import { validateNameAndRes } from '../utils';
 
 // get /group/:groupId
@@ -28,7 +28,11 @@ export const updateGroupInfo = ash (async (req, res) => {
   }
   group.description = description;
   await group.save ();
-  return res.json (group);
+  return res.json ({
+    name,
+    description,
+    revisionHistory: group.revisionHistory,
+  });
 });
 
 // post /group/:groupName/profile
@@ -36,7 +40,9 @@ export const updateProfilePhoto = ash (async (req, res) => {
   const { group } = req;
   group.profilePhoto = req.file.location;
   await group.save ();
-  return res.json (group);
+  return res.json ({
+    profilePhoto: group.profilePhoto,
+  });
 });
 
 // post /group/:groupName/background
@@ -44,7 +50,9 @@ export const updateBakPhoto = ash (async (req, res) => {
   const { group } = req;
   group.backgroundPhoto = req.file.location;
   await group.save ();
-  return res.json (group);
+  return res.json ({
+    backgroundPhoto: group.backgroundPhoto,
+  });
 });
 
 /**
@@ -79,7 +87,9 @@ export const addMember = ash (async (req, res) => {
   user.groups.push (group._id);
   // EVENT: Group added event for user
   await Promise.all ([group.save (), user.save ()]);
-  return res.json (group);
+  return res.json ({
+    members: group.members,
+  });
 });
 
 /**
@@ -119,7 +129,9 @@ export const updateMember = ash (async (req, res) => {
   }
   // EVENT: Group permission updated event for user
   await Promise.all ([group.save (), user.save ()]);
-  return res.json (group);
+  return res.json ({
+    members: group.members,
+  });
 });
 
 // delete /group/:groupName/member
@@ -155,7 +167,9 @@ export const deleteMember = ash (async (req, res) => {
   }
   // EVENT: Removed from group event for user
   await Promise.all ([group.save (), user.save ()]);
-  return res.json (group);
+  return res.json ({
+    members: group.members,
+  });
 });
 
 export const listGroupZabos = ash (async (req, res, next) => {

@@ -45,7 +45,10 @@ export const updateUserInfo = ash (async (req, res) => {
     .populate ('currentGroup.members')
     .populate ('boards');
 
-  return res.json (updatedUser);
+  return res.json ({
+    username: updatedUser.username,
+    description: updatedUser.description,
+  });
 });
 
 // post /user/profile
@@ -65,7 +68,9 @@ export const updateProfilePhoto = ash (async (req, res) => {
     .populate ('currentGroup.members')
     .populate ('boards');
 
-  res.json (updatedUser);
+  res.json ({
+    profilePhoto: updatedUser.profilePhoto,
+  });
 });
 
 // post /user/background
@@ -85,7 +90,9 @@ export const updateBakPhoto = ash (async (req, res) => {
     .populate ('currentGroup.members')
     .populate ('boards');
 
-  res.json (updatedUser);
+  res.json ({
+    backgroundPhoto: updatedUser.backgroundPhoto,
+  });
 });
 
 // post /user/currentGroup/:groupId
@@ -95,7 +102,9 @@ export const setCurrentGroup = ash (async (req, res) => {
   logger.api.info ('post /user/currentGroup/:groupId request; sid: %s, groupName: %s', sid, group.name);
   self.currentGroup = group._id;
   await self.save ();
-  res.json (group);
+  res.json ({
+    currentGroup: self.currentGroup,
+  });
 });
 
 export const listPins = ash (async (req, res, next) => {
