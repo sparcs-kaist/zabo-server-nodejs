@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { CATEGORIES, EVENTS } from '../utils/variables';
+import { TAGS, EVENTS } from '../utils/variables';
 
 export const likeSchema = new mongoose.Schema ({
   likedBy: {
@@ -42,7 +42,7 @@ export const zaboSchema = new mongoose.Schema ({
   },
   category: [{
     type: String,
-    // enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
+    // enum: TAGS, // ["recruit", "seminar", "contest", "event", "show", "fair"]
   }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
   views: Number,
   endAt: {

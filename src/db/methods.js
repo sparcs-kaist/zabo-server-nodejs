@@ -74,32 +74,45 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  async searchPartial (q) {
-    return this.find ({
+  async searchPartial (query, tags) {
+    const queryOptions = {
       $or:
-  [
-    { title: new RegExp (q, 'gi') },
-    { description: new RegExp (q, 'gi') },
-  ],
-    }).limit (20);
+        [
+          {
+            title: new RegExp (query, 'gi'),
+            category: { $in: tags },
+          },
+          {
+            description: new RegExp (query, 'gi'),
+            category: { $in: tags },
+          },
+        ],
+    };
+    if (tags.length === 0) {
+      delete queryOptions.$or[0].category;
+      delete queryOptions.$or[1].category;
+    }
+    return this.find (queryOptions).limit (20);
   },
 
-  async searchFull (q) {
-    return this.find ({
-      $text: { $search: q, $caseSensitive: false },
-    }, {
+  async searchFull (query, tags) {
+    const queryOptions = {
+      $text: { $search: query, $caseSensitive: false },
+      category: { $in: tags },
+    };
+    if (tags.length === 0) {
+      delete queryOptions.category;
+    }
+    return this.find (queryOptions, {
       score: { $meta: 'textScore' },
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
   },
 
-  async search (q) {
-    const result = await this.searchFull (q, (err, data) => {
-      if (!err && data.length) {
-        return this.callback (err, data);
-      }
-    });
+  async search (query, tags) {
+    // Currently : tags are searched by 'or'
+    const result = await this.searchFull (query, tags);
     if (result.length < 10) {
-      return this.searchPartial (q);
+      return this.searchPartial (query, tags);
     }
     return result;
   },
