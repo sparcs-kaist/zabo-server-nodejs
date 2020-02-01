@@ -99,10 +99,10 @@ export const setCurrentGroup = ash (async (req, res) => {
 });
 
 export const listPins = ash (async (req, res, next) => {
-  const { self } = req;
+  const { user } = req;
   const { lastSeen } = req.query;
   if (lastSeen) return next ();
-  await self
+  await user
     .populate ({
       path: 'boards',
       populate: {
@@ -118,7 +118,21 @@ export const listPins = ash (async (req, res, next) => {
       },
     })
     .execPopulate ();
-  return res.send (self.boards[0].pins.map (pin => pin.zabo)); // TODO: Limit and hand it to listNextPins
+  const zabos = user.boards[0].pins.map (pin => pin.zabo);
+  let result = zabos;
+  const { self } = req;
+  if (self) {
+    result = zabos.map (zabo => {
+      const zaboJSON = zabo.toJSON ();
+      const { likes, pins } = zabo;
+      return {
+        ...zaboJSON,
+        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
+        isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
+      };
+    });
+  }
+  return res.send (result); // TODO: Limit and hand it to listNextPins
 });
 
 // const { self } = req;

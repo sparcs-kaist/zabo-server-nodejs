@@ -69,7 +69,7 @@ export const findSelfIfExist = ash (async (req, res, next) => {
   return findSelfMiddleware (req, res, next);
 });
 
-export const findUserWithKeyMiddleware = (queryKey, reqKey) => ash (async (req, res, next) => {
+export const findUserWithKeyMiddleware = (queryKey, reqKey = queryKey) => ash (async (req, res, next) => {
   const value = req[reqKey || queryKey];
   if (!value) {
     logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty ${reqKey}`);
