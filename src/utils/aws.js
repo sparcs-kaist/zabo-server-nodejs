@@ -24,11 +24,13 @@ const options = {
   },
 };
 
+let zaboCount = 13642; // TODO: Date.now ()가 같은 값이 중복되는 문제가 있어서 임시로 카운터를 생성했음. 서버 확장성에 문제가 되므로 후에 제거.
 export const zaboUpload = multer ({
   storage: multerS3 ({
     ...options,
     key: (req, file, cb) => {
-      const filename = Date.now ().toString ();
+      const filename = `${zaboCount}${Date.now ().toString ()}`;
+      zaboCount += 1;
       const fullPath = `zabo/zabo-${filename}`;
       cb (null, fullPath);
     },
