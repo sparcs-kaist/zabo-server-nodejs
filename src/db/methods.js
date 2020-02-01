@@ -75,55 +75,44 @@ groupSchema.index ({
 
 zaboSchema.statics = {
   async searchPartial (query, tags) {
-    if (tags.length === 0) {
-      return this.find ({
-        $or:
-        [
-          { title: new RegExp (query, 'gi') },
-          { description: new RegExp (query, 'gi') },
-        ],
-      }).limit (20);
-    }
-    return this.find ({
+    const queryOptions = {
       $or:
-      [
-        {
-          title: new RegExp (query, 'gi'),
-          category: { $in: tags },
-        },
-        {
-          description: new RegExp (query, 'gi'),
-          category: { $in: tags },
-        },
-      ],
-    }).limit (20);
+        [
+          {
+            title: new RegExp (query, 'gi'),
+            category: { $in: tags },
+          },
+          {
+            description: new RegExp (query, 'gi'),
+            category: { $in: tags },
+          },
+        ],
+    };
+    if (tags.length === 0) {
+      delete queryOptions.$or[0].category;
+      delete queryOptions.$or[1].category;
+    }
+    return this.find (queryOptions).limit (20);
   },
 
   async searchFull (query, tags) {
-    if (tags.length === 0) {
-      return this.find ({
-        $text: { $search: '아주', $caseSensitive: false },
-      }, {
-        score: { $meta: 'textScore' },
-      }).sort ({ score: { $meta: 'textScore' } }).limit (20);
-    }
-    return this.find ({
-      $text: { $search: '아주', $caseSensitive: false },
+    const queryOptions = {
+      $text: { $search: query, $caseSensitive: false },
       category: { $in: tags },
-    }, {
+    };
+    if (tags.length === 0) {
+      delete queryOptions.category;
+    }
+    return this.find (queryOptions, {
       score: { $meta: 'textScore' },
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
   },
 
-  async search (q, tags) {
+  async search (query, tags) {
     // Currently : tags are searched by 'or'
-    const result = await this.searchFull (q, tags, (err, data) => {
-      if (!err && data.length) {
-        return this.callback (err, data);
-      }
-    });
+    const result = await this.searchFull (query, tags);
     if (result.length < 10) {
-      return this.searchPartial (q, tags);
+      return this.searchPartial (query, tags);
     }
     return result;
   },
