@@ -26,7 +26,7 @@ We're expecting anyone satisfying above conditions posting there recruiting anno
 
 Please contact SPARCS KAIST to get more detailed information.
 
-If you're looking for frontend codes, you can find it in [here](https://github..com/sparcs-kaist/zabo-front-reactjs)
+If you're looking for frontend codes, you can find it in [here](https://github.com/sparcs-kaist/zabo-front-reactjs)
 
 ### API Specification
 
