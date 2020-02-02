@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import ash from 'express-async-handler';
 
 import { Board, User, Group } from '../db';
 
@@ -8,7 +9,7 @@ import { parseJSON } from '../utils';
 import { stat } from '../utils/statistic';
 import { logger } from '../utils/logger';
 
-export const authCheck = async (req, res) => {
+export const authCheck = ash (async (req, res) => {
   const jwtSecret = req.app.get ('jwt-secret');
   const token = (req.headers.authorization || '').substring (7);
   jwt.verify (token, jwtSecret, async (error, decoded) => {
@@ -21,32 +22,23 @@ export const authCheck = async (req, res) => {
     }
     req.decoded = decoded;
     const { sid } = decoded;
-    try {
-      const user = await User.findOne ({ sso_sid: sid })
-        .populate ('groups')
-        .populate ('boards');
+    const user = await User.findOne ({ sso_sid: sid })
+      .populate ({
+        path: 'groups',
+        select: 'name profilePhoto followers recentUpload',
+      })
+      .populate ('boards');
 
-      res.json (user);
-    } catch (error) {
-      logger.error (error);
-      res.sendStatus (500);
-    }
+    res.json (user);
   });
-};
+});
 
-export const login = (req, res) => {
-  try {
-    const { url, state } = SSOClient.getLoginParams ();
-    logger.api.info ('get /auth/login request; url: %s, state: %s', url, state);
-    req.session.state = state;
-    res.redirect (url);
-  } catch (error) {
-    logger.api.error (error);
-    return res.status (500).json ({
-      error: error.message,
-    });
-  }
-};
+export const login = ash ((req, res) => {
+  const { url, state } = SSOClient.getLoginParams ();
+  logger.api.info ('get /auth/login request; url: %s, state: %s', url, state);
+  req.session.state = state;
+  res.redirect (url);
+});
 
 // TODO: Performance issue. Any better idea?
 const generateUsernameWithPostfix = async (username) => {
@@ -143,7 +135,10 @@ const updateOrCreateUserData = async (userData, create) => {
     new: true,
     setDefaultsOnInsert: true,
   })
-    .populate ('groups')
+    .populate ({
+      path: 'groups',
+      select: 'name profilePhoto followers recentUpload',
+    })
     .populate ('boards');
 
   if (create) {
@@ -155,58 +150,58 @@ const updateOrCreateUserData = async (userData, create) => {
 
 const register = async (userData) => updateOrCreateUserData (userData, true);
 
-export const loginCallback = async (req, res) => {
-  try {
-    const stateBefore = req.session.state;
-    const { state, code, update } = req.body;
-    logger.api.info ('get /auth/callback request; state: %s, code: %s, update: %s', state, code, update);
-    const jwtSecret = req.app.get ('jwt-secret');
+export const loginCallback = ash (async (req, res) => {
+  const stateBefore = req.session.state;
+  const { state, code, update } = req.body;
+  logger.api.info ('get /auth/callback request; state: %s, code: %s, update: %s', state, code, update);
+  const jwtSecret = req.app.get ('jwt-secret');
 
-    if (stateBefore !== state) {
+  if (stateBefore !== state) {
+    res.status (401).json ({
+      error: 'TOKEN MISMATCH: session might be hijacked!',
+      status: 401,
+    });
+    return;
+  }
+  const userData = await SSOClient.getUserInfo (code);
+  let user = await User.findOne ({ sso_sid: userData.sid })
+    .populate ({
+      path: 'groups',
+      select: 'name profilePhoto followers recentUpload',
+    })
+    .populate ('boards');
+  // User wants to refresh SSO data
+  if (update) {
+    if (!user) {
       res.status (401).json ({
-        error: 'TOKEN MISMATCH: session might be hijacked!',
+        error: 'Please register first.',
         status: 401,
       });
       return;
     }
-    const userData = await SSOClient.getUserInfo (code);
-    let user = await User.findOne ({ sso_sid: userData.sid });
-    // User wants to refresh SSO data
-    if (update) {
-      if (!user) {
-        res.status (401).json ({
-          error: 'Please register first.',
-          status: 401,
-        });
-        return;
-      }
-      user = await updateOrCreateUserData (userData, false);
-    }
-    if (!user) {
-      user = await register (userData);
-    }
-
-    const token = jwt.sign ({
-      id: user._id,
-      sid: user.sso_sid,
-      email: user.email,
-      username: user.username,
-    }, jwtSecret, {
-      expiresIn: '60d',
-      issuer: 'zabo-sparcs-kaist',
-    });
-
-    res.json ({
-      token,
-      user,
-    });
-  } catch (error) {
-    logger.error (error);
-    res.sendStatus (500);
+    user = await updateOrCreateUserData (userData, false);
   }
-};
+  if (!user) {
+    user = await register (userData);
+  }
 
-export const logout = async (req, res) => {
+  const token = jwt.sign ({
+    id: user._id,
+    sid: user.sso_sid,
+    email: user.email,
+    username: user.username,
+  }, jwtSecret, {
+    expiresIn: '60d',
+    issuer: 'zabo-sparcs-kaist',
+  });
+
+  res.json ({
+    token,
+    user,
+  });
+});
+
+export const logout = (req, res) => {
   const { sid } = req.session;
   const { token } = req.session;
   const jwtSecret = req.app.get ('jwt-secret');

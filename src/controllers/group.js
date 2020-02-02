@@ -68,14 +68,15 @@ export const addMember = ash (async (req, res) => {
   const {
     self, groupName, group, user,
   } = req;
-  let { isAdmin } = req.body;
-  isAdmin = isAdmin === 'true';
+  const { role } = req.body;
   logger.api.info (
-    'put /group/:groupName/member request; groupName: %s, from: %s, target: %s, isAdmin: %s',
+    'put /group/:groupName/member request; groupName: %s, from: %s (%s), target: %s (%s), role: %s',
     groupName,
     self.username,
+    self._id,
     user.username,
-    isAdmin,
+    user._id,
+    role,
   );
   const member = group.members.find (m => (m.user.equals (user._id)));
   if (member) {
@@ -83,10 +84,16 @@ export const addMember = ash (async (req, res) => {
       error: `${user.username} is already a member.`,
     });
   }
-  group.members.push ({ user: user._id, isAdmin });
+  group.members.push ({ user: user._id, role });
   user.groups.push (group._id);
   // EVENT: Group added event for user
   await Promise.all ([group.save (), user.save ()]);
+  await group
+    .populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    })
+    .execPopulate ();
   return res.json ({
     members: group.members,
   });
@@ -94,25 +101,26 @@ export const addMember = ash (async (req, res) => {
 
 /**
  * Add user as a member if not exist,
- * update isAdmin if already a member,
+ * update role if already a member,
  *
  * req.params.groupName : required
  * req.body.username : required
- * req.body.isAdmin : optional (default to false)
+ * req.body.role : required
  */
 // post /group/:groupName/member
 export const updateMember = ash (async (req, res) => {
   const {
     groupName, group, self, user,
   } = req;
-  let { isAdmin } = req.body;
-  isAdmin = isAdmin === 'true';
+  const { role } = req.body;
   logger.api.info (
-    'post /group/:groupName/member request; groupName: %s, from: %s, target: %s, isAdmin: %s',
+    'post /group/:groupName/member request; groupName: %s, from: %s (%s), target: %s (%s), role: %s',
     groupName,
     self.username,
+    self._id,
     user.username,
-    isAdmin,
+    user._id,
+    role,
   );
   if (self._id.equals (user._id)) {
     logger.api.error ('post /group/:groupName/member request error; 403 - cannot change your own permission');
@@ -120,15 +128,21 @@ export const updateMember = ash (async (req, res) => {
       error: 'forbidden: cannot change your own permission',
     });
   }
-  const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
+  const memberIndex = group.members.findIndex (m => (m.user.equals (user._id)));
   if (memberIndex !== -1) {
-    group.members[memberIndex] = { user: user._id, isAdmin };
+    group.members[memberIndex] = { user: user._id, role };
   } else {
-    group.members.push ({ user: user._id, isAdmin });
+    group.members.push ({ user: user._id, role });
     user.groups.push (group._id);
   }
   // EVENT: Group permission updated event for user
   await Promise.all ([group.save (), user.save ()]);
+  await group
+    .populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    })
+    .execPopulate ();
   return res.json ({
     members: group.members,
   });
@@ -140,33 +154,40 @@ export const deleteMember = ash (async (req, res) => {
     groupName, group, self, user,
   } = req;
   logger.api.info (
-    'delete /group/:groupName/member request; groupName: %s, from: %s, delete: %s',
+    'delete /group/:groupName/member request; groupName: %s, from: %s (%s), target: %s (%s)',
     groupName,
     self.username,
+    self._id,
     user.username,
+    user._id,
   );
 
   if (self._id.equals (user._id)) {
-    logger.api.error ('delete /group/:groupName/member request error; 403 - cannot change your own permission');
+    logger.api.error ('delete /group/:groupName/member request error; 403 - cannot delete yourself');
     return res.status (403).json ({
-      error: 'forbidden: cannot change your own permission',
+      error: 'forbidden: cannot delete yourself',
     });
   }
-
-  const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
-  if (memberIndex === -1) {
+  const member = group.members.find (m => (m.user.equals (user._id)));
+  if (!member) {
     return res.status (404).json ({
       error: `${user.username} is not a member.`,
     });
   }
-  group.members.splice (memberIndex, 1);
+  group.members.pull (member);
   const groupIndex = user.groups.findIndex (groupId => groupId.equals (group._id));
   user.groups.splice (groupIndex, 1);
-  if (user.currentGroup.equals (group._id)) {
+  if (user.currentGroup && user.currentGroup.equals (group._id)) {
     user.currentGroup = null;
   }
   // EVENT: Removed from group event for user
   await Promise.all ([group.save (), user.save ()]);
+  await group
+    .populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    })
+    .execPopulate ();
   return res.json ({
     members: group.members,
   });

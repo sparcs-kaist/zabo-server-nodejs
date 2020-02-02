@@ -6,9 +6,8 @@ import {
   findGroupMiddleware,
   isGroupAdminMiddleware,
   isGroupMemberMiddleware,
-  findUserWithUsernameMiddleware,
-  jwtParseMiddleware,
-  findSelfIfExist,
+  findUserWithUserIdMiddleware,
+  tryFindSelf,
 } from '../middlewares';
 import { groupProfileUpload, groupBakUpload } from '../utils/aws';
 
@@ -22,13 +21,12 @@ const findGroupWithParams = (req, res, next) => {
 
 // body validator
 const findUserWithBody = (req, res, next) => {
-  req.username = req.body.username;
-  return findUserWithUsernameMiddleware (req, res, next);
+  req.userId = req.body.userId;
+  return findUserWithUserIdMiddleware (req, res, next);
 };
 
 const isGroupMember = [authMiddleware, findSelfMiddleware, findGroupWithParams, isGroupMemberMiddleware];
 const isGroupAdmin = [authMiddleware, findSelfMiddleware, findGroupWithParams, isGroupAdminMiddleware, findUserWithBody];
-const tryFindSelf = [jwtParseMiddleware, findSelfIfExist];
 
 router.get ('/:groupName', findGroupWithParams, gc.getGroupInfo);
 router.post ('/:groupName', isGroupMember, gc.updateGroupInfo);

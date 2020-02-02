@@ -1,12 +1,11 @@
 import express from 'express';
 
 import {
-  jwtParseMiddleware,
-  findSelfIfExist,
   authMiddleware,
   findSelfMiddleware,
   findZaboMiddleware,
   isZaboOwnerMiddleware,
+  tryFindSelf,
 } from '../middlewares';
 import { zaboUpload } from '../utils/aws';
 
@@ -21,7 +20,6 @@ const findZaboWithParams = (req, res, next) => {
 
 const findZaboWithAuth = [authMiddleware, findSelfMiddleware, findZaboWithParams];
 const isZaboOwner = [authMiddleware, findSelfMiddleware, findZaboWithParams, isZaboOwnerMiddleware];
-const tryFindSelf = [jwtParseMiddleware, findSelfIfExist];
 
 router.get ('/list', tryFindSelf, zc.listZabos, zc.listNextZabos);
 router.post ('/:zaboId/pin', findZaboWithAuth, zc.pinZabo);

@@ -9,11 +9,13 @@ const findUser = (req, res, next) => {
   return findUserWithStudentIdMiddleware (req, res, next);
 };
 
-router.get ('/user/:studentId', authMiddleware, isAdmin, findUser, adminControllers.getUserInfo);
-router.post ('/group', authMiddleware, isAdmin, findUser, adminControllers.createGroup);
+router.use (authMiddleware, isAdmin);
+
+router.get ('/user/:studentId', findUser, adminControllers.getUserInfo);
+router.post ('/group', findUser, adminControllers.createGroup);
 
 /* Temporary Routes */
-router.post ('/fakeRegister', authMiddleware, isAdmin, adminControllers.fakeRegister);
-router.post ('/fakeLogin', authMiddleware, isAdmin, adminControllers.fakeLogin);
+router.post ('/fakeRegister', adminControllers.fakeRegister);
+router.post ('/fakeLogin', adminControllers.fakeLogin);
 
 module.exports = router;

@@ -2,12 +2,24 @@ import ash from 'express-async-handler';
 import { Board, Follow, Zabo } from '../db';
 
 export const getProfile = ash (async (req, res) => {
-  const { user, group } = req;
+  const { user, group, self } = req;
   if (group) {
     const zabosCount = await Zabo.countDocuments ({ owner: group._id });
+    let myRole = '';
+    if (self) {
+      const selfMember = group.members.find (member => member.user.equals (self._id));
+      myRole = selfMember ? selfMember.role : '';
+    }
+    if (myRole) {
+      await group.populate ({
+        path: 'members.user',
+        select: 'username koreanName lastName firstName _id profilePhoto',
+      }).execPopulate ();
+    } else group.select ('-members');
     return res.json ({
       ...group.toJSON ({ virtuals: true }),
       zabosCount,
+      myRole,
     });
   }
   if (user) {
@@ -26,16 +38,18 @@ export const getProfile = ash (async (req, res) => {
       const count = counts.find (count => groups[i]._id.equals (count._id));
       groups[i].zabosCount = count ? count.count : 0;
     }
-
     const [boardId] = user.boards;
     const board = await Board.findById (boardId);
-
-
     const pinsCount = board.pins.length;
+    let own = false;
+    if (self) {
+      own = self._id.equals (user._id);
+    }
     return res.json ({
       ...result.toJSON ({ virtuals: true }),
       groups,
       pinsCount,
+      own,
     });
   }
   throw new Error ('Cannot reach here');

@@ -1,6 +1,6 @@
 import express from 'express';
 import ash from 'express-async-handler';
-import { Group, Zabo } from '../db';
+import { Group, User, Zabo } from '../db';
 import { TAGS } from '../utils/variables';
 import { logger } from '../utils/logger';
 import { stat } from '../utils/statistic';
@@ -9,7 +9,7 @@ const router = new express.Router ();
 
 router.get ('/', ash (async (req, res) => {
   const { query } = req.query;
-  logger.info ('post /search request; query: %s', query);
+  logger.info ('get /search request; query: %s', query);
   if (!query || !query.trim ()) {
     return res.status (400).send ({
       error: 'Search Keyword Required',
@@ -45,6 +45,19 @@ router.get ('/', ash (async (req, res) => {
     groups: results[1],
     categories: results[2],
   });
+}));
+
+router.get ('/user', ash (async (req, res) => {
+  const { query } = req.query;
+  logger.info ('get /serach/user request; query: %s', query);
+  if (!query || !query.trim ()) {
+    return res.status (400).send ({
+      error: 'Search Keyword Required',
+    });
+  }
+  const users = await User.findByName (query)
+    .select ('username koreanName name _id profilePhoto');
+  res.json (users);
 }));
 
 export default router;
