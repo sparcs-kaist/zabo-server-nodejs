@@ -211,7 +211,10 @@ export const groupSchema = new mongoose.Schema ({
       type: mongoose.Schema.ObjectId,
       ref: 'User',
     },
-    isAdmin: Boolean,
+    role: {
+      type: String,
+      enum: ['admin', 'editor'],
+    },
   }], // sso_sid of users
   followers: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -4,6 +4,7 @@ import {
   authMiddleware,
   findSelfMiddleware,
   findProfileMiddleware,
+  tryFindSelf,
 } from '../middlewares';
 
 const router = express.Router ();
@@ -13,7 +14,7 @@ const findProfile = (req, res, next) => {
   return findProfileMiddleware (req, res, next);
 };
 
-router.get ('/:name', findProfile, profileController.getProfile);
+router.get ('/:name', tryFindSelf, findProfile, profileController.getProfile);
 router.post ('/:name/follow', authMiddleware, findSelfMiddleware, findProfile, profileController.followController);
 
 export default router;

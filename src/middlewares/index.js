@@ -69,6 +69,8 @@ export const findSelfIfExist = ash (async (req, res, next) => {
   return findSelfMiddleware (req, res, next);
 });
 
+export const tryFindSelf = [jwtParseMiddleware, findSelfIfExist];
+
 export const findUserWithKeyMiddleware = (queryKey, reqKey = queryKey) => ash (async (req, res, next) => {
   const value = req[reqKey || queryKey];
   if (!value) {
@@ -159,7 +161,7 @@ export const findGroupMiddleware = ash (async (req, res, next) => {
 
 export const isGroupAdminMiddleware = ash (async (req, res, next) => {
   const { group, self } = req;
-  if (group.members.find (m => m.isAdmin && (m.user.equals (self._id)))) {
+  if (group.members.find (m => m.role === 'admin' && (m.user.equals (self._id)))) {
     return next ();
   }
   return res.status (403).json ({

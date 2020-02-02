@@ -4,7 +4,9 @@ import {
   findSelfMiddleware,
   findGroupMiddleware,
   authMiddleware as auth,
-  isGroupMemberMiddleware, findUserWithUsernameMiddleware, jwtParseMiddleware, findSelfIfExist,
+  isGroupMemberMiddleware,
+  findUserWithUsernameMiddleware,
+  tryFindSelf,
 } from '../middlewares';
 import { userBakupload, userProfileUpload } from '../utils/aws';
 
@@ -20,8 +22,6 @@ const findUserWithParams = (req, res, next) => {
   req.username = req.params.username;
   return findUserWithUsernameMiddleware (req, res, next);
 };
-
-const tryFindSelf = [jwtParseMiddleware, findSelfIfExist];
 
 /* GET users listing. */
 router.get ('/', auth, uc.getUserInfo);
