@@ -15,7 +15,7 @@ export const createGroup = ash (async (req, res) => {
   if (error) return error;
 
   // Ignore very small delay after name usability check
-  const group = await Group.create ({ name, members: [{ user: user._id, isAdmin: true }] });
+  const group = await Group.create ({ name, members: [{ user: user._id, role: 'admin' }] });
   user.groups.push (group._id);
   adminUser.actionHistory.push ({
     name: 'createGroup',
