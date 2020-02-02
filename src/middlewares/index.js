@@ -72,7 +72,7 @@ export const findSelfIfExist = ash (async (req, res, next) => {
 export const tryFindSelf = [jwtParseMiddleware, findSelfIfExist];
 
 export const findUserWithKeyMiddleware = (queryKey, reqKey = queryKey) => ash (async (req, res, next) => {
-  const value = req[reqKey || queryKey];
+  const value = req[reqKey];
   if (!value) {
     logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty ${reqKey}`);
     return res.status (400).json ({
@@ -89,6 +89,7 @@ export const findUserWithKeyMiddleware = (queryKey, reqKey = queryKey) => ash (a
   req.user = user;
   return next ();
 });
+export const findUserWithUserIdMiddleware = findUserWithKeyMiddleware ('_id', 'userId');
 export const findUserWithUsernameMiddleware = findUserWithKeyMiddleware ('username');
 export const findUserWithStudentIdMiddleware = findUserWithKeyMiddleware ('studentId');
 
