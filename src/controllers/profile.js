@@ -5,15 +5,21 @@ export const getProfile = ash (async (req, res) => {
   const { user, group, self } = req;
   if (group) {
     const zabosCount = await Zabo.countDocuments ({ owner: group._id });
-    let role = '';
+    let myRole = '';
     if (self) {
       const selfMember = group.members.find (member => member.user.equals (self._id));
-      role = selfMember ? selfMember.role : '';
+      myRole = selfMember ? selfMember.role : '';
     }
+    if (myRole) {
+      await group.populate ({
+        path: 'members.user',
+        select: 'username koreanName lastName firstName _id',
+      }).execPopulate ();
+    } else group.select ('-members');
     return res.json ({
       ...group.toJSON ({ virtuals: true }),
       zabosCount,
-      role,
+      myRole,
     });
   }
   if (user) {
