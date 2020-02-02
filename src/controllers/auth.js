@@ -23,7 +23,10 @@ export const authCheck = async (req, res) => {
     const { sid } = decoded;
     try {
       const user = await User.findOne ({ sso_sid: sid })
-        .populate ('groups')
+        .populate ({
+          path: 'groups',
+          select: 'name profilePhoto followers recentUpload',
+        })
         .populate ('boards');
 
       res.json (user);
@@ -143,7 +146,10 @@ const updateOrCreateUserData = async (userData, create) => {
     new: true,
     setDefaultsOnInsert: true,
   })
-    .populate ('groups')
+    .populate ({
+      path: 'groups',
+      select: 'name profilePhoto followers recentUpload',
+    })
     .populate ('boards');
 
   if (create) {
@@ -170,7 +176,12 @@ export const loginCallback = async (req, res) => {
       return;
     }
     const userData = await SSOClient.getUserInfo (code);
-    let user = await User.findOne ({ sso_sid: userData.sid });
+    let user = await User.findOne ({ sso_sid: userData.sid })
+      .populate ({
+        path: 'groups',
+        select: 'name profilePhoto followers recentUpload',
+      })
+      .populate ('boards');
     // User wants to refresh SSO data
     if (update) {
       if (!user) {
