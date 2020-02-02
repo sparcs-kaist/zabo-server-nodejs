@@ -22,7 +22,13 @@ userSchema.virtual ('stats')
   });
 
 userSchema.statics.findByName = function (name, cb) {
-  return this.find ({ name: new RegExp (name, 'i') }, cb);
+  console.log (name);
+  return this.find ().or ([
+    { username: new RegExp (name, 'gi') },
+    { koreanName: new RegExp (name, 'gi') },
+    { firstName: new RegExp (name, 'gi') },
+    { lastName: new RegExp (name, 'gi') },
+  ], cb);
 };
 
 userSchema.query.byName = function (name) {

@@ -13,7 +13,7 @@ export const getProfile = ash (async (req, res) => {
     if (myRole) {
       await group.populate ({
         path: 'members.user',
-        select: 'username koreanName lastName firstName _id',
+        select: 'username koreanName lastName firstName _id profilePhoto',
       }).execPopulate ();
     } else group.select ('-members');
     return res.json ({
