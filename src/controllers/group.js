@@ -88,6 +88,12 @@ export const addMember = ash (async (req, res) => {
   user.groups.push (group._id);
   // EVENT: Group added event for user
   await Promise.all ([group.save (), user.save ()]);
+  await group
+    .populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    })
+    .execPopulate ();
   return res.json ({
     members: group.members,
   });
@@ -122,7 +128,7 @@ export const updateMember = ash (async (req, res) => {
       error: 'forbidden: cannot change your own permission',
     });
   }
-  const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
+  const memberIndex = group.members.findIndex (m => (m.user.equals (user._id)));
   if (memberIndex !== -1) {
     group.members[memberIndex] = { user: user._id, role };
   } else {
@@ -131,6 +137,12 @@ export const updateMember = ash (async (req, res) => {
   }
   // EVENT: Group permission updated event for user
   await Promise.all ([group.save (), user.save ()]);
+  await group
+    .populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    })
+    .execPopulate ();
   return res.json ({
     members: group.members,
   });
@@ -156,21 +168,26 @@ export const deleteMember = ash (async (req, res) => {
       error: 'forbidden: cannot delete yourself',
     });
   }
-
-  const memberIndex = group.members.findIndex (m => (m._id.equals (user._id)));
-  if (memberIndex === -1) {
+  const member = group.members.find (m => (m.user.equals (user._id)));
+  if (!member) {
     return res.status (404).json ({
       error: `${user.username} is not a member.`,
     });
   }
-  group.members.splice (memberIndex, 1);
+  group.members.pull (member);
   const groupIndex = user.groups.findIndex (groupId => groupId.equals (group._id));
   user.groups.splice (groupIndex, 1);
-  if (user.currentGroup.equals (group._id)) {
+  if (user.currentGroup && user.currentGroup.equals (group._id)) {
     user.currentGroup = null;
   }
   // EVENT: Removed from group event for user
   await Promise.all ([group.save (), user.save ()]);
+  await group
+    .populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    })
+    .execPopulate ();
   return res.json ({
     members: group.members,
   });
