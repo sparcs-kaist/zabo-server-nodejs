@@ -4,7 +4,7 @@ import {
 
 userSchema.virtual ('name')
   .get (function () {
-    return `${this.lastName} ${this.firstName}`;
+    return `${this.firstName} ${this.lastName}`;
   })
   .set (function (v) {
     this.lastName = v.substr (0, v.indexOf (' '));
