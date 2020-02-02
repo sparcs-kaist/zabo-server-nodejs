@@ -77,7 +77,7 @@ zaboSchema.statics = {
   async searchPartial (query, tags) {
     const queryOptions = {
       $or:
-        [
+        [ // TOOD: Sort search query result
           {
             title: new RegExp (query, 'gi'),
             category: { $in: tags },
