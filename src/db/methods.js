@@ -4,7 +4,8 @@ import {
 
 userSchema.virtual ('name')
   .get (function () {
-    return `${this.firstName} ${this.lastName}`;
+    if (this.firstName && this.lastName) return `${this.firstName} ${this.lastName}`;
+    return undefined;
   })
   .set (function (v) {
     this.lastName = v.substr (0, v.indexOf (' '));
@@ -14,9 +15,9 @@ userSchema.virtual ('name')
 userSchema.virtual ('stats')
   .get (function () {
     return {
-      likesCount: this.likes.length,
-      followingsCount: this.followings.length,
-      followersCount: this.followers.length,
+      likesCount: this.likes ? this.likes.length : undefined,
+      followingsCount: this.followings ? this.followings.length : undefined,
+      followersCount: this.followers ? this.followers.length : undefined,
     };
   });
 
@@ -40,17 +41,17 @@ groupSchema.virtual ('followersCount')
 
 boardSchema.virtual ('pinsCount')
   .get (function () {
-    return this.pins.length;
+    return this.pins ? this.pins.length : undefined;
   });
 
 zaboSchema.virtual ('likesCount')
   .get (function () {
-    return this.likes.length;
+    return this.likes ? this.likes.length : undefined;
   });
 
 zaboSchema.virtual ('pinsCount')
   .get (function () {
-    return this.pins.length;
+    return this.pins ? this.pins.length : undefined;
   });
 
 zaboSchema.index ({
