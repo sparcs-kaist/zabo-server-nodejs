@@ -97,7 +97,16 @@ export const postNewZabo = ash (async (req, res) => {
     newZabo.save (),
     Group.findByIdAndUpdate (self.currentGroup, { $set: { recentUpload: new Date () } }),
   ]);
-  return res.send (newZabo);
+  await newZabo
+    .populate ('owner', 'name profilePhoto')
+    .populate ('likes')
+    .populate ('pins', 'pinnedBy board')
+    .execPopulate ();
+  const zaboJSON = newZabo.toJSON ();
+  zaboJSON.isLiked = false;
+  zaboJSON.isPinned = false;
+
+  return res.send (zaboJSON);
 });
 
 export const editZabo = ash (async (req, res) => {
