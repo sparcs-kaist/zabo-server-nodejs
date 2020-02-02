@@ -58,7 +58,7 @@ export const groupBakUpload = profileUpload ('group-bak');
  * @return Promise
  */
 export const sizeS3Item = promisify ((s3ImageKey, callback) => {
-  size (s3, 'sparcs-kaist-zabo-dev', s3ImageKey, (err, dimensions, bytesRead) => {
+  size (s3, bucket, s3ImageKey, (err, dimensions, bytesRead) => {
     callback (err, [dimensions, bytesRead]);
   });
 });
