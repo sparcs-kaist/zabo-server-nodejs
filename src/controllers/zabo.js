@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import {
-  Pin, Zabo, Like, Group,
+  User, Pin, Zabo, Like, Group,
 } from '../db';
 
 export const getZabo = ash (async (req, res) => {
@@ -40,6 +40,11 @@ export const getZabo = ash (async (req, res) => {
     const { likes, pins } = zabo;
     zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (self._id));
     zaboJSON.isPinned = !!pins.find (pin => pin.pinnedBy.equals (self._id));
+    zaboJSON.isMyZabo = !!self.groups.find (group => group.equals (zaboJSON.owner._id));
+    if (zaboJSON.isMyZabo) zaboJSON.createdBy = await User.findById (zaboJSON.createdBy, 'username');
+    else delete zaboJSON.createdBy;
+  } else {
+    delete zaboJSON.createdBy;
   }
   return res.json (zaboJSON);
 });
