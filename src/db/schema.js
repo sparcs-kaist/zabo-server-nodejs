@@ -202,6 +202,7 @@ export const groupSchema = new mongoose.Schema ({
     index: true,
   },
   revisionHistory: [revisionHistorySchema],
+  subtitle: String,
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,

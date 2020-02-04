@@ -12,8 +12,8 @@ export const getGroupInfo = ash (async (req, res) => {
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
   const { groupName, group } = req;
-  const { name, description } = req.body;
-  logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description}`);
+  const { name, description, subtitle } = req.body;
+  logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description}, subtitle: ${subtitle}`);
   if (group.name !== name) {
     const error = await validateNameAndRes (name, req, res);
     if (error) return error;
@@ -27,10 +27,12 @@ export const updateGroupInfo = ash (async (req, res) => {
     group.name = name;
   }
   group.description = description;
+  group.subtitle = subtitle;
   await group.save ();
   return res.json ({
     name,
     description,
+    subtitle,
     revisionHistory: group.revisionHistory,
   });
 });
