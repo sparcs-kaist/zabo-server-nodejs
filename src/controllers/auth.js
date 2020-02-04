@@ -8,6 +8,7 @@ import SSOClient from '../utils/sso';
 import { parseJSON } from '../utils';
 import { stat } from '../utils/statistic';
 import { logger } from '../utils/logger';
+import { checkPreAndRegister } from '../utils/preRegister';
 
 export const authCheck = ash (async (req, res) => {
   const jwtSecret = req.app.get ('jwt-secret');
@@ -130,7 +131,7 @@ const updateOrCreateUserData = async (userData, create) => {
     });
   }
 
-  const newUser = await User.findOneAndUpdate ({ sso_sid: sid }, setParams, {
+  let newUser = await User.findOneAndUpdate ({ sso_sid: sid }, setParams, {
     upsert: true,
     new: true,
     setDefaultsOnInsert: true,
@@ -143,6 +144,8 @@ const updateOrCreateUserData = async (userData, create) => {
 
   if (create) {
     stat.REGISTER ({ user: newUser._id });
+    const preRegisteredUser = await checkPreAndRegister (newUser);
+    newUser = preRegisteredUser || newUser;
   }
 
   return newUser;

@@ -316,6 +316,6 @@ export const preRegisterSchema = new mongoose.Schema ({
   ownerSID: String,
   registered: {
     type: Boolean,
-    defaultValue: false,
+    default: false,
   },
 });
