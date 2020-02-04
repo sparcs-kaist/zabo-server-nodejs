@@ -2,11 +2,10 @@ import clear from 'clear';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
-import { AdminUser, User } from '../../src/db';
+import { AdminUser, Group, PreRegister, User } from '../../src/db';
 
 /*
   TODO:
-   - Seed admin user
    - Seed ZABO
    - Seed User
  */
@@ -20,6 +19,7 @@ console.log (
 
 const actions = {
   addAdminUser: 'Add Admin User',
+  seedPreRegister: 'Seed PreRegistered Groups',
   quit: 'Quit',
 };
 
@@ -69,6 +69,60 @@ const userQuery = [{
     return 'Please enter valid input.';
   },
 }];
+
+const seedPreRegisters = async () => {
+  const prevCount = await PreRegister.countDocuments ();
+  const { confirmed } = await inquirer.prompt ({
+    type: 'confirm',
+    name: 'confirmed',
+    message: `
+      Seeding pre-registered groups might cause unexpected error.
+      ${prevCount} document found in PreRegisters collection.
+      Do you really want to proceed?
+    `,
+    default: false,
+  });
+  if (!confirmed) {
+    console.warn ('Not Confirmed. Aborting..');
+    return;
+  }
+  console.log ('Start of seeding groups...');
+  let sids;
+  try {
+    sids = await import ('../../config/sids.json');
+    sids = sids.default;
+    console.log ('==>');
+    console.log ('==> SIDs found ');
+    console.log ('==>');
+    console.log (sids);
+  } catch (error) {
+    console.error ('config/sids.json file not found. Aborting...');
+    return;
+  }
+  const rawGroups = sids.map (({ owner, ownerSID, groupName }) => ({
+    name: groupName,
+    isPreRegistered: true,
+    description: '사전 등록된 그룹입니다.',
+  }));
+  const groups = await Group.insertMany (rawGroups);
+  console.log ('==>');
+  console.log ('==> Groups seeded');
+  console.log ('==>');
+  console.log (groups);
+
+  const rawPreRegisters = sids.map (({ owner, ownerSID, groupName }, index) => ({
+    group: groups[index]._id,
+    groupName,
+    owner,
+    ownerSID,
+  }));
+  const preRegisters = await PreRegister.insertMany (rawPreRegisters);
+  console.log ('==>');
+  console.log ('==> PreRegisters seeded');
+  console.log ('==>');
+  console.log (preRegisters);
+  return preRegisters;
+};
 
 const addAdminUser = async () => {
   const { key } = await inquirer.prompt (userSelectKeyQuestion);
@@ -134,6 +188,10 @@ const run = async () => {
         await addAdminUser ();
         break;
       }
+      case actions.seedPreRegister: {
+        await seedPreRegisters ();
+        break;
+      }
       case actions.quit: {
         return;
       }
@@ -149,5 +207,7 @@ run ()
   .then (() => process.exit (0))
   .catch (error => {
     console.error (error);
+    console.warn ('==> Process exited with unexpected error');
+    console.warn ('==> Exiting process with exit code 1');
     process.exit (1);
   });
