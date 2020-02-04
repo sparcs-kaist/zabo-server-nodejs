@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import {
   adminUserSchema, userSchema, zaboSchema, boardSchema, pinSchema, likeSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
 } from './methods';
+import { preRegisterSchema } from './schema';
 import { logger } from '../utils/logger';
 
 mongoose.connect ('mongodb://localhost/zabo-develop', {
@@ -31,3 +32,4 @@ export const Group = mongoose.model ('Group', groupSchema);
 export const Follow = mongoose.model ('Follow', followSchema);
 export const Statistic = mongoose.model ('Statistic', statisticsSchema);
 export const Feedback = mongoose.model ('Feedback', feedbackSchema);
+export const PreRegister = mongoose.model ('PreRegister', preRegisterSchema);

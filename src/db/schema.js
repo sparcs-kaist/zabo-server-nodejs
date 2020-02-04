@@ -201,6 +201,7 @@ export const groupSchema = new mongoose.Schema ({
     unique: true,
     index: true,
   },
+  isPreRegistered: Boolean,
   revisionHistory: [revisionHistorySchema],
   description: String,
   profilePhoto: String,
@@ -298,4 +299,23 @@ export const adminUserSchema = new mongoose.Schema ({
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
+});
+
+export const preRegisterSchema = new mongoose.Schema ({
+  group: {
+    required: true,
+    type: mongoose.Schema.ObjectId,
+    ref: 'Group',
+  },
+  groupName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  owner: String,
+  ownerSID: String,
+  registered: {
+    type: Boolean,
+    defaultValue: false,
+  },
 });
