@@ -1,5 +1,7 @@
 import ash from 'express-async-handler';
-import { Board, Follow, Zabo } from '../db';
+import {
+  Board, Follow, Group, Zabo,
+} from '../db';
 
 export const getProfile = ash (async (req, res) => {
   const { user, group, self } = req;
@@ -15,7 +17,9 @@ export const getProfile = ash (async (req, res) => {
         path: 'members.user',
         select: 'username koreanName lastName firstName _id profilePhoto',
       }).execPopulate ();
-    } else group.select ('-members');
+    } else {
+      // TODO: Hide group.members
+    }
     return res.json ({
       ...group.toJSON ({ virtuals: true }),
       zabosCount,
