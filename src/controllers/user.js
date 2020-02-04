@@ -57,7 +57,7 @@ export const updateProfilePhoto = ash (async (req, res) => {
     new: true,
   });
 
-  res.json ({
+  return res.json ({
     profilePhoto: updatedUser.profilePhoto,
   });
 });
