@@ -133,7 +133,12 @@ export const editZabo = ash (async (req, res) => {
   zabo.category = category;
   zabo.endAt = endAt;
   await zabo.save ();
-  return res.json (zabo);
+  return res.json ({
+    title: zabo.title,
+    description: zabo.description,
+    category: zabo.category,
+    endAt: zabo.endAt,
+  });
 });
 
 // DANGER: Not fully implemented. Don't use
