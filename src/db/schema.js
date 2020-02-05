@@ -10,6 +10,8 @@ export const likeSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
   },
+}, {
+  id: false,
 });
 
 export const zaboSchema = new mongoose.Schema ({
@@ -62,6 +64,7 @@ export const zaboSchema = new mongoose.Schema ({
   timestamps: true,
   autoIndex: true,
   toJSON: { virtuals: true },
+  id: false,
 });
 
 export const userSchema = new mongoose.Schema ({
@@ -141,6 +144,7 @@ export const userSchema = new mongoose.Schema ({
   timestamps: true,
   autoIndex: true,
   toJSON: { virtuals: true },
+  id: false,
 });
 
 export const boardSchema = new mongoose.Schema ({
@@ -161,6 +165,7 @@ export const boardSchema = new mongoose.Schema ({
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
+  id: false,
 });
 
 export const pinSchema = new mongoose.Schema ({
@@ -184,6 +189,7 @@ operations it's the only way to make it scalable. */
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
 });
 
 const revisionHistorySchema = new mongoose.Schema ({
@@ -203,6 +209,7 @@ export const groupSchema = new mongoose.Schema ({
   },
   isPreRegistered: Boolean,
   revisionHistory: [revisionHistorySchema],
+  subtitle: String,
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
@@ -226,6 +233,7 @@ export const groupSchema = new mongoose.Schema ({
 }, {
   timestamps: true,
   autoIndex: true,
+  id: false,
 });
 
 export const followSchema = new mongoose.Schema ({
@@ -245,6 +253,8 @@ export const followSchema = new mongoose.Schema ({
     enum: ['User', 'Group'],
   },
   __v: { type: Number, select: false },
+}, {
+  id: false,
 });
 
 export const statisticsSchema = new mongoose.Schema ({
@@ -263,6 +273,7 @@ export const statisticsSchema = new mongoose.Schema ({
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
 });
 
 export const feedbackSchema = new mongoose.Schema ({
@@ -276,6 +287,7 @@ export const feedbackSchema = new mongoose.Schema ({
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
 });
 
 const actionHistory = new mongoose.Schema ({
@@ -288,6 +300,7 @@ const actionHistory = new mongoose.Schema ({
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
 });
 
 export const adminUserSchema = new mongoose.Schema ({
@@ -299,6 +312,7 @@ export const adminUserSchema = new mongoose.Schema ({
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
 });
 
 export const preRegisterSchema = new mongoose.Schema ({

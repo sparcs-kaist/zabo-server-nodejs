@@ -29,8 +29,7 @@ const isGroupMember = [authMiddleware, findSelfMiddleware, findGroupWithParams, 
 const isGroupAdmin = [authMiddleware, findSelfMiddleware, findGroupWithParams, isGroupAdminMiddleware, findUserWithBody];
 
 router.get ('/:groupName', findGroupWithParams, gc.getGroupInfo);
-router.post ('/:groupName', isGroupMember, gc.updateGroupInfo);
-router.post ('/:groupName/profile', isGroupMember, groupProfileUpload.single ('img'), gc.updateProfilePhoto);
+router.post ('/:groupName', isGroupMember, groupProfileUpload.single ('img'), gc.updateGroupInfo);
 router.post ('/:groupName/background', isGroupMember, groupBakUpload.single ('img'), gc.updateBakPhoto);
 router.put ('/:groupName/member', isGroupAdmin, gc.addMember);
 router.post ('/:groupName/member', isGroupAdmin, gc.updateMember);
