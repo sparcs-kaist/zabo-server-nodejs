@@ -11,9 +11,11 @@ export const getGroupInfo = ash (async (req, res) => {
 
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
-  const { groupName, group } = req;
+  const { groupName, group, file } = req;
   const { name, description, subtitle } = req.body;
-  logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description}, subtitle: ${subtitle}`);
+  logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description},
+   subtitle: ${subtitle} ${file ? `, image: ${file.location}` : ''}`);
+
   if (group.name !== name) {
     const error = await validateNameAndRes (name, req, res);
     if (error) return error;
@@ -26,6 +28,9 @@ export const updateGroupInfo = ash (async (req, res) => {
     });
     group.name = name;
   }
+  if (file) {
+    group.profilePhoto = file.location;
+  }
   group.description = description;
   group.subtitle = subtitle;
   await group.save ();
@@ -34,16 +39,6 @@ export const updateGroupInfo = ash (async (req, res) => {
     description,
     subtitle,
     revisionHistory: group.revisionHistory,
-  });
-});
-
-// post /group/:groupName/profile
-export const updateProfilePhoto = ash (async (req, res) => {
-  const { group } = req;
-  group.profilePhoto = req.file.location;
-  await group.save ();
-  return res.json ({
-    profilePhoto: group.profilePhoto,
   });
 });
 
