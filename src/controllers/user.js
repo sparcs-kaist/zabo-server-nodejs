@@ -16,22 +16,23 @@ export const getUserInfo = ash (async (req, res) => {
 
 // post /user
 export const updateUserInfo = ash (async (req, res) => {
-  const { self } = req;
+  const { sid } = req.decoded;
   const { username, description } = req.body;
   logger.api.info (
     'post /user/ request; sid: %s, username: %s, description: %s',
-    self.sso_sid,
+    sid,
     username,
     description,
   );
   const updateParams = { description };
+  const self = await User.findOne ({ sso_sid: sid });
   if (self.username !== username) {
     const error = await validateNameAndRes (username, req, res);
     if (error) return error;
     updateParams.username = username;
   }
   // Ignore very rare timing issue which is unlikely to happen.
-  const updatedUser = await User.findOneAndUpdate ({ sso_sid: self.sso_sid }, {
+  const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
     $set: updateParams,
   }, {
     upsert: true,
