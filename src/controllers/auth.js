@@ -26,7 +26,7 @@ export const authCheck = ash (async (req, res) => {
     const user = await User.findOne ({ sso_sid: sid })
       .populate ({
         path: 'groups',
-        select: 'name profilePhoto followers recentUpload',
+        select: 'name profilePhoto followers recentUpload subtitle',
       })
       .populate ('boards');
 
@@ -138,7 +138,7 @@ const updateOrCreateUserData = async (userData, create) => {
   })
     .populate ({
       path: 'groups',
-      select: 'name profilePhoto followers recentUpload',
+      select: 'name profilePhoto followers recentUpload subtitle',
     })
     .populate ('boards');
 
@@ -170,7 +170,7 @@ export const loginCallback = ash (async (req, res) => {
   let user = await User.findOne ({ sso_sid: userData.sid })
     .populate ({
       path: 'groups',
-      select: 'name profilePhoto followers recentUpload',
+      select: 'name profilePhoto followers recentUpload subtitle',
     })
     .populate ('boards');
   // User wants to refresh SSO data
