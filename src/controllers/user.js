@@ -18,11 +18,13 @@ export const getUserInfo = ash (async (req, res) => {
 export const updateUserInfo = ash (async (req, res) => {
   const { sid } = req.decoded;
   const { username, description } = req.body;
+  const { file } = req;
   logger.api.info (
-    'post /user/ request; sid: %s, username: %s, description: %s',
+    'post /user/ request; sid: %s, username: %s, description: %s %s',
     sid,
     username,
     description,
+    file ? `image: ${file.location}` : '',
   );
   const updateParams = { description };
   const self = await User.findOne ({ sso_sid: sid });
@@ -31,18 +33,17 @@ export const updateUserInfo = ash (async (req, res) => {
     if (error) return error;
     updateParams.username = username;
   }
+  if (file) updateParams.profilePhoto = file.location;
   // Ignore very rare timing issue which is unlikely to happen.
   const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
     $set: updateParams,
   }, {
     upsert: true,
     new: true,
-  });
+  })
+    .select ('username description profilePhoto');
 
-  return res.json ({
-    username: updatedUser.username,
-    description: updatedUser.description,
-  });
+  return res.json (updatedUser);
 });
 
 // post /user/profile
