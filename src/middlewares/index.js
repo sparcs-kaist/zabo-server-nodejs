@@ -4,6 +4,7 @@ import {
   AdminUser, Group, User, Zabo,
 } from '../db';
 import { logger } from '../utils/logger';
+import { isValidId } from '../utils';
 
 export const authMiddleware = (req, res, next) => {
   const jwtSecret = req.app.get ('jwt-secret');
@@ -36,6 +37,25 @@ export const jwtParseMiddleware = (req, res, next) => {
     next ();
   });
 };
+
+export const validateId = (key) => (req, res, next) => {
+  const value = req[key] || req.params[key] || req.body[key] || req.query[key];
+  console.log (req.params[key]);
+  if (!value) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty ${key}`);
+    return res.status (400).json ({
+      error: `bad request: ${key} required`,
+    });
+  }
+  if (!isValidId (value)) {
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - invalid ${key}`);
+    return res.status (400).json ({
+      error: `invalid ${key}`,
+    });
+  }
+  return next ();
+};
+export const validateZaboId = validateId ('zaboId');
 
 export const isAdmin = ash (async (req, res, next) => {
   const { sid } = req.decoded;

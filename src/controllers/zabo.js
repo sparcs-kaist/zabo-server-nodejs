@@ -6,6 +6,7 @@ import { stat } from '../utils/statistic';
 import {
   User, Pin, Zabo, Like, Group,
 } from '../db';
+import { isValidId } from '../utils';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
@@ -172,11 +173,11 @@ export const listZabos = ash (async (req, res, next) => {
   if (lastSeen) return next ();
   let queryOptions = {};
   if (relatedTo) {
-    const zabo = await Zabo.findOne ({ _id: relatedTo });
+    const zabo = isValidId (relatedTo) && await Zabo.findOne ({ _id: relatedTo });
     if (!zabo) {
-      logger.zabo.error ('get /zabo/list request error; 404 - related zabo does not exist');
+      logger.zabo.error ('get /zabo/list request error; 404 - zabo does not exist');
       return res.status (404).json ({
-        error: 'related zabo does not exist',
+        error: 'zabo does not exist',
       });
     }
     queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } };
