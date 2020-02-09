@@ -1,7 +1,7 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
 import { Zabo } from '../db';
-import { validateNameAndRes } from '../utils';
+import { isNameInvalidWithRes } from '../utils';
 
 // get /group/:groupId
 export const getGroupInfo = ash (async (req, res) => {
@@ -17,7 +17,7 @@ export const updateGroupInfo = ash (async (req, res) => {
    subtitle: ${subtitle} ${file ? `, image: ${file.location}` : ''}`);
 
   if (group.name !== name) {
-    const error = await validateNameAndRes (name, req, res);
+    const error = await isNameInvalidWithRes (name, req, res);
     if (error) return error;
 
     // Use post save hook instead? What if someone use update instead of save while refactoring.

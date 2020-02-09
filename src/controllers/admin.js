@@ -2,7 +2,7 @@ import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import { Board, Group, User } from '../db';
 import { logger } from '../utils/logger';
-import { validateNameAndRes } from '../utils';
+import { isNameInvalidWithRes } from '../utils';
 
 // TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
@@ -11,7 +11,7 @@ export const createGroup = ash (async (req, res) => {
   const { name } = req.body;
   logger.api.info ('post /admin/group request; name: %s, studentId: %s', name, studentId);
 
-  const error = await validateNameAndRes (name, req, res);
+  const error = await isNameInvalidWithRes (name, req, res);
   if (error) return error;
 
   // Ignore very small delay after name usability check

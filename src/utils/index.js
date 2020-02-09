@@ -39,7 +39,7 @@ export const nameUsabilityCheck = async (name) => {
   return [user, group, (!user && !group)];
 };
 
-export const validateNameAndRes = async (name, req, res) => {
+export const isNameInvalidWithRes = async (name, req, res) => {
   const isValid = validateName (name);
   if (!isValid) {
     return res.status (400).json ({

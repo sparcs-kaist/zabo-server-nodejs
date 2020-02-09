@@ -1,7 +1,25 @@
 import ash from 'express-async-handler';
 import {
-  Board, Follow, Group, Zabo,
+  Board, Follow, Zabo,
 } from '../db';
+import { nameUsabilityCheck, validateName } from '../utils';
+
+export const validateNameController = ash (async (req, res) => {
+  const { name } = req.params;
+  const isValid = validateName (name);
+  if (!isValid) {
+    return res.status (400).json ({
+      message: 'invalid',
+    });
+  }
+  const [, , usability] = await nameUsabilityCheck (name);
+  if (!usability) {
+    return res.status (400).json ({
+      message: 'taken',
+    });
+  }
+  return res.json (true);
+});
 
 export const getProfile = ash (async (req, res) => {
   const { user, group, self } = req;

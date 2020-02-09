@@ -15,6 +15,7 @@ const findProfile = (req, res, next) => {
 };
 
 router.get ('/:name', tryFindSelf, findProfile, profileController.getProfile);
+router.get ('/:name/isValid', profileController.validateNameController);
 router.post ('/:name/follow', authMiddleware, findSelfMiddleware, findProfile, profileController.followController);
 
 export default router;

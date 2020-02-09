@@ -1,7 +1,7 @@
 import ash from 'express-async-handler';
 import { User } from '../db';
 import { logger } from '../utils/logger';
-import { validateNameAndRes } from '../utils';
+import { isNameInvalidWithRes } from '../utils';
 
 // get /user/
 export const getUserInfo = ash (async (req, res) => {
@@ -29,7 +29,7 @@ export const updateUserInfo = ash (async (req, res) => {
   const updateParams = { description };
   const self = await User.findOne ({ sso_sid: sid });
   if (self.username !== username) {
-    const error = await validateNameAndRes (username, req, res);
+    const error = await isNameInvalidWithRes (username, req, res);
     if (error) return error;
     updateParams.username = username;
   }
