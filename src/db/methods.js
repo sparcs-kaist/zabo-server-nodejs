@@ -81,8 +81,8 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  async searchPartial (query, tags) {
-    const queryOptions = {
+  async searchPartial (query, tags, lastSeen) {
+    let queryOptions = {
       $or:
         [ // TOOD: Sort search query result
           {
@@ -95,6 +95,16 @@ zaboSchema.statics = {
           },
         ],
     };
+    if (lastSeen) {
+      queryOptions = {
+        ...queryOptions,
+        _id: {
+          ...queryOptions._id,
+          $lt: lastSeen,
+        },
+      };
+    }
+
     if (tags.length === 0) {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
@@ -102,11 +112,21 @@ zaboSchema.statics = {
     return this.find (queryOptions).limit (20);
   },
 
-  async searchFull (query, tags) {
-    const queryOptions = {
+  async searchFull (query, tags, lastSeen) {
+    let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
       category: { $in: tags },
     };
+    if (lastSeen) {
+      queryOptions = {
+        ...queryOptions,
+        _id: {
+          ...queryOptions._id,
+          $lt: lastSeen,
+        },
+      };
+    }
+
     if (tags.length === 0) {
       delete queryOptions.category;
     }
@@ -115,11 +135,11 @@ zaboSchema.statics = {
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
   },
 
-  async search (query, tags) {
+  async search (query, tags, lastSeen) {
     // Currently : tags are searched by 'or'
-    const result = await this.searchFull (query, tags);
+    const result = await this.searchFull (query, tags, lastSeen);
     if (result.length < 10) {
-      return this.searchPartial (query, tags);
+      return this.searchPartial (query, tags, lastSeen);
     }
     return result;
   },
