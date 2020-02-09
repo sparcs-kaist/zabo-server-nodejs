@@ -36,13 +36,23 @@ router.get ('/', ash (async (req, res) => {
     Group.search (searchQuery),
   ]);
 
+  const groups = results[1].map (group => group.toJSON ({ virtuals: true }));
+  const counts = await Zabo.aggregate ([
+    { $match: { owner: { $in: groups.map (group => group._id) } } },
+    { $group: { _id: '$owner', count: { $sum: 1 } } },
+  ]);
+  for (let i = 0; i < groups.length; i += 1) {
+    const count = counts.find (count => groups[i]._id.equals (count._id));
+    groups[i].zabosCount = count ? count.count : 0;
+  }
+
   results.push (
     TAGS.filter (item => item.indexOf (query) > -1),
   );
 
   return res.json ({
     zabos: results[0],
-    groups: results[1],
+    groups,
     categories: results[2],
   });
 }));
