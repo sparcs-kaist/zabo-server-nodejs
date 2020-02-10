@@ -123,7 +123,7 @@ export const listPins = ash (async (req, res, next) => {
       const { likes, pins } = zabo;
       return {
         ...zaboJSON,
-        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
+        isLiked: !!likes.find (like => self._id.equals (like)),
         isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
       };
     });

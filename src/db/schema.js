@@ -1,19 +1,6 @@
 import mongoose from 'mongoose';
 import { TAGS, EVENTS } from '../utils/variables';
 
-export const likeSchema = new mongoose.Schema ({
-  likedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  },
-  zabo: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Zabo',
-  },
-}, {
-  id: false,
-});
-
 export const zaboSchema = new mongoose.Schema ({
   createdBy: {
     type: mongoose.Schema.ObjectId,
@@ -57,7 +44,7 @@ export const zaboSchema = new mongoose.Schema ({
   }], // Pin
   likes: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Like',
+    ref: 'User',
   }], // Like
   __v: { type: Number, select: false },
 }, {
@@ -117,7 +104,7 @@ export const userSchema = new mongoose.Schema ({
   }], // Only one can be created for current plan, array for probable extensions
   likes: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Like',
+    ref: 'Zabo',
   }], // Like
   groups: [{
     type: mongoose.Schema.ObjectId,

@@ -198,7 +198,6 @@ export const listGroupZabos = ash (async (req, res, next) => {
     .sort ({ createdAt: -1 })
     // .limit (20) // TODO: optimize
     .populate ('owner', 'name')
-    .populate ('likes')
     .populate ('pins', 'pinnedBy board');
   let result = zabos; // TODO: Refactor dups
   const { self } = req;
@@ -208,7 +207,7 @@ export const listGroupZabos = ash (async (req, res, next) => {
       const { likes, pins } = zabo;
       return {
         ...zaboJSON,
-        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
+        isLiked: !!likes.find (like => self._id.equals (like)),
         isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
       };
     });

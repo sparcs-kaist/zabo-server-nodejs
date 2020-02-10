@@ -48,7 +48,6 @@ export const getProfile = ash (async (req, res) => {
     const result = await user
       .populate ('groups')
       .populate ('boards')
-      .populate ('likes')
       .execPopulate ();
 
     const { groups } = user.toJSON ({ virtuals: true });

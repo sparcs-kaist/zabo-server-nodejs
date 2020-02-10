@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import {
-  User, Pin, Zabo, Like, Group,
+  User, Pin, Zabo, Group,
 } from '../db';
 import { isValidId } from '../utils';
 
@@ -21,12 +21,10 @@ export const getZabo = ash (async (req, res) => {
     stat.GET_ZABO (req);
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto')
-      .populate ('likes')
       .populate ('pins', 'pinnedBy board');
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
       .populate ('owner', 'name profilePhoto')
-      .populate ('likes')
       .populate ('pins', 'pinnedBy board');
   }
   if (!zabo) {
@@ -39,7 +37,7 @@ export const getZabo = ash (async (req, res) => {
   const { self } = req;
   if (self) {
     const { likes, pins } = zabo;
-    zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (self._id));
+    zaboJSON.isLiked = !!likes.find (like => like.equals (self._id));
     zaboJSON.isPinned = !!pins.find (pin => pin.pinnedBy.equals (self._id));
     zaboJSON.isMyZabo = !!self.groups.find (group => group.equals (zaboJSON.owner._id));
     if (zaboJSON.isMyZabo) zaboJSON.createdBy = await User.findById (zaboJSON.createdBy, 'username');
@@ -105,7 +103,6 @@ export const postNewZabo = ash (async (req, res) => {
   ]);
   await newZabo
     .populate ('owner', 'name profilePhoto')
-    .populate ('likes')
     .populate ('pins', 'pinnedBy board')
     .execPopulate ();
   const zaboJSON = newZabo.toJSON ();
@@ -154,7 +151,6 @@ const queryZabos = async (req, queryOptions) => {
     .sort ({ createdAt: -1 })
     .limit (20)
     .populate ('owner', 'name')
-    .populate ('likes')
     .populate ('pins', 'pinnedBy board');
 
   let result = zabos;
@@ -165,7 +161,7 @@ const queryZabos = async (req, queryOptions) => {
       const { likes, pins } = zabo;
       return {
         ...zaboJSON,
-        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
+        isLiked: !!likes.find (like => self._id.equals (like)),
         isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
       };
     });
@@ -261,17 +257,14 @@ export const pinZabo = ash (async (req, res) => {
 export const likeZabo = ash (async (req, res) => {
   const { self, zabo, zaboId } = req;
   logger.zabo.info (`post /zabo/like request; zaboId: ${zaboId}, by: ${self.username} (${self.sso_sid})`);
-  await Promise.all ([
-    self.populate ('likes').execPopulate (),
-    zabo.populate ('likes').execPopulate (),
-  ]);
-  const prevLike = zabo.likes.find (like => like.likedBy.equals (self._id));
+
+  const prevLike = zabo.likes.find (like => like.equals (self._id));
 
   if (prevLike) {
-    self.likes.pull ({ _id: prevLike._id });
-    zabo.likes.pull ({ _id: prevLike._id });
+    // TODO: Transaction
+    self.likes.pull ({ _id: zaboId });
+    zabo.likes.pull ({ _id: self._id });
     await Promise.all ([
-      Like.deleteOne ({ _id: prevLike._id }),
       self.save (),
       zabo.save (),
     ]);
@@ -281,13 +274,8 @@ export const likeZabo = ash (async (req, res) => {
     });
   }
 
-  const like = await Like.create ({
-    likedBy: self._id,
-    zabo: zaboId,
-  });
-
-  self.likes.push (like._id);
-  zabo.likes.push (like._id);
+  self.likes.push (zaboId);
+  zabo.likes.push (self._id);
   await Promise.all ([self.save (), zabo.save ()]);
 
   return res.send ({
