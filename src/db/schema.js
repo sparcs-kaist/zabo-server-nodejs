@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { TAGS, EVENTS } from '../utils/variables';
+import { EVENTS } from '../utils/variables';
 
 export const zaboSchema = new mongoose.Schema ({
   createdBy: {
@@ -40,7 +40,7 @@ export const zaboSchema = new mongoose.Schema ({
   },
   pins: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Pin',
+    ref: 'Board',
   }], // Pin
   likes: [{
     type: mongoose.Schema.ObjectId,
@@ -146,36 +146,12 @@ export const boardSchema = new mongoose.Schema ({
   isPrivate: Boolean,
   pins: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Pin',
+    ref: 'Zabo',
   }],
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
-  id: false,
-});
-
-export const pinSchema = new mongoose.Schema ({
-  /*
-User can pin unlimited zabos and zabos can be pinned by hundreds or thousands
-of users. Therefore, it's hard to manage user pin zabo in user collection or
-zabo pinned by user in zabo collection. Even this model incurs extra db
-operations it's the only way to make it scalable. */
-  pinnedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  }, // _id of user
-  zabo: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Zabo',
-  },
-  board: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Board',
-  },
-  __v: { type: Number, select: false },
-}, {
-  timestamps: true,
   id: false,
 });
 

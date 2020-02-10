@@ -103,18 +103,15 @@ export const listPins = ash (async (req, res, next) => {
       path: 'boards',
       populate: {
         path: 'pins',
-        populate: {
-          path: 'zabo',
-          populate: 'owner',
-          project: 'name',
-        },
+        populate: 'owner',
+        project: 'name',
       },
       options: {
         sort: { createdAt: -1 },
       },
     })
     .execPopulate ();
-  const zabos = user.boards[0].pins.map (pin => pin.zabo);
+  const zabos = user.boards[0].pins;
   let result = zabos;
   const { self } = req;
   if (self) {
@@ -123,8 +120,8 @@ export const listPins = ash (async (req, res, next) => {
       const { likes, pins } = zabo;
       return {
         ...zaboJSON,
-        isLiked: !!likes.find (like => self._id.equals (like)),
-        isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
+        isLiked: likes.some (like => like.equals (self._id)),
+        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
       };
     });
   }
