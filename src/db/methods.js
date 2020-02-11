@@ -81,7 +81,7 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  async searchPartial (query, tags, lastSeen) {
+  searchPartial (query, tags, lastSeen) {
     let queryOptions = {
       $or:
         [ // TOOD: Sort search query result
@@ -104,15 +104,18 @@ zaboSchema.statics = {
         },
       };
     }
-
-    if (tags.length === 0) {
+    if (!query) {
+      delete queryOptions.$or[0].title;
+      delete queryOptions.$or[1].description;
+    }
+    if (!tags) {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
     }
-    return this.find (queryOptions).limit (20);
+    return this.find (queryOptions);
   },
 
-  async searchFull (query, tags, lastSeen) {
+  searchFull (query, tags, lastSeen) {
     let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
       category: { $in: tags },
@@ -126,27 +129,23 @@ zaboSchema.statics = {
         },
       };
     }
-
-    if (tags.length === 0) {
+    if (!query) {
+      delete queryOptions.$text;
+    }
+    if (!tags) {
       delete queryOptions.category;
     }
     return this.find (queryOptions, {
       score: { $meta: 'textScore' },
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
+    // limit (20)
   },
-
-  async search (query, tags, lastSeen) {
-    // Currently : tags are searched by 'or'
-    const result = await this.searchFull (query, tags, lastSeen);
-    if (result.length < 10) {
-      return this.searchPartial (query, tags, lastSeen);
-    }
-    return result;
-  },
+  // Currently : tags are searched by 'or'
 };
 
 groupSchema.statics = {
-  async searchPartial (q) {
+  searchPartial (q) {
+    if (!q) { return []; }
     return this.find ({
       $or:
       [
@@ -156,24 +155,13 @@ groupSchema.statics = {
     }).limit (20);
   },
 
-  async searchFull (q) {
+  searchFull (q) {
+    if (!q) { return []; }
     return this.find ({
       $text: { $search: q, $caseSensitive: false },
     }, {
       score: { $meta: 'textScore' },
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
-  },
-
-  async search (q) {
-    const result = await this.searchFull (q, (err, data) => {
-      if (!err && data.length) {
-        return this.callback (err, data);
-      }
-    });
-    if (result.length < 10) {
-      return this.searchPartial (q);
-    }
-    return result;
   },
 };
 
