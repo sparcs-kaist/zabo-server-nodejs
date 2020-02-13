@@ -23,26 +23,23 @@ const splitTagNText = (query) => {
 };
 
 export const getSearch = ash (async (req, res) => {
-  const { query: q } = req.query;
-  const { query, category } = queryString.parse (q);
+  const { query, category } = req.query;
   logger.info ('get /search request; query: %s, category: %s', query, category);
   stat.SEARCH (req);
 
   // const { tags, searchQuery } = splitTagNText (query);
-  const searchQuery = query;
-  const tags = category;
 
   // TODO : Cache search result using REDIS
   let [zabos, groupResult] = await Promise.all ([
-    Zabo.searchFull (searchQuery, tags)
+    Zabo.searchFull (query, category)
       .populate ('owner', 'name profilePhoto')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board'),
-    Group.searchPartial (searchQuery),
+    Group.searchPartial (query),
   ]);
 
   if (zabos.length < 10) {
-    zabos = await Zabo.searchPartial (searchQuery, tags)
+    zabos = await Zabo.searchPartial (query, category)
       .populate ('owner', 'name profilePhoto')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');
@@ -79,23 +76,20 @@ export const getUserSearch = ash (async (req, res) => {
 });
 
 export const listSearchZabos = ash (async (req, res, next) => {
-  const { lastSeen, query: q } = req.query;
-  const { query, category } = queryString.parse (q);
+  const { lastSeen, query, category } = req.query;
   if (lastSeen) return next ();
   stat.SEARCH (req);
 
   // const { tags, searchQuery } = splitTagNText (query);
-  const searchQuery = query;
-  const tags = category;
   // TODO : Cache search result using REDIS
   // Zabo.search: limit(20) already exists inside function
-  let result = await Zabo.searchFull (searchQuery, tags)
+  let result = await Zabo.searchFull (query, category)
     .populate ('owner', 'name profilePhoto')
     .populate ('likes')
     .populate ('pins', 'pinnedBy board');
 
   if (result.length < 10) {
-    result = await Zabo.searchPartial (searchQuery, tags)
+    result = await Zabo.searchPartial (query, category)
       .populate ('owner', 'name profilePhoto')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');
@@ -104,20 +98,17 @@ export const listSearchZabos = ash (async (req, res, next) => {
 });
 
 export const listNextSearchZabos = ash (async (req, res) => {
-  const { lastSeen, query: q } = req.query;
-  const { query, category } = queryString.parse (q);
+  const { lastSeen, query, category } = req.query;
   stat.SEARCH (req);
 
   // const { tags, searchQuery } = splitTagNText (query);
-  const searchQuery = query;
-  const tags = category;
-  let result = await Zabo.searchFull (searchQuery, tags, lastSeen)
+  let result = await Zabo.searchFull (query, category, lastSeen)
     .populate ('owner', 'name profilePhoto')
     .populate ('likes')
     .populate ('pins', 'pinnedBy board');
 
   if (result.length < 10) {
-    result = await Zabo.searchPartial (searchQuery, tags)
+    result = await Zabo.searchPartial (query, category)
       .populate ('owner', 'name profilePhoto')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');

@@ -104,11 +104,11 @@ zaboSchema.statics = {
         },
       };
     }
-    if (!query) {
+    if (!query || query === 'undefined') {
       delete queryOptions.$or[0].title;
       delete queryOptions.$or[1].description;
     }
-    if (!tags) {
+    if (!tags || tags === 'undefined') {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
     }
@@ -140,7 +140,7 @@ zaboSchema.statics = {
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
     // limit (20)
   },
-  // Currently : tags are searched by 'or'
+  // Currently : tags(category) are searched by 'or'
 };
 
 groupSchema.statics = {
