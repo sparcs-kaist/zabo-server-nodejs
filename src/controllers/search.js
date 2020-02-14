@@ -22,8 +22,11 @@ const splitTagNText = (query) => {
   return { tags, searchQuery };
 };
 
+const escapeRegExp = string => string.replace (/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export const getSearch = ash (async (req, res) => {
-  const { query, category: stringifiedCategory } = req.query;
+  const { query: text, category: stringifiedCategory } = req.query;
+  const query = escapeRegExp (text);
   let { category } = stringifiedCategory ? queryString.parse (stringifiedCategory) : { undefined };
   if (!Array.isArray (category)) { category = [category]; }
   logger.info ('get /search request; query: %s, category: %s', query, category);
@@ -78,7 +81,8 @@ export const getUserSearch = ash (async (req, res) => {
 });
 
 export const listSearchZabos = ash (async (req, res, next) => {
-  const { lastSeen, query, category: stringifiedCategory } = req.query;
+  const { lastSeen, query: text, category: stringifiedCategory } = req.query;
+  const query = escapeRegExp (text);
   let { category } = stringifiedCategory ? queryString.parse (stringifiedCategory) : { undefined };
   if (!Array.isArray (category)) { category = [category]; }
   if (lastSeen) return next ();
@@ -102,7 +106,8 @@ export const listSearchZabos = ash (async (req, res, next) => {
 });
 
 export const listNextSearchZabos = ash (async (req, res) => {
-  const { lastSeen, query, category: stringifiedCategory } = req.query;
+  const { lastSeen, query: text, category: stringifiedCategory } = req.query;
+  const query = escapeRegExp (text);
   let { category } = stringifiedCategory ? queryString.parse (stringifiedCategory) : { undefined };
   if (!Array.isArray (category)) { category = [category]; }
   stat.SEARCH (req);
