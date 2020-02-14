@@ -137,7 +137,7 @@ zaboSchema.statics = {
     }
     return this.find (queryOptions, {
       score: { $meta: 'textScore' },
-    }).sort ({ score: { $meta: 'textScore' } }).limit (20);
+    }).sort ({ score: { $meta: 'textScore' } });
     // limit (20)
   },
   // Currently : tags(category) are searched by 'or'
