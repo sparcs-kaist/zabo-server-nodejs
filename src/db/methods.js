@@ -87,11 +87,11 @@ zaboSchema.statics = {
         [ // TOOD: Sort search query result
           {
             title: new RegExp (query, 'gi'),
-            category: { $in: tags },
+            category: { $all: tags },
           },
           {
             description: new RegExp (query, 'gi'),
-            category: { $in: tags },
+            category: { $all: tags },
           },
         ],
     };
@@ -118,7 +118,7 @@ zaboSchema.statics = {
   searchFull (query, tags, lastSeen) {
     let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
-      category: { $in: tags },
+      category: { $all: tags },
     };
     if (lastSeen) {
       queryOptions = {
