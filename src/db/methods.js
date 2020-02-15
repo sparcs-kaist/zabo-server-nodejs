@@ -82,16 +82,18 @@ groupSchema.index ({
 
 zaboSchema.statics = {
   searchPartial (query, tags, lastSeen) {
+    let category = tags;
+    if (!Array.isArray (tags)) { category = [tags]; }
     let queryOptions = {
       $or:
         [ // TOOD: Sort search query result
           {
             title: new RegExp (query, 'gi'),
-            category: { $all: tags },
+            category: { $all: category },
           },
           {
             description: new RegExp (query, 'gi'),
-            category: { $all: tags },
+            category: { $all: category },
           },
         ],
     };
@@ -116,9 +118,12 @@ zaboSchema.statics = {
   },
 
   searchFull (query, tags, lastSeen) {
+    let category = tags;
+    if (!Array.isArray (tags)) { category = [tags]; }
+
     let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
-      category: { $all: tags },
+      category: { $all: category },
     };
     if (lastSeen) {
       queryOptions = {
@@ -129,10 +134,10 @@ zaboSchema.statics = {
         },
       };
     }
-    if (!query) {
+    if (!query || query === 'undefined') {
       delete queryOptions.$text;
     }
-    if (!tags) {
+    if (!tags || tags === 'undefined') {
       delete queryOptions.category;
     }
     return this.find (queryOptions, {
