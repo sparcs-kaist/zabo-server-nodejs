@@ -195,7 +195,7 @@ export const listNextZabos = ash (async (req, res) => {
   const { lastSeen, relatedTo } = req.query;
   let queryOptions = {};
   if (relatedTo) {
-    const zabo = await Zabo.findOne ({ _id: relatedTo });
+    const zabo = await Zabo.findById (relatedTo);
     if (!zabo) {
       logger.zabo.error ('get /zabo/list request error; 404 - related zabo does not exist');
       return res.status (404).json ({
@@ -204,13 +204,12 @@ export const listNextZabos = ash (async (req, res) => {
     }
     queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } };
   }
-  queryOptions = {
-    ...queryOptions,
-    _id: {
-      ...queryOptions._id,
-      $lt: lastSeen,
-    },
-  };
+  if (lastSeen) {
+    const lastSeenZabo = await Zabo.findById (lastSeen, 'score');
+    queryOptions.score = {
+      $lt: lastSeenZabo.score,
+    };
+  }
   const result = await queryZabos (req, queryOptions);
   return res.send (result);
 });
