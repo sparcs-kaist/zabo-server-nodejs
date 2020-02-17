@@ -19,5 +19,20 @@ module.exports = {
         '--color',
       ],
     },
+    {
+      name: 'WORKER',
+      script: 'worker.js',
+      env: {
+        NODE_ENV: 'development',
+      },
+      env_production: {
+        NODE_ENV: 'production',
+      },
+      logs: './worker.log',
+      merge_logs: true,
+      args: [
+        '--color',
+      ],
+    },
   ],
 };

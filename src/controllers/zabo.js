@@ -151,7 +151,7 @@ export const deleteZabo = ash (async (req, res) => {
 
 const queryZabos = async (req, queryOptions) => {
   const zabos = await Zabo.find (queryOptions)
-    .sort ({ createdAt: -1 })
+    .sort ({ score: -1 })
     .limit (20)
     .populate ('owner', 'name')
     .populate ('likes')

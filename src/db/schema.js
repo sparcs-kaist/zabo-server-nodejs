@@ -59,6 +59,10 @@ export const zaboSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Like',
   }], // Like
+  score: {
+    type: Number,
+    default: 0,
+  },
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
@@ -229,6 +233,10 @@ export const groupSchema = new mongoose.Schema ({
     ref: 'Follow',
     default: [],
   }],
+  score: {
+    type: Number,
+    default: 0,
+  },
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
