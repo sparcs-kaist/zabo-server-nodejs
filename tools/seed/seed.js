@@ -103,6 +103,7 @@ const seedPreRegisters = async () => {
     name: groupName,
     isPreRegistered: true,
     description: '사전 등록된 그룹입니다.',
+    score: 10,
   }));
   const groups = await Group.insertMany (rawGroups);
   console.log ('==>');
