@@ -61,7 +61,6 @@ export const getSearch = ash (async (req, res) => {
   return res.json ({
     zabos,
     groups,
-    categories: [],
   });
 });
 
