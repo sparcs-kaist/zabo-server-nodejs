@@ -21,57 +21,67 @@ export const validateNameController = ash (async (req, res) => {
   return res.json (true);
 });
 
+const getGroupProfile = ash (async (req, res) => {
+  const { group, self } = req;
+  const zabosCount = await Zabo.countDocuments ({ owner: group._id });
+  let myRole = '';
+  if (self) {
+    const selfMember = group.members.find (member => member.user.equals (self._id));
+    myRole = selfMember ? selfMember.role : '';
+  }
+  if (myRole) {
+    await group.populate ({
+      path: 'members.user',
+      select: 'username koreanName lastName firstName _id profilePhoto',
+    }).execPopulate ();
+  } else {
+    // TODO: Hide group.members
+  }
+  return res.json ({
+    ...group.toJSON ({ virtuals: true }),
+    zabosCount,
+    myRole,
+  });
+});
+
+const getUserProfile = ash (async (req, res) => {
+  const { user, self } = req;
+  const result = await user
+    .populate ('groups')
+    .populate ('boards')
+    .execPopulate ();
+
+  const { groups } = user.toJSON ({ virtuals: true });
+  const counts = await Zabo.aggregate ([
+    { $match: { owner: { $in: groups.map (group => group._id) } } },
+    { $group: { _id: '$owner', count: { $sum: 1 } } },
+  ]);
+  for (let i = 0; i < groups.length; i += 1) {
+    const count = counts.find (count => groups[i]._id.equals (count._id));
+    groups[i].zabosCount = count ? count.count : 0;
+  }
+  const [boardId] = user.boards;
+  const board = await Board.findById (boardId);
+  const pinsCount = board.pins.length;
+  let own = false;
+  if (self) {
+    own = self._id.equals (user._id);
+  }
+  return res.json ({
+    ...result.toJSON ({ virtuals: true }),
+    groups,
+    pinsCount,
+    own,
+  });
+});
+
 export const getProfile = ash (async (req, res) => {
   const { user, group, self } = req;
   if (group) {
-    const zabosCount = await Zabo.countDocuments ({ owner: group._id });
-    let myRole = '';
-    if (self) {
-      const selfMember = group.members.find (member => member.user.equals (self._id));
-      myRole = selfMember ? selfMember.role : '';
-    }
-    if (myRole) {
-      await group.populate ({
-        path: 'members.user',
-        select: 'username koreanName lastName firstName _id profilePhoto',
-      }).execPopulate ();
-    } else {
-      // TODO: Hide group.members
-    }
-    return res.json ({
-      ...group.toJSON ({ virtuals: true }),
-      zabosCount,
-      myRole,
-    });
+    return getGroupProfile (req, res);
   }
   if (user) {
-    const result = await user
-      .populate ('groups')
-      .populate ('boards')
-      .execPopulate ();
-
-    const { groups } = user.toJSON ({ virtuals: true });
-    const counts = await Zabo.aggregate ([
-      { $match: { owner: { $in: groups.map (group => group._id) } } },
-      { $group: { _id: '$owner', count: { $sum: 1 } } },
-    ]);
-    for (let i = 0; i < groups.length; i += 1) {
-      const count = counts.find (count => groups[i]._id.equals (count._id));
-      groups[i].zabosCount = count ? count.count : 0;
-    }
-    const [boardId] = user.boards;
-    const board = await Board.findById (boardId);
-    const pinsCount = board.pins.length;
-    let own = false;
-    if (self) {
-      own = self._id.equals (user._id);
-    }
-    return res.json ({
-      ...result.toJSON ({ virtuals: true }),
-      groups,
-      pinsCount,
-      own,
-    });
+    return getUserProfile (req, res);
   }
   throw new Error ('Cannot reach here');
 });
