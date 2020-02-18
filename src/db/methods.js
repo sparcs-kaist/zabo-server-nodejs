@@ -15,7 +15,6 @@ userSchema.virtual ('name')
 userSchema.virtual ('stats')
   .get (function () {
     return {
-      likesCount: this.likes ? this.likes.length : undefined,
       followingsCount: this.followings ? this.followings.length : undefined,
       followersCount: this.followers ? this.followers.length : undefined,
     };

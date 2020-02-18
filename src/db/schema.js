@@ -106,10 +106,6 @@ export const userSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   }], // Only one can be created for current plan, array for probable extensions
-  likes: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'Zabo',
-  }], // Like
   groups: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Group',
