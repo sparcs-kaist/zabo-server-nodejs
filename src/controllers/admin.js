@@ -1,6 +1,8 @@
 import ash from 'express-async-handler';
 import jwt from 'jsonwebtoken';
-import { Board, Group, User } from '../db';
+import {
+  Board, Group, User, Zabo,
+} from '../db';
 import { logger } from '../utils/logger';
 import { isNameInvalidWithRes } from '../utils';
 
@@ -72,4 +74,32 @@ export const fakeLogin = ash (async (req, res) => {
     issuer: 'zabo-sparcs-kaist',
   });
   return res.json (token);
+});
+
+
+/* For admin page */
+// get /analytics/zabo/date/created
+export const analyticsGetZaboCreatedDate = ash (async (req, res) => {
+  logger.api.info ('get /admin/analytics/zabo/date/created');
+  const zabos = [];
+
+  // Use stream
+  const cursor = await Zabo.find ({}).lean ().cursor ();
+  cursor.on ('data', (zabo) => { zabos.push (zabo.createdAt); });
+  cursor.on ('end', () => {
+    res.send (zabos);
+  });
+});
+
+// get /analytics/user/date/created
+export const analyticsGetUserCreatedDate = ash (async (req, res) => {
+  logger.api.info ('get /admin/analytics/user/date/created');
+  const users = [];
+
+  // Use stream
+  const cursor = await User.find ({}).lean ().cursor ();
+  cursor.on ('data', (user) => { users.push (user.createdAt); });
+  cursor.on ('end', () => {
+    res.send (users);
+  });
 });

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { Like } from '../db';
 import { logger } from '../utils/logger';
 import { isValidId } from '../utils';
 

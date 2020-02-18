@@ -18,4 +18,9 @@ router.post ('/group', findUser, adminControllers.createGroup);
 router.post ('/fakeRegister', adminControllers.fakeRegister);
 router.post ('/fakeLogin', adminControllers.fakeLogin);
 
+/* For admin page */
+router.get ('/analytics/zabo/date/created', adminControllers.analyticsGetZaboCreatedDate);
+router.get ('/analytics/user/date/created', adminControllers.analyticsGetUserCreatedDate);
+
+
 module.exports = router;
