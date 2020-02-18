@@ -197,9 +197,7 @@ export const listGroupZabos = ash (async (req, res, next) => {
   const zabos = await Zabo.find ({ owner: group._id }, { description: 0 })
     .sort ({ createdAt: -1 })
     // .limit (20) // TODO: optimize
-    .populate ('owner', 'name')
-    .populate ('likes')
-    .populate ('pins', 'pinnedBy board');
+    .populate ('owner', 'name');
   let result = zabos; // TODO: Refactor dups
   const { self } = req;
   if (self) {
@@ -208,8 +206,8 @@ export const listGroupZabos = ash (async (req, res, next) => {
       const { likes, pins } = zabo;
       return {
         ...zaboJSON,
-        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
-        isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
+        isLiked: likes.some (like => like.equals (self._id)),
+        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
       };
     });
   }

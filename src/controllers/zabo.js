@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import {
-  User, Pin, Zabo, Like, Group,
+  User, Zabo, Group,
 } from '../db';
 import { isValidId } from '../utils';
 
@@ -20,14 +20,10 @@ export const getZabo = ash (async (req, res) => {
   if (newVisit) {
     stat.GET_ZABO (req);
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
-      .populate ('owner', 'name profilePhoto')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board');
+      .populate ('owner', 'name profilePhoto');
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
-      .populate ('owner', 'name profilePhoto')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board');
+      .populate ('owner', 'name profilePhoto');
   }
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
@@ -39,11 +35,12 @@ export const getZabo = ash (async (req, res) => {
   const { self } = req;
   if (self) {
     const { likes, pins } = zabo;
-    zaboJSON.isLiked = !!likes.find (like => like.likedBy.equals (self._id));
-    zaboJSON.isPinned = !!pins.find (pin => pin.pinnedBy.equals (self._id));
-    zaboJSON.isMyZabo = !!self.groups.find (group => group.equals (zaboJSON.owner._id));
+    zaboJSON.isLiked = likes.some (like => like.equals (self._id));
+    zaboJSON.isPinned = self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0);
+    zaboJSON.isMyZabo = self.groups.some (group => group.equals (zaboJSON.owner._id));
     if (zaboJSON.isMyZabo) zaboJSON.createdBy = await User.findById (zaboJSON.createdBy, 'username');
     else delete zaboJSON.createdBy;
+    zaboJSON.owner.following = self.followings.some (following => following.followee.equals (zaboJSON.owner._id));
   } else {
     delete zaboJSON.createdBy;
   }
@@ -105,8 +102,6 @@ export const postNewZabo = ash (async (req, res) => {
   ]);
   await newZabo
     .populate ('owner', 'name profilePhoto')
-    .populate ('likes')
-    .populate ('pins', 'pinnedBy board')
     .execPopulate ();
   const zaboJSON = newZabo.toJSON ();
   zaboJSON.isLiked = false;
@@ -153,9 +148,7 @@ const queryZabos = async (req, queryOptions) => {
   const zabos = await Zabo.find (queryOptions)
     .sort ({ score: -1 })
     .limit (20)
-    .populate ('owner', 'name')
-    .populate ('likes')
-    .populate ('pins', 'pinnedBy board');
+    .populate ('owner', 'name');
 
   let result = zabos;
   const { self } = req;
@@ -165,8 +158,8 @@ const queryZabos = async (req, queryOptions) => {
       const { likes, pins } = zabo;
       return {
         ...zaboJSON,
-        isLiked: !!likes.find (like => self._id.equals (like.likedBy)),
-        isPinned: !!pins.find (pin => self._id.equals (pin.pinnedBy)),
+        isLiked: likes.some (like => self._id.equals (like)),
+        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
       };
     });
   }
@@ -220,19 +213,16 @@ export const pinZabo = ash (async (req, res) => {
 
   // currently user has only 1 boardObject!
   await self
-    .populate ({
-      path: 'boards',
-      populate: 'pins',
-    })
+    .populate ('boards')
     .execPopulate ();
   const [board] = self.boards;
-  const prevPin = board.pins.find (pin => pin.zabo.equals (zaboId));
+  const prevPin = board.pins.find (pin => pin.equals (zaboId));
 
   if (prevPin) {
-    board.pins.pull ({ _id: prevPin._id });
-    zabo.pins.pull ({ _id: prevPin._id });
+    // TODO: Transaction
+    board.pins.pull (zaboId);
+    zabo.pins.pull (board._id);
     await Promise.all ([
-      Pin.deleteOne ({ _id: prevPin._id }),
       board.save (),
       zabo.save (),
     ]);
@@ -241,14 +231,8 @@ export const pinZabo = ash (async (req, res) => {
       pinsCount: zabo.pins.length,
     });
   }
-  const pin = await Pin.create ({
-    pinnedBy: self._id,
-    zabo: zaboId,
-    board: board._id,
-  });
-
-  board.pins.push (pin._id);
-  zabo.pins.push (pin._id);
+  board.pins.push (zaboId);
+  zabo.pins.push (board._id);
   await Promise.all ([board.save (), zabo.save ()]);
 
   return res.send ({
@@ -260,17 +244,14 @@ export const pinZabo = ash (async (req, res) => {
 export const likeZabo = ash (async (req, res) => {
   const { self, zabo, zaboId } = req;
   logger.zabo.info (`post /zabo/like request; zaboId: ${zaboId}, by: ${self.username} (${self.sso_sid})`);
-  await Promise.all ([
-    self.populate ('likes').execPopulate (),
-    zabo.populate ('likes').execPopulate (),
-  ]);
-  const prevLike = zabo.likes.find (like => like.likedBy.equals (self._id));
+
+  const prevLike = zabo.likes.find (like => like.equals (self._id));
 
   if (prevLike) {
-    self.likes.pull ({ _id: prevLike._id });
-    zabo.likes.pull ({ _id: prevLike._id });
+    // TODO: Transaction
+    self.likes.pull ({ _id: zaboId });
+    zabo.likes.pull ({ _id: self._id });
     await Promise.all ([
-      Like.deleteOne ({ _id: prevLike._id }),
       self.save (),
       zabo.save (),
     ]);
@@ -280,13 +261,8 @@ export const likeZabo = ash (async (req, res) => {
     });
   }
 
-  const like = await Like.create ({
-    likedBy: self._id,
-    zabo: zaboId,
-  });
-
-  self.likes.push (like._id);
-  zabo.likes.push (like._id);
+  self.likes.push (zaboId);
+  zabo.likes.push (self._id);
   await Promise.all ([self.save (), zabo.save ()]);
 
   return res.send ({
