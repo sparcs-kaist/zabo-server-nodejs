@@ -106,10 +106,6 @@ export const userSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   }], // Only one can be created for current plan, array for probable extensions
-  likes: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'Zabo',
-  }], // Like
   groups: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Group',
@@ -212,27 +208,6 @@ export const groupSchema = new mongoose.Schema ({
 }, {
   timestamps: true,
   autoIndex: true,
-  id: false,
-});
-
-export const followSchema = new mongoose.Schema ({
-  followee: {
-    required: true,
-    type: mongoose.Schema.ObjectId,
-    refPath: 'onModel',
-  },
-  follower: {
-    required: true,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  onModel: {
-    type: String,
-    required: true,
-    enum: ['User', 'Group'],
-  },
-  __v: { type: Number, select: false },
-}, {
   id: false,
 });
 

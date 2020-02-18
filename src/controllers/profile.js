@@ -1,6 +1,6 @@
 import ash from 'express-async-handler';
 import {
-  Board, Follow, Zabo,
+  Board, Zabo,
 } from '../db';
 import { nameUsabilityCheck, validateName } from '../utils';
 
@@ -49,22 +49,34 @@ const getGroupProfile = ash (async (req, res) => {
 
 const getUserProfile = ash (async (req, res) => {
   const { user, self } = req;
-  const result = await user
+  await user
     .populate ('groups')
     .populate ('boards')
     .execPopulate ();
 
   const { groups } = user.toJSON ({ virtuals: true });
-  const counts = await Zabo.aggregate ([
-    { $match: { owner: { $in: groups.map (group => group._id) } } },
-    { $group: { _id: '$owner', count: { $sum: 1 } } },
-  ]);
+  const [boardId] = user.boards;
+
+  const actions = [];
+
+  actions.push (
+    Zabo.aggregate ([
+      { $match: { owner: { $in: groups.map (group => group._id) } } },
+      { $group: { _id: '$owner', count: { $sum: 1 } } },
+    ]),
+  );
+  actions.push (
+    Board.findById (boardId),
+  );
+  actions.push (
+    Zabo.countDocuments ({ likes: { $in: self._id } }),
+  );
+  const [counts, board, likesCount] = await Promise.all (actions);
+
   for (let i = 0; i < groups.length; i += 1) {
     const count = counts.find (count => groups[i]._id.equals (count._id));
     groups[i].zabosCount = count ? count.count : 0;
   }
-  const [boardId] = user.boards;
-  const board = await Board.findById (boardId);
   const pinsCount = board.pins.length;
   let own = false;
   let following = false;
@@ -72,13 +84,15 @@ const getUserProfile = ash (async (req, res) => {
     own = self._id.equals (user._id);
     if (!own) following = user.followers.some (follower => follower.equals (self._id));
   }
-  return res.json ({
-    ...result.toJSON ({ virtuals: true }),
+  const result = {
+    ...user.toJSON ({ virtuals: true }),
     groups,
     pinsCount,
     own,
     following,
-  });
+  };
+  result.stats.likesCount = likesCount;
+  return res.json (result);
 });
 
 export const getProfile = ash (async (req, res) => {

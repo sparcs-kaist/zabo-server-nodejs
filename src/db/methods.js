@@ -1,5 +1,5 @@
 import {
-  adminUserSchema, boardSchema, userSchema, zaboSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
+  adminUserSchema, boardSchema, userSchema, zaboSchema, groupSchema, statisticsSchema, feedbackSchema,
 } from './schema';
 
 userSchema.virtual ('name')
@@ -15,14 +15,12 @@ userSchema.virtual ('name')
 userSchema.virtual ('stats')
   .get (function () {
     return {
-      likesCount: this.likes ? this.likes.length : undefined,
       followingsCount: this.followings ? this.followings.length : undefined,
       followersCount: this.followers ? this.followers.length : undefined,
     };
   });
 
 userSchema.statics.findByName = function (name, cb) {
-  console.log (name);
   return this.find ().or ([
     { username: new RegExp (name, 'gi') },
     { koreanName: new RegExp (name, 'gi') },
@@ -177,5 +175,5 @@ groupSchema.statics = {
 // })
 
 export {
-  adminUserSchema, userSchema, zaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
+  adminUserSchema, userSchema, zaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema,
 };
