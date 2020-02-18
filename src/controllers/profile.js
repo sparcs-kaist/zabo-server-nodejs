@@ -1,6 +1,6 @@
 import ash from 'express-async-handler';
 import {
-  Board, Follow, Zabo,
+  Board, Zabo,
 } from '../db';
 import { nameUsabilityCheck, validateName } from '../utils';
 
