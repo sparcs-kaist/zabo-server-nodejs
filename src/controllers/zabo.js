@@ -37,9 +37,10 @@ export const getZabo = ash (async (req, res) => {
     const { likes, pins } = zabo;
     zaboJSON.isLiked = likes.some (like => like.equals (self._id));
     zaboJSON.isPinned = self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0);
-    zaboJSON.isMyZabo = !!self.groups.find (group => group.equals (zaboJSON.owner._id));
+    zaboJSON.isMyZabo = self.groups.some (group => group.equals (zaboJSON.owner._id));
     if (zaboJSON.isMyZabo) zaboJSON.createdBy = await User.findById (zaboJSON.createdBy, 'username');
     else delete zaboJSON.createdBy;
+    zaboJSON.owner.following = self.followings.some (following => following.followee.equals (zaboJSON.owner._id));
   } else {
     delete zaboJSON.createdBy;
   }

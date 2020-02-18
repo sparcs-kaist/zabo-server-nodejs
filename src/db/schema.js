@@ -118,13 +118,22 @@ export const userSchema = new mongoose.Schema ({
     type: String,
     enum: [],
   },
-  followings: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Follow',
-  }],
+  followings: [
+    new mongoose.Schema ({
+      followee: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: 'onModel',
+      },
+      onModel: {
+        type: String,
+        required: true,
+        enum: ['User', 'Group'],
+      },
+    }),
+  ],
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Follow',
+    ref: 'User',
   }],
   __v: { type: Number, select: false },
 }, {
@@ -189,8 +198,7 @@ export const groupSchema = new mongoose.Schema ({
   }], // sso_sid of users
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Follow',
-    default: [],
+    ref: 'User',
   }],
   __v: { type: Number, select: false },
 }, {
