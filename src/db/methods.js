@@ -22,7 +22,6 @@ userSchema.virtual ('stats')
   });
 
 userSchema.statics.findByName = function (name, cb) {
-  console.log (name);
   return this.find ().or ([
     { username: new RegExp (name, 'gi') },
     { koreanName: new RegExp (name, 'gi') },
