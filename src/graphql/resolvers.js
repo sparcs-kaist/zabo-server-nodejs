@@ -5,12 +5,12 @@ const options = {
   port: 6379, // Redis port
   host: '127.0.0.1', // Redis host
   keyPrefix: 'zabo:',
-  retryStrategy: (times) => Math.min(times * 50, 2000),
+  retryStrategy: (times) => Math.min (times * 50, 2000),
 };
 
-export const pubsub = new RedisPubSub({
-  publisher: new Redis(options),
-  subscriber: new Redis(options),
+export const pubsub = new RedisPubSub ({
+  publisher: new Redis (options),
+  subscriber: new Redis (options),
 });
 
 const NEW_NOTICE = 'NEW_NOTICE';
