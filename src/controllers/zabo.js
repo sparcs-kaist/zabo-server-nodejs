@@ -12,7 +12,7 @@ export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   let newVisit;
-  if (!req.session[zaboId] || moment ().isAfter (req.session[zaboId])) {
+  if (req.get ('User-Agent').length > 20 && (!req.session[zaboId] || moment ().isAfter (req.session[zaboId]))) {
     newVisit = true;
     req.session[zaboId] = moment ().add (30, 'seconds');
   }
@@ -146,7 +146,7 @@ export const deleteZabo = ash (async (req, res) => {
 
 const queryZabos = async (req, queryOptions) => {
   const zabos = await Zabo.find (queryOptions)
-    .sort ({ createdAt: -1 })
+    .sort ({ score: -1 })
     .limit (20)
     .populate ('owner', 'name');
 
@@ -188,7 +188,7 @@ export const listNextZabos = ash (async (req, res) => {
   const { lastSeen, relatedTo } = req.query;
   let queryOptions = {};
   if (relatedTo) {
-    const zabo = await Zabo.findOne ({ _id: relatedTo });
+    const zabo = await Zabo.findById (relatedTo);
     if (!zabo) {
       logger.zabo.error ('get /zabo/list request error; 404 - related zabo does not exist');
       return res.status (404).json ({
@@ -197,13 +197,12 @@ export const listNextZabos = ash (async (req, res) => {
     }
     queryOptions = { category: { $in: zabo.category }, _id: { $ne: relatedTo } };
   }
-  queryOptions = {
-    ...queryOptions,
-    _id: {
-      ...queryOptions._id,
-      $lt: lastSeen,
-    },
-  };
+  if (lastSeen) {
+    const lastSeenZabo = await Zabo.findById (lastSeen, 'score');
+    queryOptions.score = {
+      $lt: lastSeenZabo.score,
+    };
+  }
   const result = await queryZabos (req, queryOptions);
   return res.send (result);
 });

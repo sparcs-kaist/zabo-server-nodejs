@@ -81,52 +81,76 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  async searchPartial (query, tags) {
-    const queryOptions = {
+  searchPartial (query, tags, lastSeen) {
+    let category = tags;
+    if (!Array.isArray (tags)) { category = [tags]; }
+    let queryOptions = {
       $or:
         [ // TOOD: Sort search query result
           {
             title: new RegExp (query, 'gi'),
-            category: { $in: tags },
+            category: { $all: category },
           },
           {
             description: new RegExp (query, 'gi'),
-            category: { $in: tags },
+            category: { $all: category },
           },
         ],
     };
-    if (tags.length === 0) {
+    if (lastSeen) {
+      queryOptions = {
+        ...queryOptions,
+        _id: {
+          ...queryOptions._id,
+          $lt: lastSeen,
+        },
+      };
+    }
+    if (!query || query === 'undefined') {
+      delete queryOptions.$or[0].title;
+      delete queryOptions.$or[1].description;
+    }
+    if (!tags || tags === 'undefined') {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
     }
-    return this.find (queryOptions).limit (20);
+    return this.find (queryOptions);
   },
 
-  async searchFull (query, tags) {
-    const queryOptions = {
+  searchFull (query, tags, lastSeen) {
+    let category = tags;
+    if (!Array.isArray (tags)) { category = [tags]; }
+
+    let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
-      category: { $in: tags },
+      category: { $all: category },
     };
-    if (tags.length === 0) {
+    if (lastSeen) {
+      queryOptions = {
+        ...queryOptions,
+        _id: {
+          ...queryOptions._id,
+          $lt: lastSeen,
+        },
+      };
+    }
+    if (!query || query === 'undefined') {
+      delete queryOptions.$text;
+    }
+    if (!tags || tags === 'undefined') {
       delete queryOptions.category;
     }
     return this.find (queryOptions, {
       score: { $meta: 'textScore' },
-    }).sort ({ score: { $meta: 'textScore' } }).limit (20);
+    }).sort ({ score: { $meta: 'textScore' } });
+    // limit (20)
   },
-
-  async search (query, tags) {
-    // Currently : tags are searched by 'or'
-    const result = await this.searchFull (query, tags);
-    if (result.length < 10) {
-      return this.searchPartial (query, tags);
-    }
-    return result;
-  },
+  // Currently : tags(category) are searched by 'or'
 };
 
 groupSchema.statics = {
-  async searchPartial (q) {
+  searchPartial (q) {
+    if (!q) { return []; }
     return this.find ({
       $or:
       [
@@ -136,24 +160,13 @@ groupSchema.statics = {
     }).limit (20);
   },
 
-  async searchFull (q) {
+  searchFull (q) {
+    if (!q) { return []; }
     return this.find ({
       $text: { $search: q, $caseSensitive: false },
     }, {
       score: { $meta: 'textScore' },
     }).sort ({ score: { $meta: 'textScore' } }).limit (20);
-  },
-
-  async search (q) {
-    const result = await this.searchFull (q, (err, data) => {
-      if (!err && data.length) {
-        return this.callback (err, data);
-      }
-    });
-    if (result.length < 10) {
-      return this.searchPartial (q);
-    }
-    return result;
   },
 };
 

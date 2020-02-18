@@ -32,7 +32,7 @@ export const zaboSchema = new mongoose.Schema ({
   category: [{
     type: String,
     // enum: TAGS, // ["recruit", "seminar", "contest", "event", "show", "fair"]
-  }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+  }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회] -> caution: there is no "#"!
   views: Number,
   endAt: {
     type: Date,
@@ -46,6 +46,10 @@ export const zaboSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   }], // Like
+  score: {
+    type: Number,
+    default: 0,
+  },
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
@@ -200,6 +204,10 @@ export const groupSchema = new mongoose.Schema ({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  score: {
+    type: Number,
+    default: 0,
+  },
   __v: { type: Number, select: false },
 }, {
   timestamps: true,

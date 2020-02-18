@@ -22,6 +22,8 @@ db.once ('open', () => {
   logger.info (`${boldBlue ('Mongo db successfully connected!!')}`);
 });
 
+export default db;
+
 export const AdminUser = mongoose.model ('AdminUser', adminUserSchema);
 export const User = mongoose.model ('User', userSchema);
 export const Zabo = mongoose.model ('Zabo', zaboSchema);
