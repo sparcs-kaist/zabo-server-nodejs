@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import {
-  adminUserSchema, userSchema, zaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
+  adminUserSchema, userSchema, zaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema,
 } from './methods';
 import { preRegisterSchema } from './schema';
 import { logger } from '../utils/logger';
@@ -29,7 +29,6 @@ export const User = mongoose.model ('User', userSchema);
 export const Zabo = mongoose.model ('Zabo', zaboSchema);
 export const Board = mongoose.model ('Board', boardSchema);
 export const Group = mongoose.model ('Group', groupSchema);
-export const Follow = mongoose.model ('Follow', followSchema);
 export const Statistic = mongoose.model ('Statistic', statisticsSchema);
 export const Feedback = mongoose.model ('Feedback', feedbackSchema);
 export const PreRegister = mongoose.model ('PreRegister', preRegisterSchema);

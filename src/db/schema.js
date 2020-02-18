@@ -215,27 +215,6 @@ export const groupSchema = new mongoose.Schema ({
   id: false,
 });
 
-export const followSchema = new mongoose.Schema ({
-  followee: {
-    required: true,
-    type: mongoose.Schema.ObjectId,
-    refPath: 'onModel',
-  },
-  follower: {
-    required: true,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  onModel: {
-    type: String,
-    required: true,
-    enum: ['User', 'Group'],
-  },
-  __v: { type: Number, select: false },
-}, {
-  id: false,
-});
-
 export const statisticsSchema = new mongoose.Schema ({
   type: {
     type: String,

@@ -1,5 +1,5 @@
 import {
-  adminUserSchema, boardSchema, userSchema, zaboSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
+  adminUserSchema, boardSchema, userSchema, zaboSchema, groupSchema, statisticsSchema, feedbackSchema,
 } from './schema';
 
 userSchema.virtual ('name')
@@ -177,5 +177,5 @@ groupSchema.statics = {
 // })
 
 export {
-  adminUserSchema, userSchema, zaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema, followSchema,
+  adminUserSchema, userSchema, zaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema,
 };
