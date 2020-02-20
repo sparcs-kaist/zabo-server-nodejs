@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
 import { stat } from '../utils/statistic';
 import {
-  User, Zabo, Group,
+  User, Zabo, Group, Board, DeletedZabo,
 } from '../db';
 import { isValidId } from '../utils';
 
@@ -136,11 +136,25 @@ export const editZabo = ash (async (req, res) => {
   });
 });
 
-// DANGER: Not fully implemented. Don't use
 export const deleteZabo = ash (async (req, res) => {
-  const { zaboId } = req;
+  const { zaboId, zabo } = req;
   logger.zabo.info ('delete /zabo/ request; id: %s', zaboId);
-  await Zabo.deleteOne ({ _id: zaboId });
+  try {
+    const [, deleted] = await Promise.all ([
+      Board.updateMany ({ pins: zaboId }, { $pull: { pins: zaboId } }),
+      Zabo.findOneAndDelete ({ _id: zaboId }),
+    ]);
+    const newDeletedZabo = deleted.toJSON ({ virtuals: false });
+    delete newDeletedZabo._id;
+    newDeletedZabo.photos.forEach ((photo, i) => {
+      delete newDeletedZabo.photos[i]._id;
+    });
+    await DeletedZabo.create (newDeletedZabo);
+  } catch (error) {
+    logger.zabo.error ('===> Error occured while deleting zabo - %s', zaboId);
+    logger.zabo.error ('=> %s', error);
+    throw error;
+  }
   return res.send (true);
 });
 
