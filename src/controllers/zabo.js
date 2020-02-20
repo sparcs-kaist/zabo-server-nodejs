@@ -6,7 +6,7 @@ import { stat } from '../utils/statistic';
 import {
   User, Zabo, Group,
 } from '../db';
-import { isValidId } from '../utils';
+import { isValidId, parseJSON } from '../utils';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
@@ -49,19 +49,20 @@ export const getZabo = ash (async (req, res) => {
 
 export const postNewZabo = ash (async (req, res) => {
   const { self } = req;
-  const { title, description, endAt } = req.body;
+  const { title, description, schedule: jsonSchedule } = req.body;
+  const schedule = parseJSON (jsonSchedule);
   let { category } = req.body;
   logger.zabo.info (
-    'post /zabo/ request; by: %s, title: %s, description: %s, category: %s, endAt: %s, files info: %s',
+    'post /zabo/ request; by: %s, title: %s, description: %s, category: %s, schedule: %s, files info: %s',
     self.username,
     title,
     description,
     category,
-    endAt,
+    schedule,
     req.files,
   );
   category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
-  if (!req.files || !title || !description || !endAt) {
+  if (!req.files || !title || !description) {
     logger.zabo.error ('post /zabo/ request error; 400');
     return res.status (400).json ({
       error: 'bad request',
@@ -79,7 +80,7 @@ export const postNewZabo = ash (async (req, res) => {
     title,
     description,
     category,
-    endAt,
+    schedule,
   });
 
   const calSizes = [];
@@ -112,27 +113,28 @@ export const postNewZabo = ash (async (req, res) => {
 
 export const editZabo = ash (async (req, res) => {
   const { zabo } = req;
-  const { title, description, endAt } = req.body;
+  const { title, description, schedule: jsonSchedule } = req.body;
+  const schedule = parseJSON (jsonSchedule);
   let { category } = req.body;
   logger.zabo.info (
-    'post /zabo/%s/edit request; title: %s, description: %s, category: %s, endAt: %s',
+    'post /zabo/%s/edit request; title: %s, description: %s, category: %s, schedule: %s',
     zabo._id,
     title,
     description,
     category,
-    endAt,
+    schedule,
   );
   category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
   zabo.title = title;
   zabo.description = description;
   zabo.category = category;
-  zabo.endAt = endAt;
+  zabo.schedule = schedule;
   await zabo.save ();
   return res.json ({
     title: zabo.title,
     description: zabo.description,
     category: zabo.category,
-    endAt: zabo.endAt,
+    schedule: zabo.schedule,
   });
 });
 

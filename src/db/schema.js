@@ -32,12 +32,17 @@ export const zaboSchema = new mongoose.Schema ({
   category: [{
     type: String,
     // enum: TAGS, // ["recruit", "seminar", "contest", "event", "show", "fair"]
-  }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회] -> caution: there is no "#"!
+  }], // [축제, 세미나, 대회, 공연, 행사, 설명회, ...] -> caution: there is no "#"!
   views: Number,
-  endAt: {
-    type: Date,
-    required: true,
-  },
+  schedule: [{
+    title: String,
+    startAt: {
+      type: Date,
+      required: true,
+    },
+    endAt: Date,
+    eventType: String, // '행사' or '신청'
+  }],
   pins: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
@@ -200,6 +205,9 @@ export const groupSchema = new mongoose.Schema ({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  category: [{
+    type: String,
+  }], // [학생 단체, 동아리, 기업, ...] -> caution: there is no "#"!
   score: {
     type: Number,
     default: 0,

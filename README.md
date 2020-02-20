@@ -274,6 +274,7 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 ### Authors
 
 * **Cookie** - [Cookie](https://github.com/jungdj)
+* **Youns** - [Youns](https://github.com/Choiyounseo)
 * **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
 * **Alogon** - [Kalogon](https://github.com/Kalogon)
 
