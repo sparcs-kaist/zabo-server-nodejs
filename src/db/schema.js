@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { EVENTS } from '../utils/variables';
 
-export const zaboSchema = new mongoose.Schema ({
+const zaboSchemaObject = {
   createdBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
@@ -56,9 +56,19 @@ export const zaboSchema = new mongoose.Schema ({
     default: 0,
   },
   __v: { type: Number, select: false },
-}, {
+};
+export const zaboSchema = new mongoose.Schema (zaboSchemaObject, {
   timestamps: true,
   autoIndex: true,
+  toJSON: { virtuals: true },
+  id: false,
+});
+
+export const deletedZaboSchema = new mongoose.Schema ({
+  ...zaboSchemaObject,
+  createdAt: Date,
+  updatedAt: Date,
+}, {
   toJSON: { virtuals: true },
   id: false,
 });
