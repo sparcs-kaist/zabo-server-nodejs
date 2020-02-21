@@ -34,7 +34,7 @@ const zaboSchemaObject = {
     // enum: TAGS, // ["recruit", "seminar", "contest", "event", "show", "fair"]
   }], // [축제, 세미나, 대회, 공연, 행사, 설명회, ...] -> caution: there is no "#"!
   views: Number,
-  schedule: [{
+  schedules: [{
     title: String,
     startAt: {
       type: Date,

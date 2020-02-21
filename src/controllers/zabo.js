@@ -49,16 +49,16 @@ export const getZabo = ash (async (req, res) => {
 
 export const postNewZabo = ash (async (req, res) => {
   const { self } = req;
-  const { title, description, schedule: jsonSchedule } = req.body;
-  const schedule = parseJSON (jsonSchedule);
+  const { title, description, schedules: jsonSchedules } = req.body;
+  const schedules = parseJSON (jsonSchedules);
   let { category } = req.body;
   logger.zabo.info (
-    'post /zabo/ request; by: %s, title: %s, description: %s, category: %s, schedule: %s, files info: %s',
+    'post /zabo/ request; by: %s, title: %s, description: %s, category: %s, schedules: %s, files info: %s',
     self.username,
     title,
     description,
     category,
-    schedule,
+    schedules,
     req.files,
   );
   category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
@@ -80,7 +80,7 @@ export const postNewZabo = ash (async (req, res) => {
     title,
     description,
     category,
-    schedule,
+    schedules,
   });
 
   const calSizes = [];
@@ -113,28 +113,28 @@ export const postNewZabo = ash (async (req, res) => {
 
 export const editZabo = ash (async (req, res) => {
   const { zabo } = req;
-  const { title, description, schedule: jsonSchedule } = req.body;
-  const schedule = parseJSON (jsonSchedule);
+  const { title, description, schedules: jsonSchedules } = req.body;
+  const schedules = parseJSON (jsonSchedules);
   let { category } = req.body;
   logger.zabo.info (
-    'post /zabo/%s/edit request; title: %s, description: %s, category: %s, schedule: %s',
+    'post /zabo/%s/edit request; title: %s, description: %s, category: %s, schedules: %s',
     zabo._id,
     title,
     description,
     category,
-    schedule,
+    schedules,
   );
   category = (category || '').toLowerCase ().split ('#').filter (x => !!x);
   zabo.title = title;
   zabo.description = description;
   zabo.category = category;
-  zabo.schedule = schedule;
+  zabo.schedules = schedules;
   await zabo.save ();
   return res.json ({
     title: zabo.title,
     description: zabo.description,
     category: zabo.category,
-    schedule: zabo.schedule,
+    schedules: zabo.schedules,
   });
 });
 

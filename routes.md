@@ -269,7 +269,7 @@ TODO: 그룹의 정보 \(사진\)을 업데이트할 수 있습니다. 이름도
 
 400 : null id 404 : 해당하는 zabo가 없음 500
 
-#### `POST` /zabo \(img, title, description, category, schedule\) =&gt; success
+#### `POST` /zabo \(img, title, description, category, schedules\) =&gt; success
 
 유효성 확인
 
@@ -285,7 +285,7 @@ TODO: 그룹의 정보 \(사진\)을 업데이트할 수 있습니다. 이름도
 | title | `string` | title of zabo |
 | description | `string` | description of zabo |
 | category | `string` | category of zabo |
-| schedule  | <code>{title, startAt, endAt, type}</code> | time info of zabo |
+| schedules  | <code>[{title, startAt, endAt, type}]</code> | time info of zabo |
 
 **Errors**
 
