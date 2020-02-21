@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 import { Group, User } from '../db';
 import { RESERVED_ROUTES_USERNAME_EXCEPTIONS } from './variables';
 
-export const parseJSON = (json) => {
+export const parseJSON = (json, fallback = {}) => {
   try {
     return JSON.parse (json);
   } catch (error) {
     console.error (json);
     console.error (error.message);
-    return {};
+    return fallback;
   }
 };
 

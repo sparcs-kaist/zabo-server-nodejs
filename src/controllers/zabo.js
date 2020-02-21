@@ -50,7 +50,7 @@ export const getZabo = ash (async (req, res) => {
 export const postNewZabo = ash (async (req, res) => {
   const { self } = req;
   const { title, description, schedules: jsonSchedules } = req.body;
-  const schedules = parseJSON (jsonSchedules);
+  const schedules = parseJSON (jsonSchedules, []);
   let { category } = req.body;
   logger.zabo.info (
     'post /zabo/ request; by: %s, title: %s, description: %s, category: %s, schedules: %s, files info: %s',
