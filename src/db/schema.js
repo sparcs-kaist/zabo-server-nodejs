@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { EVENTS } from '../utils/variables';
+import { EVENTS, ZABO_CATEGORIES, GROUP_CATEGORIES } from '../utils/variables';
 
 const zaboSchemaObject = {
   createdBy: {
@@ -31,8 +31,8 @@ const zaboSchemaObject = {
   },
   category: [{
     type: String,
-    // enum: TAGS, // ["recruit", "seminar", "contest", "event", "show", "fair"]
-  }], // [축제, 세미나, 대회, 공연, 행사, 설명회, ...] -> caution: there is no "#"!
+    // enum: ZABO_CATEGORIES,
+  }],
   views: Number,
   schedules: [{
     title: String,
@@ -217,7 +217,8 @@ export const groupSchema = new mongoose.Schema ({
   }],
   category: [{
     type: String,
-  }], // [학생 단체, 동아리, 기업, ...] -> caution: there is no "#"!
+    // enum: GROUP_CATEGORIES,
+  }],
   score: {
     type: Number,
     default: 0,

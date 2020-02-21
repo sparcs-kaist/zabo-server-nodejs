@@ -113,8 +113,7 @@ export const postNewZabo = ash (async (req, res) => {
 
 export const editZabo = ash (async (req, res) => {
   const { zabo } = req;
-  const { title, description, schedules: jsonSchedules } = req.body;
-  const schedules = parseJSON (jsonSchedules);
+  const { title, description, schedules = [] } = req.body;
   let { category } = req.body;
   logger.zabo.info (
     'post /zabo/%s/edit request; title: %s, description: %s, category: %s, schedules: %s',
