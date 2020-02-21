@@ -6,6 +6,7 @@ const router = express.Router ();
 
 router.get ('/', authControllers.authCheck);
 router.get ('/login', authControllers.login);
+router.get ('/loginApi', authControllers.loginApi);
 router.post ('/login/callback', authControllers.loginCallback);
 router.get ('/logout', authControllers.logout);
 router.get ('/unregister', authControllers.unregister);

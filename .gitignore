@@ -19,6 +19,7 @@ yarn-error.log*
 
 # Generated files
 /tmp
+/config/sids.json
 
 # Deployment files
 process.json

@@ -1,17 +1,34 @@
 import express from 'express';
 
-import { authMiddleware, jwtParseMiddleware } from '../middlewares';
+import {
+  authMiddleware,
+  findSelfMiddleware,
+  findZaboMiddleware,
+  isZaboOwnerMiddleware,
+  tryFindSelf,
+  validateId,
+  validateZaboId,
+} from '../middlewares';
 import { zaboUpload } from '../utils/aws';
 
 import * as zc from '../controllers/zabo';
 
 const router = express.Router ();
 
-router.get ('/', jwtParseMiddleware, zc.getZabo);
-router.post ('/', authMiddleware, zaboUpload.array ('img', 20), zc.postNewZabo);
-router.delete ('/', authMiddleware, zc.deleteZabo);
-router.get ('/list', zc.listZabos, zc.listNextZabos);
-router.post ('/pin', authMiddleware, zc.pinZabo);
-router.delete ('/pin', authMiddleware, zc.deletePin);
+const findZaboWithParams = (req, res, next) => {
+  req.zaboId = req.params.zaboId;
+  return findZaboMiddleware (req, res, next);
+};
+
+const findZaboWithAuth = [validateZaboId, authMiddleware, findSelfMiddleware, findZaboWithParams];
+const isZaboOwner = [validateZaboId, authMiddleware, findSelfMiddleware, findZaboWithParams, isZaboOwnerMiddleware];
+
+router.get ('/list', tryFindSelf, zc.listZabos, validateId ('lastSeen'), zc.listNextZabos);
+router.post ('/:zaboId/pin', findZaboWithAuth, zc.pinZabo);
+router.post ('/:zaboId/like', findZaboWithAuth, zc.likeZabo);
+router.get ('/:zaboId', validateZaboId, tryFindSelf, zc.getZabo);
+router.patch ('/:zaboId', isZaboOwner, zc.editZabo);
+router.delete ('/:zaboId', isZaboOwner, zc.deleteZabo);
+router.post ('/', authMiddleware, findSelfMiddleware, zaboUpload.array ('img', 20), zc.postNewZabo);
 
 module.exports = router;

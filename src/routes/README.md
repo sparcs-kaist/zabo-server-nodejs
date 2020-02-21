@@ -295,10 +295,10 @@ TODO: 그룹의 정보 (사진)을 업데이트할 수 있습니다. 이름도 �
 404 : 해당하는 zabo가 없음\
 500
 
-#### <code>POST</code> /zabo (img, title, description, category, endAt) => success
+#### <code>POST</code> /zabo (img, title, description, category, schedules) => success
 
 유효성 확인
-- img, title, description, category, endAt은 필수입니다.
+- img, title, description, category는 필수입니다.
 - img는 20개 이하로 전송해야 합니다.
 - category는 recruit, seminar, contest, event, show, fair중 하나여야 합니다.
 
@@ -310,7 +310,7 @@ TODO: 그룹의 정보 (사진)을 업데이트할 수 있습니다. 이름도 �
 | title  | <code>string</code> | title of zabo |
 | description  | <code>string</code> | description of zabo |
 | category  | <code>string</code> | category of zabo |
-| endAt  | <code>date</code> | end time of zabo |
+| schedules  | <code>{title, startAt, endAt, type}</code> | time info of zabo |
 
 ##### Errors
 

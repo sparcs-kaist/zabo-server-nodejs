@@ -9,7 +9,8 @@
     "env:prod": "cross-env NODE_ENV=production",
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
-    "prod": "yarn env:prod nodemon index"
+    "prod": "yarn env:prod nodemon index",
+    "seed": "node tools/seed"
   },
   "husky": {
     "hooks": {
@@ -30,7 +31,7 @@
     "axios": ">=0.18.1",
     "chalk": "^2.4.2",
     "connect-redis": "^3.4.1",
-    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.5",
     "cross-env": "^5.2.0",
     "debug": "~2.6.9",
     "dotenv": "^7.0.0",
@@ -46,21 +47,29 @@
     "ioredis": "^4.14.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.13",
-    "mongoose": "^5.5.5",
+    "moment": "^2.24.0",
+    "mongoose": "^5.7.5",
     "morgan": "~1.9.0",
     "multer": "^1.4.1",
     "multer-s3": "^2.9.0",
+    "node-cron": "^2.0.3",
+    "query-string": "^6.10.1",
     "s3-image-size": "^0.1.3",
+    "saslprep": "^1.0.3",
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.8.0",
     "zabo-utils": "^0.0.6"
   },
   "devDependencies": {
+    "clear": "^0.1.0",
+    "clui": "^0.3.6",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0",
+    "figlet": "^1.2.4",
     "husky": "^4.0.6",
+    "inquirer": "^7.0.3",
     "lint-staged": "^9.5.0",
     "nodemon": "^1.18.11",
     "prettier": "^1.17.0"

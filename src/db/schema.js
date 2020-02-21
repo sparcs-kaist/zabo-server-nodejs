@@ -1,66 +1,9 @@
 import mongoose from 'mongoose';
-import { CATEGORIES, EVENTS } from '../utils/variables';
+import {
+  EVENTS, ZABO_CATEGORIES, GROUP_CATEGORIES, GROUP_CATEGORIES_2,
+} from '../utils/variables';
 
-export const userSchema = new mongoose.Schema ({
-  sso_uid: { type: String, unique: true },
-  sso_sid: {
-    type: String, required: true, unique: true, index: true,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required () {
-      return !!this.sso_uid;
-    },
-    match: /^[^@\s]+@[^@\s]+\.[^@\s]+$/s,
-  },
-  profilePhoto: String,
-  /* From SSO */
-  gender: String,
-  birthday: Date,
-  flags: [String],
-  firstName: String,
-  lastName: String,
-  koreanName: String,
-  kaistId: String,
-  sparcsId: { type: String, sparse: true },
-  facebookId: String,
-  tweeterId: String,
-  studentId: String,
-  kaistEmail: String,
-  kaistPersonType: String,
-  kaistInfoTime: String,
-  kaistStatus: String,
-  /* From SSO */
-  username: {
-    type: String,
-    // username and group name are globaly unique though it's not represented in schema constraint
-    unique: true,
-    required: true,
-    index: true,
-  },
-  boards: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'Board',
-  }], // Only one can be created for current plan, array for probable extensions
-  groups: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'Group',
-  }],
-  currentGroup: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Group',
-  }, // Currently selected group. not an uploader if null
-  type: {
-    type: String,
-    enum: [],
-  },
-}, {
-  timestamps: true,
-  autoIndex: true,
-});
-
-export const zaboSchema = new mongoose.Schema ({
+const zaboSchemaObject = {
   createdBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
@@ -90,21 +33,132 @@ export const zaboSchema = new mongoose.Schema ({
   },
   category: [{
     type: String,
-    // enum: CATEGORIES, // ["recruit", "seminar", "contest", "event", "show", "fair"]
-  }], // [리크루팅, 세미나, 대회, 공연, 행사, 설명회]
+    // enum: ZABO_CATEGORIES,
+  }],
+  views: Number,
+  schedules: [{
+    title: String,
+    startAt: {
+      type: Date,
+      required: true,
+    },
+    endAt: Date,
+    eventType: String, // '행사' or '신청'
+  }],
   pins: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Pin',
+    ref: 'Board',
   }], // Pin
-  endAt: {
-    type: Date,
-    required: true,
+  likes: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  }], // Like
+  score: {
+    type: Number,
+    default: 0,
   },
+  __v: { type: Number, select: false },
+};
+export const zaboSchema = new mongoose.Schema (zaboSchemaObject, {
+  timestamps: true,
+  autoIndex: true,
+  toJSON: { virtuals: true },
+  id: false,
+});
+
+export const deletedZaboSchema = new mongoose.Schema ({
+  ...zaboSchemaObject,
+  createdAt: Date,
+  updatedAt: Date,
+}, {
+  toJSON: { virtuals: true },
+  id: false,
+});
+
+export const userSchema = new mongoose.Schema ({
+  sso_uid: { type: String, unique: true },
+  sso_sid: {
+    type: String, required: true, unique: true, index: true,
+  },
+  email: {
+    type: String,
+    unique: true,
+    required () {
+      return !!this.sso_uid;
+    },
+    match: /^[^@\s]+@[^@\s]+\.[^@\s]+$/s,
+  },
+  username: {
+    type: String,
+    // username and group name are globaly unique though it's not represented in schema constraint
+    unique: true,
+    required: true,
+    index: true,
+  },
+  description: String,
+  profilePhoto: String,
+  backgroundPhoto: String,
+  isAdmin: { // Only for usage in front.
+    type: Boolean,
+    default: false,
+  },
+  /* From SSO */
+  gender: String,
+  birthday: Date,
+  flags: [String],
+  firstName: String,
+  lastName: String,
+  koreanName: String,
+  kaistId: String,
+  sparcsId: { type: String, sparse: true },
+  facebookId: String,
+  tweeterId: String,
+  studentId: String,
+  kaistEmail: String,
+  kaistPersonType: String,
+  kaistInfoTime: String,
+  kaistStatus: String,
+  /* From SSO */
+  boards: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Board',
+  }], // Only one can be created for current plan, array for probable extensions
+  groups: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Group',
+  }],
+  currentGroup: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Group',
+  }, // Currently selected group. not an uploader if null
+  type: {
+    type: String,
+    enum: [],
+  },
+  followings: [
+    new mongoose.Schema ({
+      followee: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: 'onModel',
+      },
+      onModel: {
+        type: String,
+        required: true,
+        enum: ['User', 'Group'],
+      },
+    }),
+  ],
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
+  toJSON: { virtuals: true },
+  id: false,
 });
-
 
 export const boardSchema = new mongoose.Schema ({
   title: {
@@ -116,28 +170,20 @@ export const boardSchema = new mongoose.Schema ({
   description: String,
   category: String,
   isPrivate: Boolean,
-}, {
-  timestamps: true,
-});
-
-export const pinSchema = new mongoose.Schema ({
-  /*
-User can pin unlimited zabos and zabos can be pinned by hundreds or thousands
-of users. Therefore, it's hard to manage user pin zabo in user collection or
-zabo pinned by user in zabo collection. Even this model incurs extra db
-operations it's the only way to make it scalable. */
-  pinnedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  }, // _id of user
-  zaboId: {
+  pins: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
-  },
-  boardId: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Board',
-  },
+  }],
+  __v: { type: Number, select: false },
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  id: false,
+});
+
+const revisionHistorySchema = new mongoose.Schema ({
+  prev: String,
+  next: String,
 }, {
   timestamps: true,
 });
@@ -150,19 +196,40 @@ export const groupSchema = new mongoose.Schema ({
     unique: true,
     index: true,
   },
+  isPreRegistered: Boolean,
+  revisionHistory: [revisionHistorySchema],
+  subtitle: String,
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
+  recentUpload: Date,
   members: [{
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
     },
-    isAdmin: Boolean,
+    role: {
+      type: String,
+      enum: ['admin', 'editor'],
+    },
   }], // sso_sid of users
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  category: [{
+    type: String,
+    // enum: [...GROUP_CATEGORIES, ... GROUP_CATEGORIES_2],
+  }],
+  score: {
+    type: Number,
+    default: 0,
+  },
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
+  id: false,
 });
 
 export const statisticsSchema = new mongoose.Schema ({
@@ -178,8 +245,10 @@ export const statisticsSchema = new mongoose.Schema ({
   data: {
     type: Map,
   },
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
 });
 
 export const feedbackSchema = new mongoose.Schema ({
@@ -190,6 +259,52 @@ export const feedbackSchema = new mongoose.Schema ({
   feedback: {
     type: String,
   },
+  __v: { type: Number, select: false },
 }, {
   timestamps: true,
+  id: false,
+});
+
+const actionHistory = new mongoose.Schema ({
+  name: {
+    type: String,
+    required: true,
+  },
+  target: String,
+  info: Map,
+  __v: { type: Number, select: false },
+}, {
+  timestamps: true,
+  id: false,
+});
+
+export const adminUserSchema = new mongoose.Schema ({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+  actionHistory: [actionHistory],
+  __v: { type: Number, select: false },
+}, {
+  timestamps: true,
+  id: false,
+});
+
+export const preRegisterSchema = new mongoose.Schema ({
+  group: {
+    required: true,
+    type: mongoose.Schema.ObjectId,
+    ref: 'Group',
+  },
+  groupName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  owner: String,
+  ownerSID: String,
+  registered: {
+    type: Boolean,
+    default: false,
+  },
 });

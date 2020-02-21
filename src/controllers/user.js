@@ -1,34 +1,47 @@
 import ash from 'express-async-handler';
-import { Group, User } from '../db';
+import { User } from '../db';
 import { logger } from '../utils/logger';
+import { isNameInvalidWithRes } from '../utils';
+
+// get /user/
+export const getUserInfo = ash (async (req, res) => {
+  const { sid } = req.decoded;
+  logger.api.info ('get /user/ request; sid: %s', sid);
+
+  const user = await User.findOne ({ sso_sid: sid })
+    .populate ('groups')
+    .populate ('boards');
+  res.json (user);
+});
 
 // post /user
 export const updateUserInfo = ash (async (req, res) => {
   const { sid } = req.decoded;
-  const { username } = req.body;
-  logger.api.info ('post /user/ request; sid: %s, username: %s', sid, username);
-  const [userTaken, groupTaken] = await Promise.all ([
-    User.findOne ({ username }),
-    Group.findOne ({ name: username }),
-  ]);
-  if (userTaken || groupTaken) {
-    return res.status (400).json ({
-      error: `'${username}' has already been taken.`,
-    });
+  const { username, description } = req.body;
+  const { file } = req;
+  logger.api.info (
+    'post /user/ request; sid: %s, username: %s, description: %s %s',
+    sid,
+    username,
+    description,
+    file ? `image: ${file.location}` : '',
+  );
+  const updateParams = { description };
+  const self = await User.findOne ({ sso_sid: sid });
+  if (self.username !== username) {
+    const error = await isNameInvalidWithRes (username, req, res);
+    if (error) return error;
+    updateParams.username = username;
   }
+  if (file) updateParams.profilePhoto = file.location;
   // Ignore very rare timing issue which is unlikely to happen.
   const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
-    $set: {
-      username,
-    },
+    $set: updateParams,
   }, {
     upsert: true,
     new: true,
   })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
+    .select ('username description profilePhoto');
 
   return res.json (updatedUser);
 });
@@ -44,26 +57,29 @@ export const updateProfilePhoto = ash (async (req, res) => {
     },
   }, {
     new: true,
-  })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
+  });
 
-  res.json (updatedUser);
+  return res.json ({
+    profilePhoto: updatedUser.profilePhoto,
+  });
 });
 
-// get /user/
-export const getUserInfo = ash (async (req, res) => {
+// post /user/background
+export const updateBakPhoto = ash (async (req, res) => {
   const { sid } = req.decoded;
-  logger.api.info ('get /user/ request; sid: %s', sid);
+  const url = req.file.location;
+  logger.api.info ('post /user/background request; sid: %s, url: %s', sid, url);
+  const updatedUser = await User.findOneAndUpdate ({ sso_sid: sid }, {
+    $set: {
+      backgroundPhoto: url,
+    },
+  }, {
+    new: true,
+  });
 
-  const user = await User.findOne ({ sso_sid: sid })
-    .populate ('groups')
-    .populate ('currentGroup')
-    .populate ('currentGroup.members')
-    .populate ('boards');
-  res.json (user);
+  res.json ({
+    backgroundPhoto: updatedUser.backgroundPhoto,
+  });
 });
 
 // post /user/currentGroup/:groupId
@@ -73,5 +89,45 @@ export const setCurrentGroup = ash (async (req, res) => {
   logger.api.info ('post /user/currentGroup/:groupId request; sid: %s, groupName: %s', sid, group.name);
   self.currentGroup = group._id;
   await self.save ();
-  res.json (group);
+  res.json ({
+    currentGroup: self.currentGroup,
+  });
 });
+
+export const listPins = ash (async (req, res, next) => {
+  const { user } = req;
+  const { lastSeen } = req.query;
+  if (lastSeen) return next ();
+  await user
+    .populate ({
+      path: 'boards',
+      populate: {
+        path: 'pins',
+        populate: 'owner',
+        project: 'name',
+      },
+      options: {
+        sort: { createdAt: -1 },
+      },
+    })
+    .execPopulate ();
+  const zabos = user.boards[0].pins;
+  let result = zabos;
+  const { self } = req;
+  if (self) {
+    result = zabos.map (zabo => {
+      const zaboJSON = zabo.toJSON ();
+      const { likes, pins } = zabo;
+      return {
+        ...zaboJSON,
+        isLiked: likes.some (like => like.equals (self._id)),
+        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
+      };
+    });
+  }
+  return res.send (result); // TODO: Limit and hand it to listNextPins
+});
+
+// const { self } = req;
+// const { lastSeen } = req.query;
+export const listNextPins = ash (async (req, res) => res.send ([])); // TODO

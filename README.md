@@ -26,7 +26,7 @@ We're expecting anyone satisfying above conditions posting there recruiting anno
 
 Please contact SPARCS KAIST to get more detailed information.
 
-If you're looking for frontend codes, you can find it in [here](https://github..com/sparcs-kaist/zabo-front-reactjs)
+If you're looking for frontend codes, you can find it in [here](https://github.com/sparcs-kaist/zabo-front-reactjs)
 
 ### API Specification
 
@@ -274,6 +274,7 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 ### Authors
 
 * **Cookie** - [Cookie](https://github.com/jungdj)
+* **Youns** - [Youns](https://github.com/Choiyounseo)
 * **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
 * **Alogon** - [Kalogon](https://github.com/Kalogon)
 

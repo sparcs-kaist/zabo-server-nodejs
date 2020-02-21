@@ -2,7 +2,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import Redis from 'ioredis';
 
 const options = {
-  port: 6379, // Redis port
+  port: process.env.REDIS_PORT, // Redis port
   host: '127.0.0.1', // Redis host
   keyPrefix: 'zabo:',
   retryStrategy: (times) => Math.min (times * 50, 2000),

@@ -105,7 +105,7 @@ class Client {
 		return { url, state };
 	}
 
-	async getUserInfo(code) {
+	getUserInfo(code) {
 		/*
 			Exchange a code to user information
 			:param code: the code that given by SPARCS SSO server
@@ -118,12 +118,7 @@ class Client {
 			timestamp,
 			sign,
 		};
-		try {
-			const res = await Client._postData(this.URLS.token_info, params);
-			return res;
-		} catch (err) {
-			return err;
-		}
+		return Client._postData(this.URLS.token_info, params);
 	}
 
 	getLogoutUrl(sid, redirectUri) {
