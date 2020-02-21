@@ -38,7 +38,9 @@ app.use (express.json ());
 app.use (express.urlencoded ({ extended: false }));
 app.set ('jwt-secret', process.env.JWT_SECRET);
 
-
+app.get ('/api/hc', (req, res) => {
+  res.sendStatus (200);
+});
 app.use ('/api', routes);
 
 if (process.env.NODE_ENV === 'development') app.use ('/', express.static (`${__dirname}/../../zabo-front-reactjs/deploy`));
