@@ -90,7 +90,7 @@ const updateOrCreateUserData = async (userData, create) => {
     mail: kaist_email,
     ku_psft_user_status_kor,
     ku_kname,
-  } = parseJSON (kaist_info);
+  } = (parseJSON (kaist_info) || {});
 
   const setParams = {
     $set: {
