@@ -3,8 +3,6 @@ module.exports = {
     {
       name: 'SERVER',
       script: 'index.js',
-      watch: ['src'],
-      ignore_watch: ['node_modules'],
       exec_mode: 'cluster',
       instances: 2,
       env: {
