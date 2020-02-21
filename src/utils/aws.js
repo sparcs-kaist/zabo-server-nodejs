@@ -3,15 +3,16 @@ import AWS from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import size from 's3-image-size';
+import path from 'path';
 
 AWS.config.update ({
-  accessKeyId: process.env.AWS_ACCESS_KEY,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   signatureVersion: 'v4',
   region: 'ap-northeast-2',
 });
 
-const bucket = process.env.S3_BUCKET || process.env.NODE_ENV === 'production' ? 'sparcs-kaist-zabo-prod' : 'sparcs-kaist-zabo-dev';
+const bucket = process.env.S3_BUCKET || (process.env.NODE_ENV === 'production' ? 'sparcs-kaist-zabo-prod' : 'sparcs-kaist-zabo-dev');
 
 // TODO: Change key name
 export const s3 = new AWS.S3 ();
@@ -31,7 +32,7 @@ export const zaboUpload = multer ({
     key: (req, file, cb) => {
       const filename = `${zaboCount}${Date.now ().toString ()}`;
       zaboCount += 1;
-      const fullPath = `zabo/zabo-${filename}`;
+      const fullPath = `zabo/zabo-${filename}${path.extname (file.originalname)}`;
       cb (null, fullPath);
     },
   }),
@@ -42,7 +43,7 @@ export const profileUpload = (type) => multer ({
     ...options,
     key: (req, file, cb) => {
       const filename = Date.now ().toString ();
-      const fullPath = `profile/${type}-${filename}`;
+      const fullPath = `profile/${type}-${filename}${path.extname (file.originalname)}`;
       cb (null, fullPath);
     },
   }),
