@@ -5,7 +5,7 @@ import {
 import { preRegisterSchema } from './schema';
 import { logger } from '../utils/logger';
 
-mongoose.connect ('mongodb://localhost/zabo-develop', {
+mongoose.connect (process.env.MONGODB_URL, {
   useNewUrlParser: true,
   autoIndex: process.env.NODE_ENV !== 'production',
   useFindAndModify: false,
