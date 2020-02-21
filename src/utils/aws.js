@@ -11,7 +11,7 @@ AWS.config.update ({
   region: 'ap-northeast-2',
 });
 
-const bucket = process.env.S3_BUCKET || process.env.NODE_ENV === 'production' ? 'sparcs-kaist-zabo-dev' : 'sparcs-kaist-zabo-dev';
+const bucket = process.env.S3_BUCKET || process.env.NODE_ENV === 'production' ? 'sparcs-kaist-zabo-prod' : 'sparcs-kaist-zabo-dev';
 
 // TODO: Change key name
 export const s3 = new AWS.S3 ();
