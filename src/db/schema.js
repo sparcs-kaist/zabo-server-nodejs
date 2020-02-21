@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
-import { EVENTS, ZABO_CATEGORIES, GROUP_CATEGORIES } from '../utils/variables';
+import {
+  EVENTS, ZABO_CATEGORIES, GROUP_CATEGORIES, GROUP_CATEGORIES_2,
+} from '../utils/variables';
 
 const zaboSchemaObject = {
   createdBy: {
@@ -217,7 +219,7 @@ export const groupSchema = new mongoose.Schema ({
   }],
   category: [{
     type: String,
-    // enum: GROUP_CATEGORIES,
+    // enum: [...GROUP_CATEGORIES, ... GROUP_CATEGORIES_2],
   }],
   score: {
     type: Number,

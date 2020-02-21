@@ -41,6 +41,13 @@ export const login = ash ((req, res) => {
   res.redirect (url);
 });
 
+export const loginApi = ash ((req, res) => {
+  const { url, state } = SSOClient.getLoginParams ();
+  logger.api.info ('get /auth/login request; url: %s, state: %s', url, state);
+  req.session.state = state;
+  return res.json ({ url });
+});
+
 // TODO: Performance issue. Any better idea?
 const generateUsernameWithPostfix = async (username) => {
   let maxNum = 90;
@@ -90,7 +97,7 @@ const updateOrCreateUserData = async (userData, create) => {
     mail: kaist_email,
     ku_psft_user_status_kor,
     ku_kname,
-  } = parseJSON (kaist_info);
+  } = (parseJSON (kaist_info) || {});
 
   const setParams = {
     $set: {

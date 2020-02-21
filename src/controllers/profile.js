@@ -69,7 +69,7 @@ const getUserProfile = ash (async (req, res) => {
     Board.findById (boardId),
   );
   actions.push (
-    Zabo.countDocuments ({ likes: { $in: self._id } }),
+    Zabo.countDocuments ({ likes: { $in: user._id } }),
   );
   const [counts, board, likesCount] = await Promise.all (actions);
 
