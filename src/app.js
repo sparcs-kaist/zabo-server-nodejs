@@ -5,6 +5,7 @@ import session from 'express-session';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 import './graphql';
 
@@ -16,12 +17,13 @@ import { logger } from './utils/logger';
 
 const app = express ();
 const RedisStore = connectRedis (session);
+const redisClient = new Redis (process.env.REDIS_PORT);
 
 app.use (express.static (path.join (__dirname, 'public')));
 app.use (session ({
   secret: process.env.SESSION_SECRET,
   cookie: { maxAge: 60000 },
-  store: new RedisStore ({ port: process.env.REDIS_PORT }),
+  store: new RedisStore ({ client: redisClient }),
   resave: false,
   saveUninitialized: true,
 }));
