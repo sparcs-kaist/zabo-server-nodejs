@@ -99,11 +99,12 @@ const seedPreRegisters = async () => {
     console.error ('config/sids.json file not found. Aborting...');
     return;
   }
-  const rawGroups = sids.map (({ owner, ownerSID, groupName }) => ({
+  const rawGroups = sids.map (({ owner, ownerSID, groupName, cat1, cat2 }) => ({
     name: groupName,
     isPreRegistered: true,
     description: '사전 등록된 그룹입니다.',
     score: 10,
+    category: [cat1, cat2]
   }));
   const groups = await Group.insertMany (rawGroups);
   console.log ('==>');
