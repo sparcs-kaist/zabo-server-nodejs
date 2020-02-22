@@ -17,7 +17,7 @@ export const validateName = (name) => {
   if (name.length === 0 || name.length > 25) return false;
   // 첫 글자로는 _, 알파벳, 한글, 숫자만 입력 가능
   // ._- 한글 알파벳 숫자 입력 가능
-  const patt = new RegExp (/^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9_][ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9._-]*$/);
+  const patt = new RegExp (/^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9_][ ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9._-]*$/);
   if (!patt.test (name)) return false;
   const doubleCharPatt = /(--)|(\.\.)|(__)/;
   if (doubleCharPatt.test (name)) return false;
