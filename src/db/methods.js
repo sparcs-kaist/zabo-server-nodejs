@@ -104,11 +104,11 @@ zaboSchema.statics = {
         },
       };
     }
-    if (!query || query === 'undefined') {
+    if (!query) {
       delete queryOptions.$or[0].title;
       delete queryOptions.$or[1].description;
     }
-    if (!tags || tags === 'undefined') {
+    if (!tags) {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
     }
@@ -132,10 +132,10 @@ zaboSchema.statics = {
         },
       };
     }
-    if (!query || query === 'undefined') {
+    if (!query) {
       delete queryOptions.$text;
     }
-    if (!tags || tags === 'undefined') {
+    if (!tags) {
       delete queryOptions.category;
     }
     return this.find (queryOptions, {
