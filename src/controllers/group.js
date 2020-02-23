@@ -1,7 +1,13 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
-import { Zabo } from '../db';
+import { Group, Zabo } from '../db';
 import { isNameInvalidWithRes } from '../utils';
+
+// get /group/random
+export const findGroupRecommends = ash (async (req, res) => {
+  const groups = await Group.aggregate ([{ $sample: { size: 5 } }]);
+  return res.json (groups);
+});
 
 // get /group/:groupId
 export const getGroupInfo = ash (async (req, res) => {
@@ -197,7 +203,7 @@ export const listGroupZabos = ash (async (req, res, next) => {
   const zabos = await Zabo.find ({ owner: group._id }, { description: 0 })
     .sort ({ createdAt: -1 })
     // .limit (20) // TODO: optimize
-    .populate ('owner', 'name');
+    .populate ('owner', 'name profilePhoto subtitle description');
   let result = zabos; // TODO: Refactor dups
   const { self } = req;
   if (self) {
