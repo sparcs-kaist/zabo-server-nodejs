@@ -251,20 +251,6 @@ export const statisticsSchema = new mongoose.Schema ({
   id: false,
 });
 
-export const feedbackSchema = new mongoose.Schema ({
-  user: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  },
-  feedback: {
-    type: String,
-  },
-  __v: { type: Number, select: false },
-}, {
-  timestamps: true,
-  id: false,
-});
-
 const actionHistory = new mongoose.Schema ({
   name: {
     type: String,
