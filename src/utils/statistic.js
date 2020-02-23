@@ -35,18 +35,15 @@ stat.GET_ZABO = (req) => {
     });
 };
 
-stat.SEARCH = (req) => {
-  const { search } = req.query;
-  const { decoded } = req;
+export const statSearch = ({ query, category, decoded }) => {
   if (!decoded) return Promise.resolve ();
   const { sid } = decoded;
   return User.findOne ({ sso_sid: sid })
     .then (user => {
       const data = {
         type: EVENTS_MAP.SEARCH,
-        data: {
-          search,
-        },
+        query,
+        category,
       };
       if (user) data.user = user._id;
       return Statistic.create (data);
