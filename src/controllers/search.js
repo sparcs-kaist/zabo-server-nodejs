@@ -28,7 +28,7 @@ export const getSearch = ash (async (req, res) => {
   const safeCategory = !category ? []
     : !Array.isArray (category) ? [category]
       : category;
-  if (!safeQuery && !category.length) {
+  if (!safeQuery && !safeCategory.length) {
     return res.status (400).send ({
       error: 'Search Keyword Required',
     });
@@ -89,6 +89,11 @@ export const listSearchZabos = ash (async (req, res, next) => {
   const safeCategory = !category ? []
     : !Array.isArray (category) ? [category]
       : category;
+  if (!safeQuery && !safeCategory.length) {
+    return res.status (400).send ({
+      error: 'Search Keyword Required',
+    });
+  }
   logger.info (`get /search request; query: ${safeQuery}, category: ${safeCategory} ${lastSeen ? `lastSeen: ${lastSeen}` : ''}`);
   if (lastSeen) {
     req.safeQuery = safeQuery;
