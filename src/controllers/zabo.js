@@ -2,7 +2,7 @@ import ash from 'express-async-handler';
 import moment from 'moment';
 import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
-import { stat } from '../utils/statistic';
+import { statZabo } from '../utils/statistic';
 import {
   User, Zabo, Group, Board, DeletedZabo,
 } from '../db';
@@ -18,7 +18,7 @@ export const getZabo = ash (async (req, res) => {
   }
   let zabo;
   if (newVisit) {
-    stat.GET_ZABO (req);
+    statZabo ({ zaboId, decoded: req.decoded });
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
   } else {
