@@ -1,7 +1,13 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
-import { Zabo } from '../db';
+import { Group, Zabo } from '../db';
 import { isNameInvalidWithRes } from '../utils';
+
+// get /group/random
+export const findGroupRecommends = ash (async (req, res) => {
+  const groups = await Group.aggregate ([{ $sample: { size: 5 } }]);
+  return res.json (groups);
+});
 
 // get /group/:groupId
 export const getGroupInfo = ash (async (req, res) => {
