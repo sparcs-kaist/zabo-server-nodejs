@@ -20,10 +20,10 @@ export const getZabo = ash (async (req, res) => {
   if (newVisit) {
     stat.GET_ZABO (req);
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
-      .populate ('owner', 'name profilePhoto');
+      .populate ('owner', 'name profilePhoto subtitle description');
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
-      .populate ('owner', 'name profilePhoto');
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
@@ -102,7 +102,7 @@ export const postNewZabo = ash (async (req, res) => {
     Group.findByIdAndUpdate (self.currentGroup, { $set: { recentUpload: new Date () } }),
   ]);
   await newZabo
-    .populate ('owner', 'name profilePhoto')
+    .populate ('owner', 'name profilePhoto subtitle description')
     .execPopulate ();
   const zaboJSON = newZabo.toJSON ();
   zaboJSON.isLiked = false;
@@ -163,7 +163,7 @@ const queryZabos = async (req, queryOptions) => {
   const zabos = await Zabo.find (queryOptions)
     .sort ({ score: -1 })
     .limit (20)
-    .populate ('owner', 'name');
+    .populate ('owner', 'name profilePhoto subtitle description');
 
   let result = zabos;
   const { self } = req;

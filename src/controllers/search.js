@@ -35,7 +35,7 @@ export const getSearch = ash (async (req, res) => {
   // TODO : Cache search result using REDIS
   let [zabos, groupResult] = await Promise.all ([
     Zabo.searchFull (query, category)
-      .populate ('owner', 'name profilePhoto')
+      .populate ('owner', 'name profilePhoto subtitle description')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board'),
     Group.searchPartial (query),
@@ -43,7 +43,7 @@ export const getSearch = ash (async (req, res) => {
 
   if (zabos.length < 10) {
     zabos = await Zabo.searchPartial (query, category)
-      .populate ('owner', 'name profilePhoto')
+      .populate ('owner', 'name profilePhoto subtitle description')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');
   }
@@ -88,13 +88,13 @@ export const listSearchZabos = ash (async (req, res, next) => {
   // TODO : Cache search result using REDIS
   // Zabo.search: limit(20) already exists inside function
   let result = await Zabo.searchFull (query, category)
-    .populate ('owner', 'name profilePhoto')
+    .populate ('owner', 'name profilePhoto subtitle description')
     .populate ('likes')
     .populate ('pins', 'pinnedBy board');
 
   if (result.length < 10) {
     result = await Zabo.searchPartial (query, category)
-      .populate ('owner', 'name profilePhoto')
+      .populate ('owner', 'name profilePhoto subtitle description')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');
   }
@@ -109,13 +109,13 @@ export const listNextSearchZabos = ash (async (req, res) => {
 
   // const { tags, searchQuery } = splitTagNText (query);
   let result = await Zabo.searchFull (query, category, lastSeen)
-    .populate ('owner', 'name profilePhoto')
+    .populate ('owner', 'name profilePhoto subtitle description')
     .populate ('likes')
     .populate ('pins', 'pinnedBy board');
 
   if (result.length < 10) {
     result = await Zabo.searchPartial (query, category)
-      .populate ('owner', 'name profilePhoto')
+      .populate ('owner', 'name profilePhoto subtitle description')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');
   }

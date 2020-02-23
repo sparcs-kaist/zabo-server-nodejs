@@ -197,7 +197,7 @@ export const listGroupZabos = ash (async (req, res, next) => {
   const zabos = await Zabo.find ({ owner: group._id }, { description: 0 })
     .sort ({ createdAt: -1 })
     // .limit (20) // TODO: optimize
-    .populate ('owner', 'name');
+    .populate ('owner', 'name profilePhoto subtitle description');
   let result = zabos; // TODO: Refactor dups
   const { self } = req;
   if (self) {
