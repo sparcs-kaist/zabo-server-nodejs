@@ -242,7 +242,7 @@ export const statisticsSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  zaboId: {
+  zabo: {
     type: mongoose.Schema.ObjectId,
     ref: 'Zabo',
   },

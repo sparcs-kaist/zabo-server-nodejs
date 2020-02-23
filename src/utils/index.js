@@ -56,3 +56,5 @@ export const isNameInvalidWithRes = async (name, req, res) => {
 };
 
 export const isValidId = mongoose.Types.ObjectId.isValid;
+
+export const escapeRegExp = string => string.replace (/[.*+?^${}()|[\]\\]/g, '\\$&');

@@ -79,9 +79,7 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  searchPartial (query, tags, lastSeen) {
-    let category = tags;
-    if (!Array.isArray (tags)) { category = [tags]; }
+  searchPartial (query, category, lastSeen) {
     let queryOptions = {
       $or:
         [ // TOOD: Sort search query result
@@ -108,17 +106,14 @@ zaboSchema.statics = {
       delete queryOptions.$or[0].title;
       delete queryOptions.$or[1].description;
     }
-    if (!tags) {
+    if (!category.length) {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
     }
     return this.find (queryOptions);
   },
 
-  searchFull (query, tags, lastSeen) {
-    let category = tags;
-    if (!Array.isArray (tags)) { category = [tags]; }
-
+  searchFull (query, category, lastSeen) {
     let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
       category: { $all: category },
@@ -135,7 +130,7 @@ zaboSchema.statics = {
     if (!query) {
       delete queryOptions.$text;
     }
-    if (!tags) {
+    if (!category.length) {
       delete queryOptions.category;
     }
     return this.find (queryOptions, {

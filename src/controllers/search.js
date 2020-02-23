@@ -20,22 +20,11 @@ const splitTagNText = (query) => {
   return { tags, searchQuery };
 };
 
-const escapeRegExp = string => string.replace (/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 export const getSearch = ash (async (req, res) => {
-  const { query, category } = req.query;
-  const safeQuery = (query ? escapeRegExp (query) : '').trim ();
-  const safeCategory = !category ? []
-    : !Array.isArray (category) ? [category]
-      : category;
-  if (!safeQuery && !safeCategory.length) {
-    return res.status (400).send ({
-      error: 'Search Keyword Required',
-    });
-  }
+  const { safeQuery, safeCategory } = req;
+  const { stat } = req.query;
   logger.info ('get /search request; query: %s, category: %s', safeQuery, safeCategory);
-  statSearch ({ query: safeQuery, category: safeCategory, decoded: req.decoded });
-  // const { tags, searchQuery } = splitTagNText (query);
+  if (stat) statSearch ({ query: safeQuery, category: safeCategory, decoded: req.decoded });
 
   // TODO : Cache search result using REDIS
   let [zabos, groupResult] = await Promise.all ([
@@ -70,40 +59,22 @@ export const getSearch = ash (async (req, res) => {
 });
 
 export const getUserSearch = ash (async (req, res) => {
-  const { query } = req.query;
-  const safeQuery = (query ? escapeRegExp (query) : '').trim ();
-  logger.info ('get /search/user request; query: %s', query);
-  if (!safeQuery) {
-    return res.status (400).send ({
-      error: 'Search Keyword Required',
-    });
-  }
-  const users = await User.findByName (query)
+  const { safeQuery } = req;
+  logger.info ('get /search/user request; query: %s', safeQuery);
+  const users = await User.findByName (safeQuery)
     .select ('username koreanName name _id profilePhoto');
   res.json (users);
 });
 
 export const listSearchZabos = ash (async (req, res, next) => {
-  const { lastSeen, query, category } = req.query;
-  const safeQuery = (query ? escapeRegExp (query) : '').trim ();
-  const safeCategory = !category ? []
-    : !Array.isArray (category) ? [category]
-      : category;
-  if (!safeQuery && !safeCategory.length) {
-    return res.status (400).send ({
-      error: 'Search Keyword Required',
-    });
-  }
+  const { safeQuery, safeCategory } = req;
+  const { lastSeen } = req.query;
   logger.info (`get /search request; query: ${safeQuery}, category: ${safeCategory} ${lastSeen ? `lastSeen: ${lastSeen}` : ''}`);
   if (lastSeen) {
-    req.safeQuery = safeQuery;
-    req.safeCategory = safeCategory;
     req.lastSeen = lastSeen;
     return next ();
   }
-  statSearch ({ query: safeQuery, category: safeCategory, decoded: req.decoded });
 
-  // const { tags, searchQuery } = splitTagNText (query);
   // TODO : Cache search result using REDIS
   // Zabo.search: limit(20) already exists inside function
   let result = await Zabo.searchFull (safeQuery, safeCategory)

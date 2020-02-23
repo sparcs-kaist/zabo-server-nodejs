@@ -6,7 +6,6 @@ import { Board, User, Group } from '../db';
 /* eslint camelcase:0 */
 import SSOClient from '../utils/sso';
 import { parseJSON } from '../utils';
-import { stat } from '../utils/statistic';
 import { logger } from '../utils/logger';
 import { checkPreAndRegister } from '../utils/preRegister';
 
@@ -150,7 +149,6 @@ const updateOrCreateUserData = async (userData, create) => {
     .populate ('boards');
 
   if (create) {
-    stat.REGISTER ({ user: newUser._id });
     const preRegisteredUser = await checkPreAndRegister (newUser);
     newUser = preRegisteredUser || newUser;
   }
@@ -196,7 +194,7 @@ export const loginCallback = ash (async (req, res) => {
   }
 
   const token = jwt.sign ({
-    id: user._id,
+    _id: user._id,
     sid: user.sso_sid,
     email: user.email,
     username: user.username,
