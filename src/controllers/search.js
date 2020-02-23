@@ -24,25 +24,27 @@ const splitTagNText = (query) => {
 const escapeRegExp = string => string.replace (/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export const getSearch = ash (async (req, res) => {
-  const { query: text, category: stringifiedCategory } = req.query;
-  const query = escapeRegExp (text);
-  const { category } = stringifiedCategory ? queryString.parse (stringifiedCategory) : { undefined };
-  logger.info ('get /search request; query: %s, category: %s', query, category);
+  const { query, category } = req.query;
+  const safeQuery = query ? escapeRegExp (query) : '';
+  const safeCategory = !category ? []
+    : !Array.isArray (category) ? [category]
+      : category;
+  logger.info ('get /search request; query: %s, category: %s', safeQuery, safeCategory);
   stat.SEARCH (req);
 
   // const { tags, searchQuery } = splitTagNText (query);
 
   // TODO : Cache search result using REDIS
   let [zabos, groupResult] = await Promise.all ([
-    Zabo.searchFull (query, category)
+    Zabo.searchFull (safeQuery, safeCategory)
       .populate ('owner', 'name profilePhoto subtitle description')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board'),
-    Group.searchPartial (query),
+    Group.searchPartial (safeQuery),
   ]);
 
   if (zabos.length < 10) {
-    zabos = await Zabo.searchPartial (query, category)
+    zabos = await Zabo.searchPartial (safeQuery, safeCategory)
       .populate ('owner', 'name profilePhoto subtitle description')
       .populate ('likes')
       .populate ('pins', 'pinnedBy board');
