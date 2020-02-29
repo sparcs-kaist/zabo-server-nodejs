@@ -21,7 +21,11 @@ export const updateScores = async () => {
       likeTimeMA = calMA (likeTimeMA, likeTime, LIKE_MA_WEIGHT);
     });
 
-    const views = await Statistic.find ({ type: EVENTS_MAP.GET_ZABO, createdAt: { $gt: lastCountedViewDate } });
+    const views = await Statistic.find ({
+      type: EVENTS_MAP.GET_ZABO,
+      zabo: zabo._id,
+      createdAt: { $gt: lastCountedViewDate },
+    });
     let viewTimeMA = lastViewTimeMA;
     views.forEach (view => {
       const viewTime = new Date (view.createdAt).getTime ();
