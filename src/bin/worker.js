@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { updateScores } from '../worker/recommender';
 
-cron.schedule ('34 * * * *', () => {
+cron.schedule ('/17 * * * *', () => {
   updateScores ()
     .then (() => {
       console.log ('success');
