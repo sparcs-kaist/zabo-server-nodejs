@@ -1,5 +1,4 @@
 import ash from 'express-async-handler';
-import jwt from 'jsonwebtoken';
 import {
   Board, Group, User, Zabo,
 } from '../db';
@@ -29,6 +28,13 @@ export const createGroup = ash (async (req, res) => {
     adminUser.save (),
   ]);
   return res.json (group);
+});
+
+export const patchLevel = ash (async (req, res) => {
+  const { groupName } = req.params;
+  const { level } = req.body;
+  const result = await Group.findOneAndUpdate ({ name: groupName }, { $set: { level } }, { new: true });
+  return res.json (result);
 });
 
 // get /admin/user/:studentId

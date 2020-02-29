@@ -209,6 +209,10 @@ export const groupSchema = new mongoose.Schema ({
     index: true,
   },
   isPreRegistered: Boolean,
+  level: {
+    type: Number,
+    default: 0,
+  },
   revisionHistory: [revisionHistorySchema],
   subtitle: String,
   description: String,

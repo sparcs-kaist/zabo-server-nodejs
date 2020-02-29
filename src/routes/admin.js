@@ -18,6 +18,7 @@ router.use (authMiddleware, isAdmin);
 
 router.get ('/user/:studentId', findUser, adminControllers.getUserInfo);
 router.post ('/group', findUser, adminControllers.createGroup);
+router.patch ('/group/:groupName/level', adminControllers.patchLevel);
 
 /* Temporary Routes */
 router.post ('/fakeRegister', notInProduction, adminControllers.fakeRegister);
