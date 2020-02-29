@@ -77,6 +77,7 @@ export const fakeLogin = ash (async (req, res) => {
   if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
   const user = await User.findOne ({ username });
+  if (!user) return res.sendStatus (404);
   const token = jwtSign (user, jwtSecret);
   return res.json (token);
 });
