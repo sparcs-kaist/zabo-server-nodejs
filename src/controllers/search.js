@@ -2,6 +2,7 @@ import ash from 'express-async-handler';
 import { Group, User, Zabo } from '../db';
 import { logger } from '../utils/logger';
 import { statSearch } from '../utils/statistic';
+import { populateZabosPrivateStats } from '../utils/populate';
 
 const splitTagNText = (query) => {
   const split = query.trim ().split ('#');
@@ -47,19 +48,15 @@ export const getSearch = ash (async (req, res) => {
   // TODO : Cache search result using REDIS
   let [zabos, groupResult] = await Promise.all ([
     Zabo.searchFull (safeQuery, safeCategory)
-      .populate ('owner', 'name profilePhoto subtitle description')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board'),
+      .populate ('owner', 'name profilePhoto subtitle description'),
     Group.searchPartial (safeQuery),
   ]);
 
   if (zabos.length < 10) {
     zabos = await Zabo.searchPartial (safeQuery, safeCategory)
-      .populate ('owner', 'name profilePhoto subtitle description')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board');
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
-
+  zabos = populateZabosPrivateStats (zabos, req.self);
   const groups = groupResult.map (group => group.toJSON ({ virtuals: true }));
   const counts = await Zabo.aggregate ([
     { $match: { owner: { $in: groups.map (group => group._id) } } },

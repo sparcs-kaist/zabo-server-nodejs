@@ -7,6 +7,7 @@ import {
   User, Zabo, Group, Board, DeletedZabo,
 } from '../db';
 import { isValidId, parseJSON } from '../utils';
+import { populateZaboPrivateStats, populateZabosPrivateStats } from '../utils/populate';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
@@ -31,16 +32,13 @@ export const getZabo = ash (async (req, res) => {
       error: 'not found: zabo does not exist',
     });
   }
-  const zaboJSON = zabo.toJSON ();
   const { self } = req;
+  const zaboJSON = populateZaboPrivateStats (zabo, self);
   if (self) {
-    const { likes, pins } = zabo;
-    zaboJSON.isLiked = likes.some (like => like.equals (self._id));
-    zaboJSON.isPinned = self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0);
     zaboJSON.isMyZabo = self.groups.some (group => group.equals (zaboJSON.owner._id));
+    zaboJSON.owner.following = self.followings.some (following => following.followee.equals (zaboJSON.owner._id));
     if (zaboJSON.isMyZabo) zaboJSON.createdBy = await User.findById (zaboJSON.createdBy, 'username');
     else delete zaboJSON.createdBy;
-    zaboJSON.owner.following = self.followings.some (following => following.followee.equals (zaboJSON.owner._id));
   } else {
     delete zaboJSON.createdBy;
   }
@@ -164,21 +162,7 @@ const queryZabos = async (req, queryOptions) => {
     .sort ({ score: -1 })
     .limit (20)
     .populate ('owner', 'name profilePhoto subtitle description');
-
-  let result = zabos;
-  const { self } = req;
-  if (self) {
-    result = zabos.map (zabo => {
-      const zaboJSON = zabo.toJSON ();
-      const { likes, pins } = zabo;
-      return {
-        ...zaboJSON,
-        isLiked: likes.some (like => self._id.equals (like)),
-        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
-      };
-    });
-  }
-  return result;
+  return populateZabosPrivateStats (zabos, req.self);
 };
 
 export const listZabos = ash (async (req, res, next) => {
