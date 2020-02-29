@@ -1,13 +1,17 @@
 import moment from 'moment';
-import db, { Zabo, Statistic } from '../../db';
-import { EVENTS_MAP } from '../../utils/variables';
+import _ from 'lodash';
+import db, { Zabo, Statistic, User } from '../../db';
+import { EVENTS_MAP, GROUP_CATEGORIES_2 } from '../../utils/variables';
 
 const eventEndDate = moment ('2020-03-31', 'YYYY-MM-DD');
+
+// (9/10)^10 = 0.348
+// (99/100)^100 = 0.366
 
 const LIKE_MA_WEIGHT = 4;
 const VIEW_MA_WEIGHT = 15;
 
-const calMA = (acc, cur, weight) => (acc * (weight - 1) + cur) / weight;
+const calMA = (prev, next, weight) => (prev * (weight - 1) + next) / weight;
 
 export const updateScores = async () => {
   // eslint-disable-next-line no-restricted-syntax
@@ -55,11 +59,86 @@ export const updateScores = async () => {
       {
         $set: {
           score,
-          updatedAt: zabo.updatedAt,
           scoreMeta,
         },
       },
     );
   }
   return true;
+};
+
+const INTEREST_LIKE_MA_WEIGHT = 30;
+const INTEREST_VIEW_MA_WEIGHT = 200;
+
+const calObjMA = (prev, next, weight) => {
+  const newVal = Object.keys (prev)
+    .reduce ((acc, cur) => ({
+      ...acc, [cur]: prev[cur] * ((weight - 1) / weight),
+    }), {});
+  newVal[next] += (1 / weight);
+  return newVal;
+};
+
+const cats = [...GROUP_CATEGORIES_2, '관리자'];
+export const updateRecommends = async () => {
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const user of User.find ()) {
+    const { lastCountedDate } = user.interestMeta;
+    let { interests } = user;
+    if (!interests) {
+      interests = cats.reduce ((acc, cur) => ({ ...acc, [cur]: 1 / cats.length }), {});
+    }
+
+    const views = await Statistic.find ({
+      type: EVENTS_MAP.GET_ZABO,
+      user: user._id,
+      createdAt: { $gt: lastCountedDate },
+    })
+      .populate ({
+        path: 'zabo',
+        populate: {
+          path: 'owner',
+          project: 'category',
+        },
+      });
+
+    let viewInterests = { ...interests };
+    views.forEach (view => {
+      const [, cat2] = view.zabo.owner.category;
+      viewInterests = calObjMA (viewInterests, cat2, INTEREST_VIEW_MA_WEIGHT);
+    });
+
+    const likes = await Zabo.find ({
+      likesWithTime: {
+        $elemMatch: {
+          user: user._id,
+          createdAt: { $gt: lastCountedDate },
+        },
+      },
+    }, 'owner').populate ({
+      path: 'owner',
+      select: 'category',
+    });
+
+    let likeInterests = { ...viewInterests };
+    likes.forEach (zabo => {
+      const [, cat2] = zabo.owner.category;
+      likeInterests = calObjMA (likeInterests, cat2, INTEREST_LIKE_MA_WEIGHT);
+    });
+
+    const interestMeta = {
+      lastCountedDate: new Date (),
+    };
+
+    await db.collection ('users').updateOne (
+      { _id: user._id },
+      {
+        $set: {
+          interestMeta,
+          interests: likeInterests,
+        },
+      },
+    );
+    // _ (likeInterests).toPairs ().sortBy (1).value ()
+  }
 };

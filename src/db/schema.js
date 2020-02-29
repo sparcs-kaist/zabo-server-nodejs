@@ -182,6 +182,17 @@ export const userSchema = new mongoose.Schema ({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  recommends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Zabo',
+  }],
+  interests: Object,
+  interestMeta: {
+    lastCountedDate: {
+      type: Date,
+      default: Date.now,
+    },
+  },
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
