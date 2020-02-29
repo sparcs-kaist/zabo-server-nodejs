@@ -4,6 +4,11 @@ import { authMiddleware, isAdmin, findUserWithStudentIdMiddleware } from '../mid
 
 const router = express.Router ();
 
+const notInProduction = (req, res, next) => {
+  if (process.env.NODE_ENV === 'production') return res.status (403);
+  next ();
+};
+
 const findUser = (req, res, next) => {
   req.studentId = req.params.studentId || req.body.studentId;
   return findUserWithStudentIdMiddleware (req, res, next);
@@ -15,7 +20,7 @@ router.get ('/user/:studentId', findUser, adminControllers.getUserInfo);
 router.post ('/group', findUser, adminControllers.createGroup);
 
 /* Temporary Routes */
-router.post ('/fakeRegister', adminControllers.fakeRegister);
+router.post ('/fakeRegister', notInProduction, adminControllers.fakeRegister);
 router.post ('/fakeLogin', adminControllers.fakeLogin);
 
 /* For admin page */
