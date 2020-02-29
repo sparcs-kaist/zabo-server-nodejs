@@ -64,6 +64,7 @@ export const fakeRegister = ash (async (req, res) => {
     email: `${username}@kaist.ac.kr`,
     boards,
     username,
+    studentId: Math.ceil (Math.random () * 10000),
   });
   const token = jwtSign (user, jwtSecret);
   return res.json ({ user, token });
