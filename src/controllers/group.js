@@ -6,7 +6,14 @@ import { populateZabosPrivateStats } from '../utils/populate';
 
 // get /group/random
 export const findGroupRecommends = ash (async (req, res) => {
-  const groups = await Group.aggregate ([{ $sample: { size: 5 } }]);
+  if (req.session.groupRecommend) {
+    return res.json (req.session.groupRecommend);
+  }
+  const groups = await Group.aggregate ([
+    { $sample: { size: 5 } },
+    { $project: { name: 1, profilePhoto: 1, subtitle: 1 } },
+  ]);
+  req.session.groupRecommend = groups;
   return res.json (groups);
 });
 
