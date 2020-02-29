@@ -9,14 +9,23 @@ import { isNameInvalidWithRes, jwtSign } from '../utils';
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
   const { user, studentId, adminUser } = req;
-  const { name } = req.body;
+  const { name, category } = req.body;
   logger.api.info ('post /admin/group request; name: %s, studentId: %s', name, studentId);
 
   const error = await isNameInvalidWithRes (name, req, res);
   if (error) return error;
 
+  if (!Array.isArray (category) || category.length < 2) {
+    return res.status (400).json ({
+      error: 'category with 2 length long array is required',
+    });
+  }
   // Ignore very small delay after name usability check
-  const group = await Group.create ({ name, members: [{ user: user._id, role: 'admin' }] });
+  const group = await Group.create ({
+    name,
+    members: [{ user: user._id, role: 'admin' }],
+    category,
+  });
   user.groups.push (group._id);
   adminUser.actionHistory.push ({
     name: 'createGroup',
