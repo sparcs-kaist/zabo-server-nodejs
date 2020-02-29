@@ -242,9 +242,12 @@ export const statisticsSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  data: {
-    type: Map,
+  zabo: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Zabo',
   },
+  query: String,
+  category: [],
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
