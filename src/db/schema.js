@@ -196,7 +196,7 @@ const revisionHistorySchema = new mongoose.Schema ({
   prev: String,
   next: String,
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   id: false,
 });
 
@@ -262,7 +262,7 @@ export const statisticsSchema = new mongoose.Schema ({
   category: [],
   __v: { type: Number, select: false },
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   id: false,
 });
 
@@ -275,7 +275,7 @@ const actionHistory = new mongoose.Schema ({
   info: Map,
   __v: { type: Number, select: false },
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   id: false,
 });
 
