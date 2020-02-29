@@ -50,7 +50,7 @@ boardSchema.virtual ('pinsCount')
 
 zaboSchema.virtual ('likesCount')
   .get (function () {
-    return this.likes ? this.likes.length : undefined;
+    return this.likesWithTime ? this.likesWithTime.length : undefined;
   });
 
 zaboSchema.virtual ('pinsCount')

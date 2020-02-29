@@ -11,6 +11,7 @@ import { populateZaboPrivateStats, populateZabosPrivateStats } from '../utils/po
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
+  const { self } = req;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   let newVisit;
   if (req.get ('User-Agent').length > 20 && (!req.session[zaboId] || moment ().isAfter (req.session[zaboId]))) {
@@ -20,10 +21,10 @@ export const getZabo = ash (async (req, res) => {
   let zabo;
   if (newVisit) {
     statZabo ({ zaboId, decoded: req.decoded });
-    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1, effectiveViews: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
   } else {
-    zabo = await Zabo.findOne ({ _id: zaboId })
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
   }
   if (!zabo) {
@@ -32,7 +33,6 @@ export const getZabo = ash (async (req, res) => {
       error: 'not found: zabo does not exist',
     });
   }
-  const { self } = req;
   const zaboJSON = populateZaboPrivateStats (zabo, self);
   if (self) {
     zaboJSON.isMyZabo = self.groups.some (group => group.equals (zaboJSON.owner._id));
@@ -243,19 +243,19 @@ export const pinZabo = ash (async (req, res) => {
 export const likeZabo = ash (async (req, res) => {
   const { self, zabo, zaboId } = req;
   logger.zabo.info (`post /zabo/like request; zaboId: ${zaboId}, by: ${self.username} (${self.sso_sid})`);
-  const prevLike = zabo.likes.find (like => like.equals (self._id));
+  const prevLike = zabo.likesWithTime.find (like => like.user.equals (self._id));
   if (prevLike) {
-    zabo.likes.pull ({ _id: self._id });
+    zabo.likesWithTime.pull (prevLike);
     await zabo.save ();
     return res.send ({
       isLiked: false,
-      likesCount: zabo.likes.length,
+      likesCount: zabo.likesWithTime.length,
     });
   }
-  zabo.likes.push (self._id);
+  zabo.likesWithTime.push ({ user: self._id });
   await zabo.save ();
   return res.send ({
     isLiked: true,
-    likesCount: zabo.likes.length,
+    likesCount: zabo.likesWithTime.length,
   });
 });

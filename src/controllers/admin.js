@@ -1,23 +1,32 @@
 import ash from 'express-async-handler';
-import jwt from 'jsonwebtoken';
 import {
   Board, Group, User, Zabo,
 } from '../db';
 import { logger } from '../utils/logger';
-import { isNameInvalidWithRes } from '../utils';
+import { isNameInvalidWithRes, jwtSign, parseJSON } from '../utils';
 
 // TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
   const { user, studentId, adminUser } = req;
-  const { name } = req.body;
+  const { name, category: categoryString } = req.body;
   logger.api.info ('post /admin/group request; name: %s, studentId: %s', name, studentId);
+  const category = parseJSON (categoryString, []);
 
   const error = await isNameInvalidWithRes (name, req, res);
   if (error) return error;
 
+  if (!Array.isArray (category) || category.length < 2) {
+    return res.status (400).json ({
+      error: 'category with 2 length long array is required',
+    });
+  }
   // Ignore very small delay after name usability check
-  const group = await Group.create ({ name, members: [{ user: user._id, role: 'admin' }] });
+  const group = await Group.create ({
+    name,
+    members: [{ user: user._id, role: 'admin' }],
+    category,
+  });
   user.groups.push (group._id);
   adminUser.actionHistory.push ({
     name: 'createGroup',
@@ -29,6 +38,13 @@ export const createGroup = ash (async (req, res) => {
     adminUser.save (),
   ]);
   return res.json (group);
+});
+
+export const patchLevel = ash (async (req, res) => {
+  const { groupName } = req.params;
+  const { level } = req.body;
+  const result = await Group.findOneAndUpdate ({ name: groupName }, { $set: { level } }, { new: true });
+  return res.json (result);
 });
 
 // get /admin/user/:studentId
@@ -44,6 +60,9 @@ export const getUserInfo = ash (async (req, res) => {
 // post /admin/fakeRegister
 export const fakeRegister = ash (async (req, res) => {
   const { username } = req.body;
+  const error = await isNameInvalidWithRes (username, req, res);
+  if (error) return error;
+  const jwtSecret = req.app.get ('jwt-secret');
   const board = await Board.create ({
     title: '저장한 포스터',
   });
@@ -55,24 +74,21 @@ export const fakeRegister = ash (async (req, res) => {
     email: `${username}@kaist.ac.kr`,
     boards,
     username,
+    studentId: Math.ceil (Math.random () * 10000),
   });
-  return res.json (user);
+  const token = jwtSign (user, jwtSecret);
+  return res.json ({ user, token });
 });
 
 // post /admin/fakeLogin
 export const fakeLogin = ash (async (req, res) => {
-  const { studentId } = req.body;
+  const { username } = req.body;
+  const error = await isNameInvalidWithRes (username, req, res);
+  if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
-  const user = await User.findOne ({ studentId });
-  const token = jwt.sign ({
-    id: user._id,
-    sid: user.sso_sid,
-    email: user.email,
-    studentId: user.studentId,
-  }, jwtSecret, {
-    expiresIn: '60d',
-    issuer: 'zabo-sparcs-kaist',
-  });
+  const user = await User.findOne ({ username });
+  if (!user) return res.sendStatus (404);
+  const token = jwtSign (user, jwtSecret);
   return res.json (token);
 });
 

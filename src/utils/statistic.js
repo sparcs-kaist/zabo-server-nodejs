@@ -1,5 +1,5 @@
 import { Statistic } from '../db';
-import { EVENTS, EVENTS_MAP } from './variables';
+import { EVENTS_MAP } from './variables';
 
 export const statZabo = async ({ zaboId, decoded }) => {
   if (!decoded) return null;
