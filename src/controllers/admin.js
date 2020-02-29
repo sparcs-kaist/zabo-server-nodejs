@@ -44,6 +44,7 @@ export const getUserInfo = ash (async (req, res) => {
 // post /admin/fakeRegister
 export const fakeRegister = ash (async (req, res) => {
   const { username } = req.body;
+  const jwtSecret = req.app.get ('jwt-secret');
   const board = await Board.create ({
     title: '저장한 포스터',
   });
@@ -56,14 +57,23 @@ export const fakeRegister = ash (async (req, res) => {
     boards,
     username,
   });
-  return res.json (user);
+  const token = jwt.sign ({
+    id: user._id,
+    sid: user.sso_sid,
+    email: user.email,
+    studentId: user.studentId,
+  }, jwtSecret, {
+    expiresIn: '60d',
+    issuer: 'zabo-sparcs-kaist',
+  });
+  return res.json ({ user, token });
 });
 
 // post /admin/fakeLogin
 export const fakeLogin = ash (async (req, res) => {
-  const { studentId } = req.body;
+  const { username } = req.body;
   const jwtSecret = req.app.get ('jwt-secret');
-  const user = await User.findOne ({ studentId });
+  const user = await User.findOne ({ username });
   const token = jwt.sign ({
     id: user._id,
     sid: user.sso_sid,
