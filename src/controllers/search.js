@@ -20,6 +20,24 @@ const splitTagNText = (query) => {
   return { tags, searchQuery };
 };
 
+export const getSimpleSearch = ash (async (req, res) => {
+  const { safeQuery, safeCategory } = req;
+  let [zabos, groups] = await Promise.all ([
+    Zabo.searchFull (safeQuery, safeCategory)
+      .select ({ title: 1 }),
+    Group.searchPartial (safeQuery)
+      .select ({ name: 1, profilePhoto: 1 }),
+  ]);
+  if (zabos.length < 10) {
+    zabos = await Zabo.searchPartial (safeQuery, safeCategory)
+      .select ({ title: 1 });
+  }
+  return res.json ({
+    zabos,
+    groups,
+  });
+});
+
 export const getSearch = ash (async (req, res) => {
   const { safeQuery, safeCategory } = req;
   const { stat } = req.query;
