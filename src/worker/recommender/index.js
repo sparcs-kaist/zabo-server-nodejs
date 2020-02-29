@@ -46,7 +46,6 @@ export const updateScores = async () => {
       lastViewTimeMA: new Date (viewTimeMA),
     };
 
-    zabo.score = score;
     await db.collection ('zabos').updateOne (
       { _id: zabo._id },
       {
