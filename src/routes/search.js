@@ -22,6 +22,7 @@ const parseQuery = (req, res, next) => {
 };
 
 router.get ('/', parseQuery, sc.getSearch);
+router.get ('/simple', parseQuery, sc.getSimpleSearch);
 router.get ('/user', parseQuery, sc.getUserSearch);
 router.get ('/zabo/list', parseQuery, sc.listSearchZabos, sc.listNextSearchZabos);
 
