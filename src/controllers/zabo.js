@@ -10,6 +10,7 @@ import { isValidId, parseJSON } from '../utils';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
+  const { self } = req;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   let newVisit;
   if (req.get ('User-Agent').length > 20 && (!req.session[zaboId] || moment ().isAfter (req.session[zaboId]))) {
@@ -21,6 +22,10 @@ export const getZabo = ash (async (req, res) => {
     statZabo ({ zaboId, decoded: req.decoded });
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
+    if (self) {
+      User.findByIdAndUpdate (self._id, { $push: { zaboViews: { zabo: zabo._id } } })
+        .exec ();
+    }
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
       .populate ('owner', 'name profilePhoto subtitle description');
@@ -32,7 +37,6 @@ export const getZabo = ash (async (req, res) => {
     });
   }
   const zaboJSON = zabo.toJSON ();
-  const { self } = req;
   if (self) {
     const { likes, pins } = zabo;
     zaboJSON.isLiked = likes.some (like => like.equals (self._id));

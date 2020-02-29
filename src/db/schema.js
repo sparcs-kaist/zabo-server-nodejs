@@ -75,6 +75,16 @@ export const deletedZaboSchema = new mongoose.Schema ({
   id: false,
 });
 
+const zaboViewSchema = new mongoose.Schema ({
+  zabo: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Zabo',
+  },
+}, {
+  timestamps: true,
+  id: false,
+});
+
 export const userSchema = new mongoose.Schema ({
   sso_uid: { type: String, unique: true },
   sso_sid: {
@@ -135,6 +145,7 @@ export const userSchema = new mongoose.Schema ({
     type: String,
     enum: [],
   },
+  zaboViews: [zaboViewSchema],
   followings: [
     new mongoose.Schema ({
       followee: {
@@ -186,6 +197,7 @@ const revisionHistorySchema = new mongoose.Schema ({
   next: String,
 }, {
   timestamps: true,
+  id: false,
 });
 
 export const groupSchema = new mongoose.Schema ({
