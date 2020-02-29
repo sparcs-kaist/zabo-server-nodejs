@@ -3,14 +3,15 @@ import {
   Board, Group, User, Zabo,
 } from '../db';
 import { logger } from '../utils/logger';
-import { isNameInvalidWithRes, jwtSign } from '../utils';
+import { isNameInvalidWithRes, jwtSign, parseJSON } from '../utils';
 
 // TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
   const { user, studentId, adminUser } = req;
-  const { name, category } = req.body;
+  const { name, category: categoryString } = req.body;
   logger.api.info ('post /admin/group request; name: %s, studentId: %s', name, studentId);
+  const category = parseJSON (categoryString, []);
 
   const error = await isNameInvalidWithRes (name, req, res);
   if (error) return error;
