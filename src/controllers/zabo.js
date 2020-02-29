@@ -18,10 +18,14 @@ export const getZabo = ash (async (req, res) => {
     newVisit = true;
     req.session[zaboId] = moment ().add (30, 'seconds');
   }
-  const zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
-    .populate ('owner', 'name profilePhoto subtitle description');
+  let zabo;
   if (newVisit) {
     statZabo ({ zaboId, decoded: req.decoded });
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
+      .populate ('owner', 'name profilePhoto subtitle description');
+  } else {
+    zabo = await Zabo.findOne ({ _id: zaboId })
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
