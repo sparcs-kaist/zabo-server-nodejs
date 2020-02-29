@@ -10,11 +10,11 @@ cron.schedule ('*/17 * * * *', () => {
   zaboSignale.info ('ZABO Scoring start');
   updateScores ()
     .then (() => {
-      console.log ('success');
+      zaboSignale.log ('success');
     })
     .catch (error => {
-      console.error (error);
-      console.log ('failure');
+      zaboSignale.error (error);
+      zaboSignale.log ('failure');
     })
     .finally (() => {
       const hrend = process.hrtime (hrstart);
@@ -27,11 +27,11 @@ cron.schedule ('43 */19 * * * *', () => {
   userSignale.info ('User Scoring start');
   updateRecommends ()
     .then (() => {
-      console.log ('success');
+      userSignale.log ('success');
     })
     .catch (error => {
-      console.error (error);
-      console.log ('failure');
+      userSignale.error (error);
+      userSignale.log ('failure');
     })
     .finally (() => {
       const hrend = process.hrtime (hrstart);
