@@ -23,10 +23,6 @@ export const getZabo = ash (async (req, res) => {
     statZabo ({ zaboId, decoded: req.decoded });
     zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
-    if (self) {
-      User.findByIdAndUpdate (self._id, { $push: { zaboViews: { zabo: zabo._id } } })
-        .exec ();
-    }
   } else {
     zabo = await Zabo.findOne ({ _id: zaboId })
       .populate ('owner', 'name profilePhoto subtitle description');
