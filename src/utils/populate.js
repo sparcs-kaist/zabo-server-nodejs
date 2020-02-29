@@ -1,10 +1,10 @@
 export const populateZaboPrivateStats = (zabo, self) => {
   if (!self) return zabo.toJSON ();
   const zaboJSON = zabo.toJSON ();
-  const { likes, pins } = zabo;
+  const { likesWithTime, pins } = zabo;
   return {
     ...zaboJSON,
-    isLiked: likes.some (like => self._id.equals (like)),
+    isLiked: likesWithTime.some (like => self._id.equals (like.user)),
     isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
   };
 };

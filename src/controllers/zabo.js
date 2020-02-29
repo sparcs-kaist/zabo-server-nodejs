@@ -247,19 +247,19 @@ export const pinZabo = ash (async (req, res) => {
 export const likeZabo = ash (async (req, res) => {
   const { self, zabo, zaboId } = req;
   logger.zabo.info (`post /zabo/like request; zaboId: ${zaboId}, by: ${self.username} (${self.sso_sid})`);
-  const prevLike = zabo.likes.find (like => like.equals (self._id));
+  const prevLike = zabo.likesWithTime.find (like => like.user.equals (self._id));
   if (prevLike) {
-    zabo.likes.pull ({ _id: self._id });
+    zabo.likesWithTime.pull (prevLike);
     await zabo.save ();
     return res.send ({
       isLiked: false,
-      likesCount: zabo.likes.length,
+      likesCount: zabo.likesWithTime.length,
     });
   }
-  zabo.likes.push (self._id);
+  zabo.likesWithTime.push ({ user: self._id });
   await zabo.save ();
   return res.send ({
     isLiked: true,
-    likesCount: zabo.likes.length,
+    likesCount: zabo.likesWithTime.length,
   });
 });

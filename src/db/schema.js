@@ -3,6 +3,16 @@ import {
   EVENTS, ZABO_CATEGORIES, GROUP_CATEGORIES, GROUP_CATEGORIES_2,
 } from '../utils/variables';
 
+const zaboLikeSchema = mongoose.Schema ({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+}, {
+  timestamps: { createdAt: true, updatedAt: false },
+  id: false,
+});
+
 const zaboSchemaObject = {
   createdBy: {
     type: mongoose.Schema.ObjectId,
@@ -52,7 +62,8 @@ const zaboSchemaObject = {
   likes: [{
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-  }], // Like
+  }],
+  likesWithTime: [zaboLikeSchema],
   score: {
     type: Number,
     default: 0,
@@ -81,7 +92,7 @@ const zaboViewSchema = new mongoose.Schema ({
     ref: 'Zabo',
   },
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   id: false,
 });
 
