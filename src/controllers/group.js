@@ -2,6 +2,7 @@ import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
 import { Group, Zabo } from '../db';
 import { isNameInvalidWithRes } from '../utils';
+import { populateZabosPrivateStats } from '../utils/populate';
 
 // get /group/random
 export const findGroupRecommends = ash (async (req, res) => {
@@ -204,19 +205,7 @@ export const listGroupZabos = ash (async (req, res, next) => {
     .sort ({ createdAt: -1 })
     // .limit (20) // TODO: optimize
     .populate ('owner', 'name profilePhoto subtitle description');
-  let result = zabos; // TODO: Refactor dups
-  const { self } = req;
-  if (self) {
-    result = zabos.map (zabo => {
-      const zaboJSON = zabo.toJSON ();
-      const { likes, pins } = zabo;
-      return {
-        ...zaboJSON,
-        isLiked: likes.some (like => like.equals (self._id)),
-        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
-      };
-    });
-  }
+  const result = populateZabosPrivateStats (zabos, req.self);
   return res.json (result);
 });
 

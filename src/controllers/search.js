@@ -2,6 +2,7 @@ import ash from 'express-async-handler';
 import { Group, User, Zabo } from '../db';
 import { logger } from '../utils/logger';
 import { statSearch } from '../utils/statistic';
+import { populateZabosPrivateStats } from '../utils/populate';
 
 const splitTagNText = (query) => {
   const split = query.trim ().split ('#');
@@ -20,6 +21,24 @@ const splitTagNText = (query) => {
   return { tags, searchQuery };
 };
 
+export const getSimpleSearch = ash (async (req, res) => {
+  const { safeQuery, safeCategory } = req;
+  let [zabos, groups] = await Promise.all ([
+    Zabo.searchFull (safeQuery, safeCategory)
+      .select ({ title: 1 }),
+    Group.searchPartial (safeQuery)
+      .select ({ name: 1, profilePhoto: 1 }),
+  ]);
+  if (zabos.length < 10) {
+    zabos = await Zabo.searchPartial (safeQuery, safeCategory)
+      .select ({ title: 1 });
+  }
+  return res.json ({
+    zabos,
+    groups,
+  });
+});
+
 export const getSearch = ash (async (req, res) => {
   const { safeQuery, safeCategory } = req;
   const { stat } = req.query;
@@ -29,19 +48,15 @@ export const getSearch = ash (async (req, res) => {
   // TODO : Cache search result using REDIS
   let [zabos, groupResult] = await Promise.all ([
     Zabo.searchFull (safeQuery, safeCategory)
-      .populate ('owner', 'name profilePhoto subtitle description')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board'),
+      .populate ('owner', 'name profilePhoto subtitle description'),
     Group.searchPartial (safeQuery),
   ]);
 
   if (zabos.length < 10) {
     zabos = await Zabo.searchPartial (safeQuery, safeCategory)
-      .populate ('owner', 'name profilePhoto subtitle description')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board');
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
-
+  zabos = populateZabosPrivateStats (zabos, req.self);
   const groups = groupResult.map (group => group.toJSON ({ virtuals: true }));
   const counts = await Zabo.aggregate ([
     { $match: { owner: { $in: groups.map (group => group._id) } } },
