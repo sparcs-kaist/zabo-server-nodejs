@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import { Group, User } from '../db';
 import { RESERVED_ROUTES_USERNAME_EXCEPTIONS } from './variables';
 
@@ -61,3 +62,13 @@ export const isNameInvalidWithRes = async (name, req, res) => {
 export const isValidId = mongoose.Types.ObjectId.isValid;
 
 export const escapeRegExp = string => string.replace (/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export const jwtSign = (user, jwtSecret) => jwt.sign ({
+  _id: user._id,
+  sid: user.sso_sid,
+  email: user.email,
+  username: user.username,
+}, jwtSecret, {
+  expiresIn: '60d',
+  issuer: 'zabo-sparcs-kaist',
+});

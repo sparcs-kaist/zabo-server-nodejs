@@ -5,7 +5,7 @@ import { Board, User, Group } from '../db';
 
 /* eslint camelcase:0 */
 import SSOClient from '../utils/sso';
-import { parseJSON } from '../utils';
+import { jwtSign, parseJSON } from '../utils';
 import { logger } from '../utils/logger';
 import { checkPreAndRegister } from '../utils/preRegister';
 
@@ -193,16 +193,7 @@ export const loginCallback = ash (async (req, res) => {
     user = await register (userData);
   }
 
-  const token = jwt.sign ({
-    _id: user._id,
-    sid: user.sso_sid,
-    email: user.email,
-    username: user.username,
-  }, jwtSecret, {
-    expiresIn: '60d',
-    issuer: 'zabo-sparcs-kaist',
-  });
-
+  const token = jwtSign (user, jwtSecret);
   res.json ({
     token,
     user,

@@ -4,7 +4,7 @@ import {
   Board, Group, User, Zabo,
 } from '../db';
 import { logger } from '../utils/logger';
-import { isNameInvalidWithRes } from '../utils';
+import { isNameInvalidWithRes, jwtSign } from '../utils';
 
 // TODO: Accept other keys too, Don't accept student id only.
 // post /admin/group
@@ -44,6 +44,8 @@ export const getUserInfo = ash (async (req, res) => {
 // post /admin/fakeRegister
 export const fakeRegister = ash (async (req, res) => {
   const { username } = req.body;
+  const error = await isNameInvalidWithRes (username, req, res);
+  if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
   const board = await Board.create ({
     title: '저장한 포스터',
@@ -57,32 +59,18 @@ export const fakeRegister = ash (async (req, res) => {
     boards,
     username,
   });
-  const token = jwt.sign ({
-    id: user._id,
-    sid: user.sso_sid,
-    email: user.email,
-    studentId: user.studentId,
-  }, jwtSecret, {
-    expiresIn: '60d',
-    issuer: 'zabo-sparcs-kaist',
-  });
+  const token = jwtSign (user, jwtSecret);
   return res.json ({ user, token });
 });
 
 // post /admin/fakeLogin
 export const fakeLogin = ash (async (req, res) => {
   const { username } = req.body;
+  const error = await isNameInvalidWithRes (username, req, res);
+  if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
   const user = await User.findOne ({ username });
-  const token = jwt.sign ({
-    id: user._id,
-    sid: user.sso_sid,
-    email: user.email,
-    studentId: user.studentId,
-  }, jwtSecret, {
-    expiresIn: '60d',
-    issuer: 'zabo-sparcs-kaist',
-  });
+  const token = jwtSign (user, jwtSecret);
   return res.json (token);
 });
 
