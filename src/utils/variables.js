@@ -1,5 +1,9 @@
-export const EVENTS = ['REGISTER', 'GET_ZABO', 'SEARCH'];
-export const EVENTS_MAP = EVENTS.reduce ((acc, cur) => ({ ...acc, [cur]: cur }), {});
+export const EVENTS_MAP = {
+  REGISTER: 'REGISTER',
+  GET_ZABO: 'GET_ZABO',
+  SEARCH: 'SEARCH',
+};
+export const EVENTS = Object.values (EVENTS_MAP);
 export const RESERVED_ROUTES_USERNAME_EXCEPTIONS = ['auth', 'settings', 'admin', 'pins', 'main'];
 
 export const ZABO_CATEGORIES = ['행사', '공연', '축제', '세미나', '교육', '모임', '이벤트', '공모전', '전시', '공지', '모집', '채용', '봉사', '오픈동방', '데모데이'];

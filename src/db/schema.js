@@ -68,6 +68,24 @@ const zaboSchemaObject = {
     type: Number,
     default: 0,
   },
+  scoreMeta: {
+    lastLikeCount: {
+      type: Number,
+      default: 0,
+    },
+    lastLikeTimeMA: {
+      type: Date,
+      default: Date.now,
+    },
+    lastCountedViewDate: {
+      type: Date,
+      default: Date.now,
+    },
+    lastViewTimeMA: {
+      type: Date,
+      default: Date.now,
+    },
+  },
   __v: { type: Number, select: false },
 };
 export const zaboSchema = new mongoose.Schema (zaboSchemaObject, {
