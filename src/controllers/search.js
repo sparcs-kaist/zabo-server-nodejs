@@ -91,34 +91,26 @@ export const listSearchZabos = ash (async (req, res, next) => {
   }
 
   // TODO : Cache search result using REDIS
-  // Zabo.search: limit(20) already exists inside function
-  let result = await Zabo.searchFull (safeQuery, safeCategory)
-    .populate ('owner', 'name profilePhoto subtitle description')
-    .populate ('likes')
-    .populate ('pins', 'pinnedBy board');
-
-  if (result.length < 10) {
-    result = await Zabo.searchPartial (safeQuery, safeCategory)
-      .populate ('owner', 'name profilePhoto subtitle description')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board');
+  let zabos = await Zabo.searchFull (safeQuery, safeCategory)
+    .populate ('owner', 'name profilePhoto subtitle description');
+  if (zabos.length < 10) {
+    zabos = await Zabo.searchPartial (safeQuery, safeCategory)
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
-  return res.send (result);
+  zabos = populateZabosPrivateStats (zabos, req.self);
+  return res.send (zabos);
 });
 
 export const listNextSearchZabos = ash (async (req, res) => {
   const { safeQuery, safeCategory, lastSeen } = req;
   // const { tags, searchQuery } = splitTagNText (safeQuery);
-  let result = await Zabo.searchFull (safeQuery, safeCategory, lastSeen)
-    .populate ('owner', 'name profilePhoto subtitle description')
-    .populate ('likes')
-    .populate ('pins', 'pinnedBy board');
+  let zabos = await Zabo.searchFull (safeQuery, safeCategory, lastSeen)
+    .populate ('owner', 'name profilePhoto subtitle description');
 
-  if (result.length < 10) {
-    result = await Zabo.searchPartial (safeQuery, safeCategory)
-      .populate ('owner', 'name profilePhoto subtitle description')
-      .populate ('likes')
-      .populate ('pins', 'pinnedBy board');
+  if (zabos.length < 10) {
+    zabos = await Zabo.searchPartial (safeQuery, safeCategory)
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
-  return res.send (result);
+  zabos = populateZabosPrivateStats (zabos, req.self);
+  return res.send (zabos);
 });
