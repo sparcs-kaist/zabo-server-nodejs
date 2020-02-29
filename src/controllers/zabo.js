@@ -21,10 +21,10 @@ export const getZabo = ash (async (req, res) => {
   let zabo;
   if (newVisit) {
     statZabo ({ zaboId, decoded: req.decoded });
-    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1, effectiveViews: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
   } else {
-    zabo = await Zabo.findOne ({ _id: zaboId })
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
       .populate ('owner', 'name profilePhoto subtitle description');
   }
   if (!zabo) {

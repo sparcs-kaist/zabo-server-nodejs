@@ -46,6 +46,7 @@ const zaboSchemaObject = {
     // enum: ZABO_CATEGORIES,
   }],
   views: Number,
+  effectiveViews: Number,
   schedules: [{
     title: String,
     startAt: {
