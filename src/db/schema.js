@@ -75,7 +75,7 @@ const zaboSchemaObject = {
     },
     lastLikeTimeMA: {
       type: Date,
-      default: Date.now,
+      default: () => new Date (+new Date () - 3 * 24 * 60 * 60 * 1000),
     },
     lastCountedViewDate: {
       type: Date,
@@ -83,7 +83,7 @@ const zaboSchemaObject = {
     },
     lastViewTimeMA: {
       type: Date,
-      default: Date.now,
+      default: () => new Date (+new Date () - 3 * 24 * 60 * 60 * 1000),
     },
   },
   __v: { type: Number, select: false },
