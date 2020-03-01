@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import {
   adminUserSchema, userSchema, zaboSchema, deletedZaboSchema, boardSchema, groupSchema, statisticsSchema,
 } from './methods';
-import { preRegisterSchema } from './schema';
+import { preRegisterSchema, metaSchema } from './schema';
 import { logger } from '../utils/logger';
 
 mongoose.connect (process.env.MONGODB_URL, {
@@ -32,3 +32,4 @@ export const Board = mongoose.model ('Board', boardSchema);
 export const Group = mongoose.model ('Group', groupSchema);
 export const Statistic = mongoose.model ('Statistic', statisticsSchema);
 export const PreRegister = mongoose.model ('PreRegister', preRegisterSchema);
+export const Meta = mongoose.model ('Meta', metaSchema);

@@ -105,6 +105,20 @@ export const deletedZaboSchema = new mongoose.Schema ({
   id: false,
 });
 
+export const metaSchema = new mongoose.Schema ({
+  type: {
+    type: String,
+    unique: true,
+  },
+  value: {
+    type: Object,
+    required: true,
+  },
+}, {
+  timestamps: true,
+  id: false,
+});
+
 export const userSchema = new mongoose.Schema ({
   sso_uid: { type: String, unique: true },
   sso_sid: {
