@@ -1,8 +1,41 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
-import { Group, Zabo } from '../db';
-import { isNameInvalidWithRes } from '../utils';
+import { Group, GroupApply, Zabo } from '../db';
+import { isNameInvalidWithRes, parseJSON } from '../utils';
 import { populateZabosPrivateStats } from '../utils/populate';
+
+export const applyGroup = ash (async (req, res) => {
+  const { file, self } = req;
+  const {
+    name, description, subtitle, purpose, category: categoryString, isBusiness = false,
+  } = req.body;
+  const category = parseJSON (categoryString, []);
+  logger.api.info (`
+    post /group/apply request; name: %s, description: %s, subtitle: %s,
+    purpose: %s, category: %s, isBusiness: %s
+   `, name, description, subtitle, purpose, category, isBusiness);
+
+  if (!name || !description || !subtitle || !purpose || category.length < 2 || !file) {
+    return res.status (400).json ({
+      error: 'All fields are required',
+    });
+  }
+  const error = await isNameInvalidWithRes (name, req, res);
+  if (error) return error;
+
+  const groupApply = await GroupApply.create ({
+    name,
+    description,
+    subtitle,
+    purpose,
+    profilePhoto: file.location,
+    members: [{ user: self._id, role: 'admin' }],
+    category,
+    isBusiness,
+  });
+
+  return res.json (groupApply);
+});
 
 // get /group/random
 export const findGroupRecommends = ash (async (req, res) => {

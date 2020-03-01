@@ -12,7 +12,7 @@ export const validateNameController = ash (async (req, res) => {
       message: 'invalid',
     });
   }
-  const [, , usability] = await nameUsabilityCheck (name);
+  const [usability] = await nameUsabilityCheck (name);
   if (!usability) {
     return res.status (400).json ({
       message: 'taken',

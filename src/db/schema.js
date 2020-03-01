@@ -230,7 +230,7 @@ const revisionHistorySchema = new mongoose.Schema ({
   id: false,
 });
 
-export const groupSchema = new mongoose.Schema ({
+const groupSchemaObject = {
   name: {
     type: String,
     required: true,
@@ -238,17 +238,14 @@ export const groupSchema = new mongoose.Schema ({
     unique: true,
     index: true,
   },
-  isPreRegistered: Boolean,
-  level: {
-    type: Number,
-    default: 0,
-  },
-  revisionHistory: [revisionHistorySchema],
   subtitle: String,
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
-  recentUpload: Date,
+  category: [{
+    type: String,
+    // enum: [...GROUP_CATEGORIES, ... GROUP_CATEGORIES_2],
+  }],
   members: [{
     user: {
       type: mongoose.Schema.ObjectId,
@@ -258,20 +255,39 @@ export const groupSchema = new mongoose.Schema ({
       type: String,
       enum: ['admin', 'editor'],
     },
-  }], // sso_sid of users
+  }],
+  purpose: String,
+  isBusiness: {
+    type: Boolean,
+    default: false,
+  },
+  __v: { type: Number, select: false },
+};
+
+export const groupApplySchema = new mongoose.Schema ({
+  ...groupSchemaObject,
+}, {
+  timestamps: true,
+  id: false,
+});
+
+export const groupSchema = new mongoose.Schema ({
+  ...groupSchemaObject,
+  isPreRegistered: Boolean,
+  level: {
+    type: Number,
+    default: 0,
+  },
+  revisionHistory: [revisionHistorySchema],
+  recentUpload: Date,
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-  }],
-  category: [{
-    type: String,
-    // enum: [...GROUP_CATEGORIES, ... GROUP_CATEGORIES_2],
   }],
   score: {
     type: Number,
     default: 0,
   },
-  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
