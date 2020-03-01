@@ -21,6 +21,9 @@ export const acceptGroupApply = ash (async (req, res) => {
     delete newGroupJSON.members[i]._id;
   });
   const created = await Group.create (newGroupJSON);
+  await Promise.all (
+    newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
+  );
   return res.json (created);
 });
 

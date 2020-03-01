@@ -1,5 +1,5 @@
 import ash from 'express-async-handler';
-import { User } from '../db';
+import { GroupApply, User } from '../db';
 import { logger } from '../utils/logger';
 import { isNameInvalidWithRes } from '../utils';
 import { populateZabosPrivateStats } from '../utils/populate';
@@ -12,7 +12,10 @@ export const getUserInfo = ash (async (req, res) => {
   const user = await User.findOne ({ sso_sid: sid })
     .populate ('groups')
     .populate ('boards');
-  res.json (user);
+  const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } });
+  const userJSON = user.toJSON ();
+  userJSON.pendingGroups = groupApplies;
+  res.json (userJSON);
 });
 
 // post /user
