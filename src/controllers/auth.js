@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
 import ash from 'express-async-handler';
 
-import { Board, User, Group } from '../db';
+import {
+  Board, User, Group, GroupApply,
+} from '../db';
 
 /* eslint camelcase:0 */
 import SSOClient from '../utils/sso';
@@ -28,8 +30,10 @@ export const authCheck = ash (async (req, res) => {
         select: 'name profilePhoto followers recentUpload subtitle',
       })
       .populate ('boards');
-
-    res.json (user);
+    const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } }, { name: 1, profilePhoto: 1, subtitle: 1 });
+    const userJSON = user.toJSON ();
+    userJSON.pendingGroups = groupApplies;
+    res.json (userJSON);
   });
 });
 

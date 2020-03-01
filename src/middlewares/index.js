@@ -74,9 +74,9 @@ export const findSelfMiddleware = ash (async (req, res, next) => {
   const { sid } = req.decoded;
   const user = await User.findOne ({ sso_sid: sid });
   if (user === null) {
-    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 404 - user does not exist`);
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 403 - Authentication required`);
     return res.status (404).json ({
-      error: 'user does not exist',
+      error: 'Invalid User',
     });
   }
   req.self = user;

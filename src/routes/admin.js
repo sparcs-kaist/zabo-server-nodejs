@@ -1,5 +1,5 @@
 import express from 'express';
-import * as adminControllers from '../controllers/admin';
+import * as ac from '../controllers/admin';
 import { authMiddleware, isAdmin, findUserWithStudentIdMiddleware } from '../middlewares';
 
 const router = express.Router ();
@@ -16,17 +16,20 @@ const findUser = (req, res, next) => {
 
 router.use (authMiddleware, isAdmin);
 
-router.get ('/user/:studentId', findUser, adminControllers.getUserInfo);
-router.post ('/group', findUser, adminControllers.createGroup);
-router.patch ('/group/:groupName/level', adminControllers.patchLevel);
-
 /* Temporary Routes */
-router.post ('/fakeRegister', notInProduction, adminControllers.fakeRegister);
-router.post ('/fakeLogin', adminControllers.fakeLogin);
+router.post ('/fakeRegister', notInProduction, ac.fakeRegister);
+router.post ('/fakeLogin', ac.fakeLogin);
 
 /* For admin page */
-router.get ('/analytics/zabo/date/created', adminControllers.analyticsGetZaboCreatedDate);
-router.get ('/analytics/user/date/created', adminControllers.analyticsGetUserCreatedDate);
+router.get ('/user/list', ac.listUsers);
+router.get ('/user/:studentId', findUser, ac.getUserInfo);
+router.get ('/group/list', ac.listGroups);
+router.get ('/group/applies', ac.listGroupApplies);
+router.post ('/group/apply/accept', ac.acceptGroupApply);
+router.post ('/group', findUser, ac.createGroup);
+router.patch ('/group/:groupName/level', ac.patchLevel);
+router.get ('/analytics/zabo/date/created', ac.analyticsGetZaboCreatedDate);
+router.get ('/analytics/user/date/created', ac.analyticsGetUserCreatedDate);
 
 
 module.exports = router;
