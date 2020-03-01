@@ -79,7 +79,8 @@ export const getUserInfo = ash (async (req, res) => {
 });
 
 export const listGroups = ash (async (req, res) => {
-  const groups = await Group.find ().lean ();
+  const groups = await Group.find ()
+    .populate ('members.user');
   return res.json (groups);
 });
 
