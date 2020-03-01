@@ -306,7 +306,7 @@ const actionHistory = new mongoose.Schema ({
     required: true,
   },
   target: String,
-  info: Map,
+  info: Object,
   __v: { type: Number, select: false },
 }, {
   timestamps: { createdAt: true, updatedAt: false },
