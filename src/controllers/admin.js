@@ -1,11 +1,32 @@
 import ash from 'express-async-handler';
 import {
-  Board, Group, User, Zabo,
+  Board, Group, GroupApply, User, Zabo,
 } from '../db';
 import { logger } from '../utils/logger';
 import { isNameInvalidWithRes, jwtSign, parseJSON } from '../utils';
 
-// TODO: Accept other keys too, Don't accept student id only.
+export const listGroupApplies = ash (async (req, res) => {
+  const applies = await GroupApply.find ()
+    .populate ('members.user');
+  return res.json (applies);
+});
+
+export const acceptGroupApply = ash (async (req, res) => {
+  const { name } = req.body;
+  const newGroup = await GroupApply.findOneAndDelete ({ name });
+  console.log (name, newGroup);
+  const newGroupJSON = newGroup.toJSON ({ virtuals: false });
+  delete newGroupJSON._id;
+  newGroupJSON.members.forEach ((member, i) => {
+    delete newGroupJSON.members[i]._id;
+  });
+  const created = await Group.create (newGroupJSON);
+  await Promise.all (
+    newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
+  );
+  return res.json (created);
+});
+
 // post /admin/group
 export const createGroup = ash (async (req, res) => {
   const { user, studentId, adminUser } = req;
@@ -55,6 +76,17 @@ export const getUserInfo = ash (async (req, res) => {
     .populate ('boards', '_id title isPrivate')
     .execPopulate ();
   res.json (populated);
+});
+
+export const listGroups = ash (async (req, res) => {
+  const groups = await Group.find ()
+    .populate ('members.user');
+  return res.json (groups);
+});
+
+export const listUsers = ash (async (req, res) => {
+  const users = await User.find ().lean ();
+  return res.json (users);
 });
 
 // post /admin/fakeRegister
