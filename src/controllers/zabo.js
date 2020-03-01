@@ -165,6 +165,30 @@ const queryZabos = async (req, queryOptions) => {
   return populateZabosPrivateStats (zabos, req.self);
 };
 
+export const listHotZabos = ash (async (req, res) => {
+  const zabos = await queryZabos (req, { $where: 'this.likesWithTime.length > 5' }); // TODO: Store likes count with pre
+  // save
+  // or some other hooks
+  const results = [];
+  let minIndex = 0;
+  zabos.forEach (zabo => {
+    const zaboJSON = zabo.toJSON ();
+    if (results.length < 3) {
+      results.push (zaboJSON);
+      if (results[minIndex].likesCount >= zaboJSON.likesCount) minIndex = results.length - 1;
+      return;
+    }
+    if (results[minIndex].likesCount < zaboJSON.likesCount) {
+      results.splice (0, 1);
+      results.push (zaboJSON);
+      minIndex = 0;
+      if (results[1].likesCount <= results[minIndex].likesCount) minIndex = 1;
+      if (results[2].likesCount <= results[minIndex].likesCount) minIndex = 2;
+    }
+  });
+  return res.json (results);
+});
+
 export const listZabos = ash (async (req, res, next) => {
   const { lastSeen, relatedTo } = req.query;
   if (lastSeen) return next ();
