@@ -15,7 +15,7 @@ export const applyGroup = ash (async (req, res) => {
     purpose: %s, category: %s, isBusiness: %s
    `, name, description, subtitle, purpose, category, isBusiness);
 
-  if (!name || !description || !subtitle || !purpose || category.length < 2 || !file) {
+  if (!name || !description || !subtitle || !purpose || category.length < 1) {
     return res.status (400).json ({
       error: 'All fields are required',
     });
@@ -23,16 +23,21 @@ export const applyGroup = ash (async (req, res) => {
   const error = await isNameInvalidWithRes (name, req, res);
   if (error) return error;
 
-  const groupApply = await GroupApply.create ({
+  const groupInfo = {
     name,
     description,
     subtitle,
     purpose,
-    profilePhoto: file.location,
     members: [{ user: self._id, role: 'admin' }],
     category,
     isBusiness,
-  });
+  };
+
+  if (file) {
+    groupInfo.profilePhoto = file.location;
+  }
+
+  const groupApply = await GroupApply.create (groupInfo);
 
   return res.json (groupApply);
 });
