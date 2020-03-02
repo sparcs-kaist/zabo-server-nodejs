@@ -189,6 +189,13 @@ export const listHotZabos = ash (async (req, res) => {
   return res.json (results);
 });
 
+export const listMagamImbakList = ash (async (req, res) => {
+  const cur = new Date ();
+  const nextWeek = new Date (+new Date () + 7 * 24 * 60 * 60 * 1000);
+  const zabos = await Zabo.find ({ schedules: { $elemMatch: { startAt: { $lt: nextWeek, $gt: cur } } } });
+  return res.json (zabos);
+});
+
 export const listZabos = ash (async (req, res, next) => {
   const { lastSeen, relatedTo } = req.query;
   if (lastSeen) return next ();
