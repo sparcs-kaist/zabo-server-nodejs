@@ -64,9 +64,12 @@ export const getGroupInfo = ash (async (req, res) => {
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
   const { groupName, group, file } = req;
-  const { name, description, subtitle } = req.body;
+  const {
+    name, description, subtitle, category: categoryString,
+  } = req.body;
+  const category = parseJSON (categoryString, []);
   logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description},
-   subtitle: ${subtitle} ${file ? `, image: ${file.location}` : ''}`);
+   subtitle: ${subtitle} category: ${category} ${file ? `, image: ${file.location}` : ''}`);
 
   if (group.name !== name) {
     const error = await isNameInvalidWithRes (name, req, res);
@@ -85,6 +88,7 @@ export const updateGroupInfo = ash (async (req, res) => {
   }
   group.description = description;
   group.subtitle = subtitle;
+  group.category = category;
   await group.save ();
   return res.json ({
     name,
