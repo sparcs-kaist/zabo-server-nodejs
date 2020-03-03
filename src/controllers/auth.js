@@ -197,10 +197,14 @@ export const loginCallback = ash (async (req, res) => {
     user = await register (userData);
   }
 
+  const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } }, { name: 1, profilePhoto: 1, subtitle: 1 });
+  const userJSON = user.toJSON ();
+  userJSON.pendingGroups = groupApplies;
+
   const token = jwtSign (user, jwtSecret);
   res.json ({
     token,
-    user,
+    user: userJSON,
   });
 });
 

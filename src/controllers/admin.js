@@ -115,8 +115,6 @@ export const fakeRegister = ash (async (req, res) => {
 // post /admin/fakeLogin
 export const fakeLogin = ash (async (req, res) => {
   const { username } = req.body;
-  const error = await isNameInvalidWithRes (username, req, res);
-  if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
   const user = await User.findOne ({ username });
   if (!user) return res.sendStatus (404);

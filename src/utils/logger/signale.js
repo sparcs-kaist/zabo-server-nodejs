@@ -21,4 +21,9 @@ const signale = new Signale (options);
 signale.remind ('Improve Logging.');
 signale.santa ('Hoho!');
 
+export const debug = new Signale ({
+  ...options,
+  disabled: process.env.NODE_ENV === 'production',
+});
+
 export default signale;

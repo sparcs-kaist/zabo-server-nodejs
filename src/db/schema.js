@@ -45,8 +45,14 @@ const zaboSchemaObject = {
     type: String,
     // enum: ZABO_CATEGORIES,
   }],
-  views: Number,
-  effectiveViews: Number,
+  views: {
+    type: Number,
+    default: 0,
+  },
+  effectiveViews: {
+    type: Number,
+    default: 0,
+  },
   schedules: [{
     title: String,
     startAt: {
@@ -102,6 +108,20 @@ export const deletedZaboSchema = new mongoose.Schema ({
   updatedAt: Date,
 }, {
   toJSON: { virtuals: true },
+  id: false,
+});
+
+export const metaSchema = new mongoose.Schema ({
+  type: {
+    type: String,
+    unique: true,
+  },
+  value: {
+    type: Object,
+    required: true,
+  },
+}, {
+  timestamps: true,
   id: false,
 });
 

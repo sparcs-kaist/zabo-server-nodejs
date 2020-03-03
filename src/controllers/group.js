@@ -3,6 +3,7 @@ import { logger } from '../utils/logger';
 import { Group, GroupApply, Zabo } from '../db';
 import { isNameInvalidWithRes, parseJSON } from '../utils';
 import { populateZabosPrivateStats } from '../utils/populate';
+import { sendNewApplyMessage } from '../utils/slack';
 
 export const applyGroup = ash (async (req, res) => {
   const { file, self } = req;
@@ -15,7 +16,7 @@ export const applyGroup = ash (async (req, res) => {
     purpose: %s, category: %s, isBusiness: %s
    `, name, description, subtitle, purpose, category, isBusiness);
 
-  if (!name || !description || !subtitle || !purpose || category.length < 2 || !file) {
+  if (!name || !description || !subtitle || !purpose || category.length < 1) {
     return res.status (400).json ({
       error: 'All fields are required',
     });
@@ -23,23 +24,36 @@ export const applyGroup = ash (async (req, res) => {
   const error = await isNameInvalidWithRes (name, req, res);
   if (error) return error;
 
-  const groupApply = await GroupApply.create ({
+  const groupInfo = {
     name,
     description,
     subtitle,
     purpose,
-    profilePhoto: file.location,
     members: [{ user: self._id, role: 'admin' }],
     category,
     isBusiness,
-  });
+  };
+
+  if (file) {
+    groupInfo.profilePhoto = file.location;
+  }
+
+  const groupApply = await GroupApply.create (groupInfo);
+  sendNewApplyMessage (groupApply, self);
 
   return res.json (groupApply);
 });
 
 // get /group/random
 export const findGroupRecommends = ash (async (req, res) => {
-  const groups = await Group.aggregate ([{ $sample: { size: 5 } }]);
+  if (req.session.groupRecommend) {
+    return res.json (req.session.groupRecommend);
+  }
+  const groups = await Group.aggregate ([
+    { $sample: { size: 5 } },
+    { $project: { name: 1, profilePhoto: 1, subtitle: 1 } },
+  ]);
+  req.session.groupRecommend = groups;
   return res.json (groups);
 });
 
@@ -52,9 +66,12 @@ export const getGroupInfo = ash (async (req, res) => {
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
   const { groupName, group, file } = req;
-  const { name, description, subtitle } = req.body;
+  const {
+    name, description, subtitle, category: categoryString,
+  } = req.body;
+  const category = parseJSON (categoryString, []);
   logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description},
-   subtitle: ${subtitle} ${file ? `, image: ${file.location}` : ''}`);
+   subtitle: ${subtitle} category: ${category} ${file ? `, image: ${file.location}` : ''}`);
 
   if (group.name !== name) {
     const error = await isNameInvalidWithRes (name, req, res);
@@ -73,6 +90,7 @@ export const updateGroupInfo = ash (async (req, res) => {
   }
   group.description = description;
   group.subtitle = subtitle;
+  group.category = category;
   await group.save ();
   return res.json ({
     name,

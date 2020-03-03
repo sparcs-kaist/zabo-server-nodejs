@@ -1,7 +1,10 @@
 import moment from 'moment';
 import _ from 'lodash';
-import db, { Zabo, Statistic, User } from '../../db';
+import db, {
+  Zabo, Statistic, User, Meta,
+} from '../../db';
 import { EVENTS_MAP, GROUP_CATEGORIES_2 } from '../../utils/variables';
+import { debug } from '../../utils/logger/signale';
 
 const eventEndDate = moment ('2020-03-31', 'YYYY-MM-DD');
 
@@ -81,32 +84,52 @@ const calObjMA = (prev, next, weight) => {
 
 const cats = [...GROUP_CATEGORIES_2, '관리자'];
 export const updateRecommends = async () => {
+  // const meta = await Meta.findOne ({ type: 'lastRecommendCountedDate' });
+  // const lastRecommendCountedDate = meta ? meta.value : new Date (0);
+  // const views = await Statistic.find ({
+  //     type: EVENTS_MAP.GET_ZABO,
+  //     createdAt: { $gt: lastCountedDate },
+  //   })
+  //   .populate ({
+  //     path: 'zabo',
+  //     populate: {
+  //       path: 'owner',
+  //       project: 'category',
+  //     },
+  //   });
+  // TODO: Temporarily disabled due to useless data
+  // const viewsAll = await Statistic.aggregate ([
+  //   {
+  //     $match: {
+  //       type: EVENTS_MAP.GET_ZABO,
+  //       createdAt: { $gt: lastCountedDate },
+  //     },
+  //   },
+  //   { $group: { _id: '$user', zabo: { $push: '$zabo' } } },
+  // ]);
+  //
+  // await Meta.findOneAndUpdate (
+  //   { type: 'lastRecommendCountedDate' },
+  //   { $set: { value: new Date () } },
+  //   { upsert: true },
+  // );
+
   // eslint-disable-next-line no-restricted-syntax
   for await (const user of User.find ()) {
+    const hrstart = process.hrtime ();
     const { lastCountedDate } = user.interestMeta;
     let { interests } = user;
     if (!interests) {
       interests = cats.reduce ((acc, cur) => ({ ...acc, [cur]: 1 / cats.length }), {});
     }
 
-    const views = await Statistic.find ({
-      type: EVENTS_MAP.GET_ZABO,
-      user: user._id,
-      createdAt: { $gt: lastCountedDate },
-    })
-      .populate ({
-        path: 'zabo',
-        populate: {
-          path: 'owner',
-          project: 'category',
-        },
-      });
+    const viewInterests = { ...interests };
 
-    let viewInterests = { ...interests };
-    views.forEach (view => {
-      const [, cat2] = view.zabo.owner.category;
-      viewInterests = calObjMA (viewInterests, cat2, INTEREST_VIEW_MA_WEIGHT);
-    });
+    // const views = viewsAll.find (userViews => userViews._id.equals (user._id));
+    // views.forEach (view => {
+    //   const [, cat2] = view.zabo.owner.category;
+    //   viewInterests = calObjMA (viewInterests, cat2, INTEREST_VIEW_MA_WEIGHT);
+    // });
 
     const likes = await Zabo.find ({
       likesWithTime: {
@@ -139,6 +162,9 @@ export const updateRecommends = async () => {
         },
       },
     );
+
+    const hrend = process.hrtime (hrstart);
+    debug.info ('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000);
     // _ (likeInterests).toPairs ().sortBy (1).value ()
   }
 };
