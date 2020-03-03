@@ -17,7 +17,10 @@ export const sendNewApplyMessage = async (group, user) => {
     isBusiness,
   } = group;
 
-  return sendMessage (`
+  const devLog = (process.env.NODE_ENV !== 'production') ? `
+    [DEV]
+  ` : '';
+  return sendMessage (`${devLog}
     ##새로운 그룹 신청이 있습니다.##
     <http://zabo.sparcs.org/admin/group/${name}|*link*>
     *이름* : ${name}
