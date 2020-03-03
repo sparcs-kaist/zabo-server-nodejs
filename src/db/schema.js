@@ -3,6 +3,16 @@ import {
   EVENTS, ZABO_CATEGORIES, GROUP_CATEGORIES, GROUP_CATEGORIES_2,
 } from '../utils/variables';
 
+const zaboLikeSchema = mongoose.Schema ({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+}, {
+  timestamps: { createdAt: true, updatedAt: false },
+  id: false,
+});
+
 const zaboSchemaObject = {
   createdBy: {
     type: mongoose.Schema.ObjectId,
@@ -35,7 +45,14 @@ const zaboSchemaObject = {
     type: String,
     // enum: ZABO_CATEGORIES,
   }],
-  views: Number,
+  views: {
+    type: Number,
+    default: 0,
+  },
+  effectiveViews: {
+    type: Number,
+    default: 0,
+  },
   schedules: [{
     title: String,
     startAt: {
@@ -52,10 +69,29 @@ const zaboSchemaObject = {
   likes: [{
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-  }], // Like
+  }],
+  likesWithTime: [zaboLikeSchema],
   score: {
     type: Number,
     default: 0,
+  },
+  scoreMeta: {
+    lastLikeCount: {
+      type: Number,
+      default: 0,
+    },
+    lastLikeTimeMA: {
+      type: Date,
+      default: () => new Date (+new Date () - 3 * 24 * 60 * 60 * 1000),
+    },
+    lastCountedViewDate: {
+      type: Date,
+      default: Date.now,
+    },
+    lastViewTimeMA: {
+      type: Date,
+      default: () => new Date (+new Date () - 3 * 24 * 60 * 60 * 1000),
+    },
   },
   __v: { type: Number, select: false },
 };
@@ -72,6 +108,20 @@ export const deletedZaboSchema = new mongoose.Schema ({
   updatedAt: Date,
 }, {
   toJSON: { virtuals: true },
+  id: false,
+});
+
+export const metaSchema = new mongoose.Schema ({
+  type: {
+    type: String,
+    unique: true,
+  },
+  value: {
+    type: Object,
+    required: true,
+  },
+}, {
+  timestamps: true,
   id: false,
 });
 
@@ -152,6 +202,17 @@ export const userSchema = new mongoose.Schema ({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  recommends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Zabo',
+  }],
+  interests: Object,
+  interestMeta: {
+    lastCountedDate: {
+      type: Date,
+      default: Date.now,
+    },
+  },
   __v: { type: Number, select: false },
 }, {
   timestamps: true,
@@ -185,10 +246,11 @@ const revisionHistorySchema = new mongoose.Schema ({
   prev: String,
   next: String,
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
+  id: false,
 });
 
-export const groupSchema = new mongoose.Schema ({
+const groupSchemaObject = {
   name: {
     type: String,
     required: true,
@@ -196,13 +258,14 @@ export const groupSchema = new mongoose.Schema ({
     unique: true,
     index: true,
   },
-  isPreRegistered: Boolean,
-  revisionHistory: [revisionHistorySchema],
   subtitle: String,
   description: String,
   profilePhoto: String,
   backgroundPhoto: String,
-  recentUpload: Date,
+  category: [{
+    type: String,
+    // enum: [...GROUP_CATEGORIES, ... GROUP_CATEGORIES_2],
+  }],
   members: [{
     user: {
       type: mongoose.Schema.ObjectId,
@@ -212,20 +275,39 @@ export const groupSchema = new mongoose.Schema ({
       type: String,
       enum: ['admin', 'editor'],
     },
-  }], // sso_sid of users
+  }],
+  purpose: String,
+  isBusiness: {
+    type: Boolean,
+    default: false,
+  },
+  __v: { type: Number, select: false },
+};
+
+export const groupApplySchema = new mongoose.Schema ({
+  ...groupSchemaObject,
+}, {
+  timestamps: true,
+  id: false,
+});
+
+export const groupSchema = new mongoose.Schema ({
+  ...groupSchemaObject,
+  isPreRegistered: Boolean,
+  level: {
+    type: Number,
+    default: 0,
+  },
+  revisionHistory: [revisionHistorySchema],
+  recentUpload: Date,
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-  }],
-  category: [{
-    type: String,
-    // enum: [...GROUP_CATEGORIES, ... GROUP_CATEGORIES_2],
   }],
   score: {
     type: Number,
     default: 0,
   },
-  __v: { type: Number, select: false },
 }, {
   timestamps: true,
   autoIndex: true,
@@ -242,26 +324,15 @@ export const statisticsSchema = new mongoose.Schema ({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },
-  data: {
-    type: Map,
-  },
-  __v: { type: Number, select: false },
-}, {
-  timestamps: true,
-  id: false,
-});
-
-export const feedbackSchema = new mongoose.Schema ({
-  user: {
+  zabo: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: 'Zabo',
   },
-  feedback: {
-    type: String,
-  },
+  query: String,
+  category: [],
   __v: { type: Number, select: false },
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   id: false,
 });
 
@@ -271,10 +342,10 @@ const actionHistory = new mongoose.Schema ({
     required: true,
   },
   target: String,
-  info: Map,
+  info: Object,
   __v: { type: Number, select: false },
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   id: false,
 });
 

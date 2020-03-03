@@ -1,5 +1,5 @@
 import {
-  adminUserSchema, boardSchema, userSchema, zaboSchema, deletedZaboSchema, groupSchema, statisticsSchema, feedbackSchema,
+  adminUserSchema, boardSchema, userSchema, zaboSchema, deletedZaboSchema, groupSchema, statisticsSchema,
 } from './schema';
 
 userSchema.virtual ('name')
@@ -50,7 +50,7 @@ boardSchema.virtual ('pinsCount')
 
 zaboSchema.virtual ('likesCount')
   .get (function () {
-    return this.likes ? this.likes.length : undefined;
+    return this.likesWithTime ? this.likesWithTime.length : undefined;
   });
 
 zaboSchema.virtual ('pinsCount')
@@ -79,9 +79,7 @@ groupSchema.index ({
 });
 
 zaboSchema.statics = {
-  searchPartial (query, tags, lastSeen) {
-    let category = tags;
-    if (!Array.isArray (tags)) { category = [tags]; }
+  searchPartial (query, category, lastSeen) {
     let queryOptions = {
       $or:
         [ // TOOD: Sort search query result
@@ -104,21 +102,18 @@ zaboSchema.statics = {
         },
       };
     }
-    if (!query || query === 'undefined') {
+    if (!query) {
       delete queryOptions.$or[0].title;
       delete queryOptions.$or[1].description;
     }
-    if (!tags || tags === 'undefined') {
+    if (!category.length) {
       delete queryOptions.$or[0].category;
       delete queryOptions.$or[1].category;
     }
     return this.find (queryOptions);
   },
 
-  searchFull (query, tags, lastSeen) {
-    let category = tags;
-    if (!Array.isArray (tags)) { category = [tags]; }
-
+  searchFull (query, category, lastSeen) {
     let queryOptions = {
       $text: { $search: query, $caseSensitive: false },
       category: { $all: category },
@@ -132,10 +127,10 @@ zaboSchema.statics = {
         },
       };
     }
-    if (!query || query === 'undefined') {
+    if (!query) {
       delete queryOptions.$text;
     }
-    if (!tags || tags === 'undefined') {
+    if (!category.length) {
       delete queryOptions.category;
     }
     return this.find (queryOptions, {
@@ -175,5 +170,5 @@ groupSchema.statics = {
 // })
 
 export {
-  adminUserSchema, userSchema, zaboSchema, deletedZaboSchema, boardSchema, groupSchema, statisticsSchema, feedbackSchema,
+  adminUserSchema, userSchema, zaboSchema, deletedZaboSchema, boardSchema, groupSchema, statisticsSchema,
 };

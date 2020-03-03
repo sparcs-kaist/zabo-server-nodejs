@@ -2,14 +2,16 @@ import ash from 'express-async-handler';
 import moment from 'moment';
 import { logger } from '../utils/logger';
 import { sizeS3Item } from '../utils/aws';
-import { stat } from '../utils/statistic';
+import { statZabo } from '../utils/statistic';
 import {
   User, Zabo, Group, Board, DeletedZabo,
 } from '../db';
 import { isValidId, parseJSON } from '../utils';
+import { populateZaboPrivateStats, populateZabosPrivateStats } from '../utils/populate';
 
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
+  const { self } = req;
   logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   let newVisit;
   if (req.get ('User-Agent').length > 20 && (!req.session[zaboId] || moment ().isAfter (req.session[zaboId]))) {
@@ -18,12 +20,12 @@ export const getZabo = ash (async (req, res) => {
   }
   let zabo;
   if (newVisit) {
-    stat.GET_ZABO (req);
-    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
-      .populate ('owner', 'name profilePhoto');
+    statZabo ({ zaboId, decoded: req.decoded });
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1, effectiveViews: 1 } }, { new: true })
+      .populate ('owner', 'name profilePhoto subtitle description');
   } else {
-    zabo = await Zabo.findOne ({ _id: zaboId })
-      .populate ('owner', 'name profilePhoto');
+    zabo = await Zabo.findByIdAndUpdate (zaboId, { $inc: { views: 1 } }, { new: true })
+      .populate ('owner', 'name profilePhoto subtitle description');
   }
   if (!zabo) {
     logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
@@ -31,16 +33,12 @@ export const getZabo = ash (async (req, res) => {
       error: 'not found: zabo does not exist',
     });
   }
-  const zaboJSON = zabo.toJSON ();
-  const { self } = req;
+  const zaboJSON = populateZaboPrivateStats (zabo, self);
   if (self) {
-    const { likes, pins } = zabo;
-    zaboJSON.isLiked = likes.some (like => like.equals (self._id));
-    zaboJSON.isPinned = self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0);
     zaboJSON.isMyZabo = self.groups.some (group => group.equals (zaboJSON.owner._id));
+    zaboJSON.owner.following = self.followings.some (following => following.followee.equals (zaboJSON.owner._id));
     if (zaboJSON.isMyZabo) zaboJSON.createdBy = await User.findById (zaboJSON.createdBy, 'username');
     else delete zaboJSON.createdBy;
-    zaboJSON.owner.following = self.followings.some (following => following.followee.equals (zaboJSON.owner._id));
   } else {
     delete zaboJSON.createdBy;
   }
@@ -102,7 +100,7 @@ export const postNewZabo = ash (async (req, res) => {
     Group.findByIdAndUpdate (self.currentGroup, { $set: { recentUpload: new Date () } }),
   ]);
   await newZabo
-    .populate ('owner', 'name profilePhoto')
+    .populate ('owner', 'name profilePhoto subtitle description')
     .execPopulate ();
   const zaboJSON = newZabo.toJSON ();
   zaboJSON.isLiked = false;
@@ -163,23 +161,40 @@ const queryZabos = async (req, queryOptions) => {
   const zabos = await Zabo.find (queryOptions)
     .sort ({ score: -1 })
     .limit (20)
-    .populate ('owner', 'name');
-
-  let result = zabos;
-  const { self } = req;
-  if (self) {
-    result = zabos.map (zabo => {
-      const zaboJSON = zabo.toJSON ();
-      const { likes, pins } = zabo;
-      return {
-        ...zaboJSON,
-        isLiked: likes.some (like => self._id.equals (like)),
-        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
-      };
-    });
-  }
-  return result;
+    .populate ('owner', 'name profilePhoto subtitle description');
+  return populateZabosPrivateStats (zabos, req.self);
 };
+
+export const listHotZabos = ash (async (req, res) => {
+  const zabos = await queryZabos (req, { $where: 'this.likesWithTime.length > 5' }); // TODO: Store likes count with pre
+  // save
+  // or some other hooks
+  const results = [];
+  let minIndex = 0;
+  zabos.forEach (zabo => {
+    const zaboJSON = zabo.toJSON ();
+    if (results.length < 3) {
+      results.push (zaboJSON);
+      if (results[minIndex].likesCount >= zaboJSON.likesCount) minIndex = results.length - 1;
+      return;
+    }
+    if (results[minIndex].likesCount < zaboJSON.likesCount) {
+      results.splice (0, 1);
+      results.push (zaboJSON);
+      minIndex = 0;
+      if (results[1].likesCount <= results[minIndex].likesCount) minIndex = 1;
+      if (results[2].likesCount <= results[minIndex].likesCount) minIndex = 2;
+    }
+  });
+  return res.json (results);
+});
+
+export const listMagamImbakList = ash (async (req, res) => {
+  const cur = new Date ();
+  const nextWeek = new Date (+new Date () + 7 * 24 * 60 * 60 * 1000);
+  const zabos = await Zabo.find ({ schedules: { $elemMatch: { startAt: { $lt: nextWeek, $gt: cur } } } });
+  return res.json (zabos);
+});
 
 export const listZabos = ash (async (req, res, next) => {
   const { lastSeen, relatedTo } = req.query;
@@ -259,19 +274,19 @@ export const pinZabo = ash (async (req, res) => {
 export const likeZabo = ash (async (req, res) => {
   const { self, zabo, zaboId } = req;
   logger.zabo.info (`post /zabo/like request; zaboId: ${zaboId}, by: ${self.username} (${self.sso_sid})`);
-  const prevLike = zabo.likes.find (like => like.equals (self._id));
+  const prevLike = zabo.likesWithTime.find (like => like.user.equals (self._id));
   if (prevLike) {
-    zabo.likes.pull ({ _id: self._id });
+    zabo.likesWithTime.pull (prevLike);
     await zabo.save ();
     return res.send ({
       isLiked: false,
-      likesCount: zabo.likes.length,
+      likesCount: zabo.likesWithTime.length,
     });
   }
-  zabo.likes.push (self._id);
+  zabo.likesWithTime.push ({ user: self._id });
   await zabo.save ();
   return res.send ({
     isLiked: true,
-    likesCount: zabo.likes.length,
+    likesCount: zabo.likesWithTime.length,
   });
 });

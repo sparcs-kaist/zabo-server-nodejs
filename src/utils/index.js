@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import { Group, User } from '../db';
+import jwt from 'jsonwebtoken';
+import { Group, GroupApply, User } from '../db';
 import { RESERVED_ROUTES_USERNAME_EXCEPTIONS } from './variables';
 
 export const parseJSON = (jsonString, fallback = {}) => {
@@ -35,11 +36,13 @@ export const validateName = (name) => {
  * @returns {Promise<*[User, Group, boolean]>}
  */
 export const nameUsabilityCheck = async (name) => {
-  const [user, group] = await Promise.all ([
-    User.findOne ({ username: { $regex: new RegExp (`^${name}$`, 'i') } }),
-    Group.findOne ({ name: { $regex: new RegExp (`^${name}$`, 'i') } }),
+  const caseInsensitiveRegexQuery = { $regex: new RegExp (`^${name}$`, 'i') };
+  const [user, group, groupApply] = await Promise.all ([
+    User.findOne ({ username: caseInsensitiveRegexQuery }),
+    Group.findOne ({ name: caseInsensitiveRegexQuery }),
+    GroupApply.findOne ({ name: caseInsensitiveRegexQuery }),
   ]);
-  return [user, group, (!user && !group)];
+  return [(!user && !group && !groupApply), user, group, groupApply];
 };
 
 export const isNameInvalidWithRes = async (name, req, res) => {
@@ -49,7 +52,7 @@ export const isNameInvalidWithRes = async (name, req, res) => {
       error: `'${name}' is not valid.`,
     });
   }
-  const [, , usability] = await nameUsabilityCheck (name);
+  const [usability] = await nameUsabilityCheck (name);
   if (!usability) {
     return res.status (400).json ({
       error: `'${name}' has already been taken.`,
@@ -59,3 +62,15 @@ export const isNameInvalidWithRes = async (name, req, res) => {
 };
 
 export const isValidId = mongoose.Types.ObjectId.isValid;
+
+export const escapeRegExp = string => string.replace (/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export const jwtSign = (user, jwtSecret) => jwt.sign ({
+  _id: user._id,
+  sid: user.sso_sid,
+  email: user.email,
+  username: user.username,
+}, jwtSecret, {
+  expiresIn: '60d',
+  issuer: 'zabo-sparcs-kaist',
+});

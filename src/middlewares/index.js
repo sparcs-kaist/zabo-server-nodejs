@@ -40,7 +40,6 @@ export const jwtParseMiddleware = (req, res, next) => {
 
 export const validateId = (key) => (req, res, next) => {
   const value = req[key] || req.params[key] || req.body[key] || req.query[key];
-  console.log (req.params[key]);
   if (!value) {
     logger.api.error (`[${req.method}] ${req.originalUrl} request error; 400 - empty ${key}`);
     return res.status (400).json ({
@@ -75,9 +74,9 @@ export const findSelfMiddleware = ash (async (req, res, next) => {
   const { sid } = req.decoded;
   const user = await User.findOne ({ sso_sid: sid });
   if (user === null) {
-    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 404 - user does not exist`);
+    logger.api.error (`[${req.method}] ${req.originalUrl} request error; 403 - Authentication required`);
     return res.status (404).json ({
-      error: 'user does not exist',
+      error: 'Invalid User',
     });
   }
   req.self = user;

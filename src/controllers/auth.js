@@ -1,12 +1,13 @@
 import jwt from 'jsonwebtoken';
 import ash from 'express-async-handler';
 
-import { Board, User, Group } from '../db';
+import {
+  Board, User, Group, GroupApply,
+} from '../db';
 
 /* eslint camelcase:0 */
 import SSOClient from '../utils/sso';
-import { parseJSON } from '../utils';
-import { stat } from '../utils/statistic';
+import { jwtSign, parseJSON } from '../utils';
 import { logger } from '../utils/logger';
 import { checkPreAndRegister } from '../utils/preRegister';
 
@@ -29,8 +30,10 @@ export const authCheck = ash (async (req, res) => {
         select: 'name profilePhoto followers recentUpload subtitle',
       })
       .populate ('boards');
-
-    res.json (user);
+    const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } }, { name: 1, profilePhoto: 1, subtitle: 1 });
+    const userJSON = user.toJSON ();
+    userJSON.pendingGroups = groupApplies;
+    res.json (userJSON);
   });
 });
 
@@ -150,7 +153,6 @@ const updateOrCreateUserData = async (userData, create) => {
     .populate ('boards');
 
   if (create) {
-    stat.REGISTER ({ user: newUser._id });
     const preRegisteredUser = await checkPreAndRegister (newUser);
     newUser = preRegisteredUser || newUser;
   }
@@ -195,19 +197,14 @@ export const loginCallback = ash (async (req, res) => {
     user = await register (userData);
   }
 
-  const token = jwt.sign ({
-    id: user._id,
-    sid: user.sso_sid,
-    email: user.email,
-    username: user.username,
-  }, jwtSecret, {
-    expiresIn: '60d',
-    issuer: 'zabo-sparcs-kaist',
-  });
+  const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } }, { name: 1, profilePhoto: 1, subtitle: 1 });
+  const userJSON = user.toJSON ();
+  userJSON.pendingGroups = groupApplies;
 
+  const token = jwtSign (user, jwtSecret);
   res.json ({
     token,
-    user,
+    user: userJSON,
   });
 });
 

@@ -1,7 +1,61 @@
 import ash from 'express-async-handler';
 import { logger } from '../utils/logger';
-import { Zabo } from '../db';
-import { isNameInvalidWithRes } from '../utils';
+import { Group, GroupApply, Zabo } from '../db';
+import { isNameInvalidWithRes, parseJSON } from '../utils';
+import { populateZabosPrivateStats } from '../utils/populate';
+import { sendNewApplyMessage } from '../utils/slack';
+
+export const applyGroup = ash (async (req, res) => {
+  const { file, self } = req;
+  const {
+    name, description, subtitle, purpose, category: categoryString, isBusiness = false,
+  } = req.body;
+  const category = parseJSON (categoryString, []);
+  logger.api.info (`
+    post /group/apply request; name: %s, description: %s, subtitle: %s,
+    purpose: %s, category: %s, isBusiness: %s
+   `, name, description, subtitle, purpose, category, isBusiness);
+
+  if (!name || !description || !subtitle || !purpose || category.length < 1) {
+    return res.status (400).json ({
+      error: 'All fields are required',
+    });
+  }
+  const error = await isNameInvalidWithRes (name, req, res);
+  if (error) return error;
+
+  const groupInfo = {
+    name,
+    description,
+    subtitle,
+    purpose,
+    members: [{ user: self._id, role: 'admin' }],
+    category,
+    isBusiness,
+  };
+
+  if (file) {
+    groupInfo.profilePhoto = file.location;
+  }
+
+  const groupApply = await GroupApply.create (groupInfo);
+  sendNewApplyMessage (groupApply, self);
+
+  return res.json (groupApply);
+});
+
+// get /group/random
+export const findGroupRecommends = ash (async (req, res) => {
+  if (req.session.groupRecommend) {
+    return res.json (req.session.groupRecommend);
+  }
+  const groups = await Group.aggregate ([
+    { $sample: { size: 5 } },
+    { $project: { name: 1, profilePhoto: 1, subtitle: 1 } },
+  ]);
+  req.session.groupRecommend = groups;
+  return res.json (groups);
+});
 
 // get /group/:groupId
 export const getGroupInfo = ash (async (req, res) => {
@@ -12,9 +66,12 @@ export const getGroupInfo = ash (async (req, res) => {
 // post /group/:groupName
 export const updateGroupInfo = ash (async (req, res) => {
   const { groupName, group, file } = req;
-  const { name, description, subtitle } = req.body;
+  const {
+    name, description, subtitle, category: categoryString,
+  } = req.body;
+  const category = parseJSON (categoryString, []);
   logger.api.info (`post /group/${groupName} request; name : ${name}, description: ${description},
-   subtitle: ${subtitle} ${file ? `, image: ${file.location}` : ''}`);
+   subtitle: ${subtitle} category: ${category} ${file ? `, image: ${file.location}` : ''}`);
 
   if (group.name !== name) {
     const error = await isNameInvalidWithRes (name, req, res);
@@ -33,6 +90,7 @@ export const updateGroupInfo = ash (async (req, res) => {
   }
   group.description = description;
   group.subtitle = subtitle;
+  group.category = category;
   await group.save ();
   return res.json ({
     name,
@@ -197,20 +255,8 @@ export const listGroupZabos = ash (async (req, res, next) => {
   const zabos = await Zabo.find ({ owner: group._id }, { description: 0 })
     .sort ({ createdAt: -1 })
     // .limit (20) // TODO: optimize
-    .populate ('owner', 'name');
-  let result = zabos; // TODO: Refactor dups
-  const { self } = req;
-  if (self) {
-    result = zabos.map (zabo => {
-      const zaboJSON = zabo.toJSON ();
-      const { likes, pins } = zabo;
-      return {
-        ...zaboJSON,
-        isLiked: likes.some (like => like.equals (self._id)),
-        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
-      };
-    });
-  }
+    .populate ('owner', 'name profilePhoto subtitle description');
+  const result = populateZabosPrivateStats (zabos, req.self);
   return res.json (result);
 });
 

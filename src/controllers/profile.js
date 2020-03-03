@@ -12,7 +12,7 @@ export const validateNameController = ash (async (req, res) => {
       message: 'invalid',
     });
   }
-  const [, , usability] = await nameUsabilityCheck (name);
+  const [usability] = await nameUsabilityCheck (name);
   if (!usability) {
     return res.status (400).json ({
       message: 'taken',
@@ -69,7 +69,7 @@ const getUserProfile = ash (async (req, res) => {
     Board.findById (boardId),
   );
   actions.push (
-    Zabo.countDocuments ({ likes: { $in: user._id } }),
+    Zabo.countDocuments ({ likesWithTime: { $elemMatch: { user: user._id } } }),
   );
   const [counts, board, likesCount] = await Promise.all (actions);
 

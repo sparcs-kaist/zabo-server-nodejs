@@ -1,7 +1,8 @@
 import ash from 'express-async-handler';
-import { User } from '../db';
+import { GroupApply, User } from '../db';
 import { logger } from '../utils/logger';
 import { isNameInvalidWithRes } from '../utils';
+import { populateZabosPrivateStats } from '../utils/populate';
 
 // get /user/
 export const getUserInfo = ash (async (req, res) => {
@@ -11,7 +12,10 @@ export const getUserInfo = ash (async (req, res) => {
   const user = await User.findOne ({ sso_sid: sid })
     .populate ('groups')
     .populate ('boards');
-  res.json (user);
+  const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } });
+  const userJSON = user.toJSON ();
+  userJSON.pendingGroups = groupApplies;
+  res.json (userJSON);
 });
 
 // post /user
@@ -112,19 +116,7 @@ export const listPins = ash (async (req, res, next) => {
     })
     .execPopulate ();
   const zabos = user.boards[0].pins;
-  let result = zabos;
-  const { self } = req;
-  if (self) {
-    result = zabos.map (zabo => {
-      const zaboJSON = zabo.toJSON ();
-      const { likes, pins } = zabo;
-      return {
-        ...zaboJSON,
-        isLiked: likes.some (like => like.equals (self._id)),
-        isPinned: self.boards.some (board => pins.findIndex (pin => pin.equals (board)) >= 0),
-      };
-    });
-  }
+  const result = populateZabosPrivateStats (zabos, req.self);
   return res.send (result); // TODO: Limit and hand it to listNextPins
 });
 

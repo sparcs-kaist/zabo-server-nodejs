@@ -24,6 +24,8 @@ const findZaboWithAuth = [validateZaboId, authMiddleware, findSelfMiddleware, fi
 const isZaboOwner = [validateZaboId, authMiddleware, findSelfMiddleware, findZaboWithParams, isZaboOwnerMiddleware];
 
 router.get ('/list', tryFindSelf, zc.listZabos, validateId ('lastSeen'), zc.listNextZabos);
+router.get ('/list/hot', zc.listHotZabos);
+router.get ('/list/deadline', zc.listMagamImbakList);
 router.post ('/:zaboId/pin', findZaboWithAuth, zc.pinZabo);
 router.post ('/:zaboId/like', findZaboWithAuth, zc.likeZabo);
 router.get ('/:zaboId', validateZaboId, tryFindSelf, zc.getZabo);
