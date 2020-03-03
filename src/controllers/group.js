@@ -3,6 +3,7 @@ import { logger } from '../utils/logger';
 import { Group, GroupApply, Zabo } from '../db';
 import { isNameInvalidWithRes, parseJSON } from '../utils';
 import { populateZabosPrivateStats } from '../utils/populate';
+import { sendNewApplyMessage } from '../utils/slack';
 
 export const applyGroup = ash (async (req, res) => {
   const { file, self } = req;
@@ -38,6 +39,7 @@ export const applyGroup = ash (async (req, res) => {
   }
 
   const groupApply = await GroupApply.create (groupInfo);
+  sendNewApplyMessage (groupApply, self);
 
   return res.json (groupApply);
 });
