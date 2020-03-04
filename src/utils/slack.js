@@ -22,7 +22,7 @@ export const sendNewApplyMessage = async (group, user) => {
   ` : '';
   return sendMessage (`${devLog}
     ##새로운 그룹 신청이 있습니다.##
-    <http://zabo.sparcs.org/admin/group/${name}|*link*>
+    <http://zabo.sparcs.org/admin/group/${name}|*link*> @channel
     *이름* : ${name}
     *사용 목적* : ${purpose}
     *한 줄 소개* : ${subtitle}
