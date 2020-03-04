@@ -12,18 +12,23 @@ export const listGroupApplies = ash (async (req, res) => {
 });
 
 export const acceptGroupApply = ash (async (req, res) => {
+  const { adminUser } = req;
   const { name } = req.body;
   const newGroup = await GroupApply.findOneAndDelete ({ name });
-  console.log (name, newGroup);
   const newGroupJSON = newGroup.toJSON ({ virtuals: false });
   delete newGroupJSON._id;
   newGroupJSON.members.forEach ((member, i) => {
     delete newGroupJSON.members[i]._id;
   });
   const created = await Group.create (newGroupJSON);
-  await Promise.all (
+  adminUser.actionHistory.push ({
+    name: 'acceptGroup',
+    target: created._id,
+  });
+  await Promise.all ([
     newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
-  );
+    adminUser.save (),
+  ]);
   return res.json (created);
 });
 
@@ -62,9 +67,15 @@ export const createGroup = ash (async (req, res) => {
 });
 
 export const patchLevel = ash (async (req, res) => {
+  const { adminUser } = req;
   const { groupName } = req.params;
   const { level } = req.body;
   const result = await Group.findOneAndUpdate ({ name: groupName }, { $set: { level } }, { new: true });
+  adminUser.actionHistory.push ({
+    name: 'patchLevel',
+    target: result._id,
+  });
+  await adminUser.save ();
   return res.json (result);
 });
 
@@ -91,6 +102,7 @@ export const listUsers = ash (async (req, res) => {
 
 // post /admin/fakeRegister
 export const fakeRegister = ash (async (req, res) => {
+  const { adminUser } = req;
   const { username } = req.body;
   const error = await isNameInvalidWithRes (username, req, res);
   if (error) return error;
@@ -108,6 +120,11 @@ export const fakeRegister = ash (async (req, res) => {
     username,
     studentId: Math.ceil (Math.random () * 10000),
   });
+  adminUser.actionHistory.push ({
+    name: 'fakeRegister',
+    target: user._id,
+  });
+  await adminUser.save ();
   const token = jwtSign (user, jwtSecret);
   return res.json ({ user, token });
 });

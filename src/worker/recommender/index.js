@@ -48,7 +48,7 @@ export const updateScores = async () => {
     if (isPreBonusSuitable) score *= 0.8;
 
     const isBonusApplicable = (zabo.owner.level > 0);
-    if (isBonusApplicable) score *= 0.5;
+    if (isBonusApplicable) score *= 0.5 ** zabo.owner.level;
 
     const scoreMeta = {
       lastLikeCount: zabo.likesWithTime.length,
