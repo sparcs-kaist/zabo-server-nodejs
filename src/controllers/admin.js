@@ -98,7 +98,10 @@ export const listGroups = ash (async (req, res) => {
 });
 
 export const listUsers = ash (async (req, res) => {
-  const users = await User.find ().lean ();
+  const users = await User.find ()
+    .populate ('currentGroup')
+    .populate ('groups')
+    .populate ('followings.followee');
   return res.json (users);
 });
 
