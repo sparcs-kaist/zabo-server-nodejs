@@ -12,7 +12,6 @@ import { populateZaboPrivateStats, populateZabosPrivateStats } from '../utils/po
 export const getZabo = ash (async (req, res) => {
   const { zaboId } = req.params;
   const { self } = req;
-  logger.zabo.info ('get /zabo/ request; id: %s', zaboId);
   let newVisit;
   if (req.get ('User-Agent').length > 20 && (!req.session[zaboId] || moment ().isAfter (req.session[zaboId]))) {
     newVisit = true;
@@ -28,7 +27,7 @@ export const getZabo = ash (async (req, res) => {
       .populate ('owner', 'name profilePhoto subtitle description');
   }
   if (!zabo) {
-    logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist');
+    logger.zabo.error ('get /zabo/ request error; 404 - zabo does not exist - id: %s', zaboId);
     return res.status (404).json ({
       error: 'not found: zabo does not exist',
     });
@@ -166,7 +165,7 @@ const queryZabos = async (req, queryOptions) => {
 };
 
 export const listHotZabos = ash (async (req, res) => {
-  const zabos = await queryZabos (req, { $where: 'this.likesWithTime.length > 5' }); // TODO: Store likes count with pre
+  const zabos = await queryZabos (req, {}); // TODO: Store likes count with pre
   // save
   // or some other hooks
   const results = [];

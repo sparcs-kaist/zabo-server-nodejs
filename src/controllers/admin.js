@@ -4,6 +4,7 @@ import {
 } from '../db';
 import { logger } from '../utils/logger';
 import { isNameInvalidWithRes, jwtSign, parseJSON } from '../utils';
+import { sendApplyDoneMessage } from '../utils/slack';
 
 export const listGroupApplies = ash (async (req, res) => {
   const applies = await GroupApply.find ()
@@ -14,6 +15,7 @@ export const listGroupApplies = ash (async (req, res) => {
 export const acceptGroupApply = ash (async (req, res) => {
   const { adminUser } = req;
   const { name } = req.body;
+  logger.api.info ('post /admin/group/apply/accept request; name: %s, adminUser: %s', name, adminUser.user);
   const newGroup = await GroupApply.findOneAndDelete ({ name });
   const newGroupJSON = newGroup.toJSON ({ virtuals: false });
   delete newGroupJSON._id;
@@ -26,9 +28,10 @@ export const acceptGroupApply = ash (async (req, res) => {
     target: created._id,
   });
   await Promise.all ([
-    newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
+    ...newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
     adminUser.save (),
   ]);
+  sendApplyDoneMessage (name, adminUser);
   return res.json (created);
 });
 
@@ -70,6 +73,7 @@ export const patchLevel = ash (async (req, res) => {
   const { adminUser } = req;
   const { groupName } = req.params;
   const { level } = req.body;
+  logger.api.info ('patch /admin/:groupName/level request; groupName: %s, adminUser: %s', groupName, adminUser.user);
   const result = await Group.findOneAndUpdate ({ name: groupName }, { $set: { level } }, { new: true });
   adminUser.actionHistory.push ({
     name: 'patchLevel',
@@ -96,7 +100,10 @@ export const listGroups = ash (async (req, res) => {
 });
 
 export const listUsers = ash (async (req, res) => {
-  const users = await User.find ().lean ();
+  const users = await User.find ()
+    .populate ('currentGroup')
+    .populate ('groups')
+    .populate ('followings.followee');
   return res.json (users);
 });
 
@@ -104,6 +111,7 @@ export const listUsers = ash (async (req, res) => {
 export const fakeRegister = ash (async (req, res) => {
   const { adminUser } = req;
   const { username } = req.body;
+  logger.api.info ('post /admin/fakeRegister request; username: %s, adminUser: %s', username, adminUser.user);
   const error = await isNameInvalidWithRes (username, req, res);
   if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
@@ -131,7 +139,9 @@ export const fakeRegister = ash (async (req, res) => {
 
 // post /admin/fakeLogin
 export const fakeLogin = ash (async (req, res) => {
+  const { adminUser } = req;
   const { username } = req.body;
+  logger.api.info ('post /admin/fakeLogin request; username: %s, adminUser: %s', username, adminUser.user);
   const jwtSecret = req.app.get ('jwt-secret');
   const user = await User.findOne ({ username });
   if (!user) return res.sendStatus (404);
@@ -144,25 +154,13 @@ export const fakeLogin = ash (async (req, res) => {
 // get /analytics/zabo/date/created
 export const analyticsGetZaboCreatedDate = ash (async (req, res) => {
   logger.api.info ('get /admin/analytics/zabo/date/created');
-  const zabos = [];
-
-  // Use stream
-  const cursor = await Zabo.find ({}).lean ().cursor ();
-  cursor.on ('data', (zabo) => { zabos.push (zabo.createdAt); });
-  cursor.on ('end', () => {
-    res.send (zabos);
-  });
+  const users = await Zabo.find ({}, 'createdAt').lean ();
+  return res.json (users);
 });
 
 // get /analytics/user/date/created
 export const analyticsGetUserCreatedDate = ash (async (req, res) => {
   logger.api.info ('get /admin/analytics/user/date/created');
-  const users = [];
-
-  // Use stream
-  const cursor = await User.find ({}).lean ().cursor ();
-  cursor.on ('data', (user) => { users.push (user.createdAt); });
-  cursor.on ('end', () => {
-    res.send (users);
-  });
+  const users = await User.find ({}, 'createdAt').lean ();
+  return res.json (users);
 });

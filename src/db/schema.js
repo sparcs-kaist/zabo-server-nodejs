@@ -66,10 +66,7 @@ const zaboSchemaObject = {
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   }], // Pin
-  likes: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  }],
+  likes: [zaboLikeSchema], // Currently not being used
   likesWithTime: [zaboLikeSchema],
   score: {
     type: Number,
@@ -189,7 +186,7 @@ export const userSchema = new mongoose.Schema ({
     new mongoose.Schema ({
       followee: {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'onModel',
+        refPath: 'followings.onModel',
       },
       onModel: {
         type: String,
