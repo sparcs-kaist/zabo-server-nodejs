@@ -4,6 +4,7 @@ import {
 
 userSchema.virtual ('name')
   .get (function () {
+    if (this.koreanName) return this.koreanName;
     if (this.firstName && this.lastName) return `${this.firstName} ${this.lastName}`;
     return undefined;
   })
