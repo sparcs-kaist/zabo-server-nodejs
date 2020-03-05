@@ -165,7 +165,7 @@ const queryZabos = async (req, queryOptions) => {
 };
 
 export const listHotZabos = ash (async (req, res) => {
-  const zabos = await queryZabos (req, { $where: 'this.likesWithTime.length > 5' }); // TODO: Store likes count with pre
+  const zabos = await queryZabos (req, {}); // TODO: Store likes count with pre
   // save
   // or some other hooks
   const results = [];
