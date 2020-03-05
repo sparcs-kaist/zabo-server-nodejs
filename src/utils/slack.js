@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { User } from '../db';
 
 const WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 
@@ -37,7 +38,10 @@ export const sendNewApplyMessage = async (group, user) => {
   `);
 };
 
-export const sendApplyDoneMessage = async (groupName, adminUser) => sendMessage (`${devLog}
+export const sendApplyDoneMessage = async (groupName, adminUser) => {
+  const user = await User.findById (adminUser.user);
+  return sendMessage (`${devLog}
     *${groupName}* 그룹 승인 완료
-    - by ${adminUser.username}
+    - by ${user.username}
   `);
+};
