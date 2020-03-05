@@ -66,10 +66,7 @@ const zaboSchemaObject = {
     type: mongoose.Schema.ObjectId,
     ref: 'Board',
   }], // Pin
-  likes: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-  }],
+  likes: [zaboLikeSchema], // Currently not being used
   likesWithTime: [zaboLikeSchema],
   score: {
     type: Number,
