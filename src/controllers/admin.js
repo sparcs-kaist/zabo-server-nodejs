@@ -4,6 +4,7 @@ import {
 } from '../db';
 import { logger } from '../utils/logger';
 import { isNameInvalidWithRes, jwtSign, parseJSON } from '../utils';
+import { sendApplyDoneMessage } from '../utils/slack';
 
 export const listGroupApplies = ash (async (req, res) => {
   const applies = await GroupApply.find ()
@@ -30,6 +31,7 @@ export const acceptGroupApply = ash (async (req, res) => {
     ...newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
     adminUser.save (),
   ]);
+  sendApplyDoneMessage (name, adminUser);
   return res.json (created);
 });
 
