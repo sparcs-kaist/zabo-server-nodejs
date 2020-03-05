@@ -149,25 +149,13 @@ export const fakeLogin = ash (async (req, res) => {
 // get /analytics/zabo/date/created
 export const analyticsGetZaboCreatedDate = ash (async (req, res) => {
   logger.api.info ('get /admin/analytics/zabo/date/created');
-  const zabos = [];
-
-  // Use stream
-  const cursor = await Zabo.find ({}).lean ().cursor ();
-  cursor.on ('data', (zabo) => { zabos.push (zabo.createdAt); });
-  cursor.on ('end', () => {
-    res.send (zabos);
-  });
+  const users = await Zabo.find ({}, 'createdAt').lean ();
+  return res.json (users);
 });
 
 // get /analytics/user/date/created
 export const analyticsGetUserCreatedDate = ash (async (req, res) => {
   logger.api.info ('get /admin/analytics/user/date/created');
-  const users = [];
-
-  // Use stream
-  const cursor = await User.find ({}).lean ().cursor ();
-  cursor.on ('data', (user) => { users.push (user.createdAt); });
-  cursor.on ('end', () => {
-    res.send (users);
-  });
+  const users = await User.find ({}, 'createdAt').lean ();
+  return res.json (users);
 });
