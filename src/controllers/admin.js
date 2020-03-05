@@ -27,7 +27,7 @@ export const acceptGroupApply = ash (async (req, res) => {
     target: created._id,
   });
   await Promise.all ([
-    newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
+    ...newGroupJSON.members.map (({ user }) => User.findByIdAndUpdate (user._id, { $push: { groups: created._id } })),
     adminUser.save (),
   ]);
   return res.json (created);
