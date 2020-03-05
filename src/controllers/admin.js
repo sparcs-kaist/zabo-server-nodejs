@@ -14,6 +14,7 @@ export const listGroupApplies = ash (async (req, res) => {
 export const acceptGroupApply = ash (async (req, res) => {
   const { adminUser } = req;
   const { name } = req.body;
+  logger.api.info ('post /admin/group/apply/accept request; name: %s, adminUser: %s', name, adminUser.user);
   const newGroup = await GroupApply.findOneAndDelete ({ name });
   const newGroupJSON = newGroup.toJSON ({ virtuals: false });
   delete newGroupJSON._id;
@@ -70,6 +71,7 @@ export const patchLevel = ash (async (req, res) => {
   const { adminUser } = req;
   const { groupName } = req.params;
   const { level } = req.body;
+  logger.api.info ('patch /admin/:groupName/level request; groupName: %s, adminUser: %s', groupName, adminUser.user);
   const result = await Group.findOneAndUpdate ({ name: groupName }, { $set: { level } }, { new: true });
   adminUser.actionHistory.push ({
     name: 'patchLevel',
@@ -104,6 +106,7 @@ export const listUsers = ash (async (req, res) => {
 export const fakeRegister = ash (async (req, res) => {
   const { adminUser } = req;
   const { username } = req.body;
+  logger.api.info ('post /admin/fakeRegister request; username: %s, adminUser: %s', username, adminUser.user);
   const error = await isNameInvalidWithRes (username, req, res);
   if (error) return error;
   const jwtSecret = req.app.get ('jwt-secret');
@@ -131,7 +134,9 @@ export const fakeRegister = ash (async (req, res) => {
 
 // post /admin/fakeLogin
 export const fakeLogin = ash (async (req, res) => {
+  const { adminUser } = req;
   const { username } = req.body;
+  logger.api.info ('post /admin/fakeLogin request; username: %s, adminUser: %s', username, adminUser.user);
   const jwtSecret = req.app.get ('jwt-secret');
   const user = await User.findOne ({ username });
   if (!user) return res.sendStatus (404);
