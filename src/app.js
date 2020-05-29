@@ -7,7 +7,6 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
-import './graphql';
 
 import routes from './routes';
 
