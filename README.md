@@ -34,31 +34,31 @@ Document for API Speicifcation can be found [here](https://github.com/sparcs-kai
 
 ### Table of Contents
 
-* [Prerequisites](./#prerequisites)
-* [Getting Started](./#getting-started)
-  * [Running Development Server](./#running-development-server)
-    * [Using npm](./#npm)
-    * [Using yarn](./#yarn)
-  * [Running Production Server](./#deploying-on-production-server)
-    * [Using npm](./#npm)
-    * [Using yarn](./#yarn)
-* [Folder Structure](./#folder-structure)
-* [Deployment](./#deployment)
-* [Built With](./#built-with)
-* [Commit Message Guidelines](./#commit-message-guidlines)
-  * [Commit Message Format](./#commit-message-format)
-  * [Revert](./#revert)
-  * [Type](./#type)
-  * [Scope](./#scope)
-  * [Subject](./#subject)
-  * [Body](./#body)
-  * [Footer](./#footer)
-* [Branch Management](./#branch-management)
-* [Versioning](./#versioning)
-* [Authors](./#authors)
-* [Contributing](./#contributing)
-* [License](./#license)
-* [Acknowledgements](./#acknowledgements)
+- [About](#about)
+  - [API Specification](#api-specification)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Getting Started](#getting-started)
+    - [Running Development Server](#running-development-server)
+    - [Running Production Server](#running-production-server)
+  - [Folder Structure](#folder-structure)
+  - [Deployment](#deployment)
+  - [Built With](#built-with)
+    - [S3](#s3)
+  - [Commit Message Guidelines](#commit-message-guidelines)
+    - [Commit Message Format](#commit-message-format)
+    - [Revert](#revert)
+    - [Type](#type)
+    - [Scope](#scope)
+    - [Subject](#subject)
+    - [Body](#body)
+    - [Footer](#footer)
+  - [Branch Management](#branch-management)
+  - [Contributing](#contributing)
+  - [Versioning](#versioning)
+  - [Authors](#authors)
+  - [License](#license)
+  - [Acknowledgments](#acknowledgments)
 
 ### Prerequisites
 
@@ -172,13 +172,13 @@ To be deployed on [https://zabo.sparcs.org/](https://zabo.sparcs.org/) and [http
 
 ### Built With
 
-* [Express.js](https://expressjs.com/) - Used to build server.
-* [SPARCS SSO](https://github.com/sparcs-kaist/sparcssso) - Using SPARCS SSO for sign-on
-* [JWT](https://jwt.io) - JWT for authentication
-* [AWS S3](https://aws.amazon.com/s3/?nc1=h_ls) - Amazon S3\(Simple Storage Service\) is an object storage service that offers nice scalability, data availability, security, and performance.
-* [MongoDB](https://www.mongodb.com/) - Widely used free to use NoSQL database.
-* [Redis](https://redis.io/) - In-memory data structure store.
-* [Docker](https://www.docker.com/) - Containerizate software. Docker configuration should be uploaded soon
+- [Express.js](https://expressjs.com/) - Used to build server.
+- [SPARCS SSO](https://github.com/sparcs-kaist/sparcssso) - Using SPARCS SSO for sign-on
+- [JWT](https://jwt.io) - JWT for authentication
+- [AWS S3](https://aws.amazon.com/s3/?nc1=h_ls) - Amazon S3\(Simple Storage Service\) is an object storage service that offers nice scalability, data availability, security, and performance.
+- [MongoDB](https://www.mongodb.com/) - Widely used free to use NoSQL database.
+- [Redis](https://redis.io/) - In-memory data structure store.
+- [Docker](https://www.docker.com/) - Containerizate software. Docker configuration should be uploaded soon
 
 #### S3
 
@@ -228,16 +228,16 @@ If the commit reverts a previous commit, it should begin with `revert:`, followe
 
 Should be one of the following:
 
-* **build**: Changes that affect the build system or external dependencies \(example scopes: gulp, broccoli, npm\)
-* **ci**: Changes to our CI configuration files and scripts \(example scopes: Circle, BrowserStack, SauceLabs\)
-* **docs**: Documentation only changes
-* **feat**: A new feature
-* **fix**: A bug fix
-* **perf**: A code change that improves performance
-* **refactor**: A code change that neither fixes a bug nor adds a feature
-* **style**: Changes that do not affect the meaning of the code \(white-space, formatting, missing semi-colons, etc\)
-* **test**: Adding missing tests or correcting existing tests
-* **misc**: Adding miscellaneous items
+- **build**: Changes that affect the build system or external dependencies \(example scopes: gulp, broccoli, npm\)
+- **ci**: Changes to our CI configuration files and scripts \(example scopes: Circle, BrowserStack, SauceLabs\)
+- **docs**: Documentation only changes
+- **feat**: A new feature
+- **fix**: A bug fix
+- **perf**: A code change that improves performance
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **style**: Changes that do not affect the meaning of the code \(white-space, formatting, missing semi-colons, etc\)
+- **test**: Adding missing tests or correcting existing tests
+- **misc**: Adding miscellaneous items
 
 #### Scope
 
@@ -247,9 +247,9 @@ There's no specific recommendations for naming scope yet. Feel free to write you
 
 The subject contains a succinct description of the change:
 
-* use the **imperative, present tense**: "change" not "changed" nor "changes"
-* **do capitalize** the first letter
-* no dot \(.\) at the end
+- use the **imperative, present tense**: "change" not "changed" nor "changes"
+- **do capitalize** the first letter
+- no dot \(.\) at the end
 
 #### Body
 
@@ -273,10 +273,10 @@ I use [SemVer](http://semver.org/) for versioning. For the versions available, s
 
 ### Authors
 
-* **Cookie** - [Cookie](https://github.com/jungdj)
-* **Youns** - [Youns](https://github.com/Choiyounseo)
-* **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
-* **Alogon** - [Kalogon](https://github.com/Kalogon)
+- **Cookie** - [Cookie](https://github.com/jungdj)
+- **Youns** - [Youns](https://github.com/Choiyounseo)
+- **Loopy** - [Smartbirdisharvard](https://github.com/smartbirdisharvard)
+- **Alogon** - [Kalogon](https://github.com/Kalogon)
 
 ### License
 
@@ -287,4 +287,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](license.md
 We're renewing following projects.
 
 [Zabo-WEB](https://github.com/sparcs-kaist/zabo-web) and [Zabo-API](https://github.com/sparcs-kaist/zabo-api)
-
