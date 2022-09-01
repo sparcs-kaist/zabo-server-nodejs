@@ -63,7 +63,7 @@
   "devDependencies": {
     "clear": "^0.1.0",
     "clui": "^0.3.6",
-    "eslint": "^8.23.0",
+    "eslint": "8.22.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0",
     "figlet": "^1.2.4",
