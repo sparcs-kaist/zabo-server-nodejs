@@ -1,28 +1,17 @@
 {
-  "extends": "airbnb-base",
+  "extends": [
+    "airbnb-base",
+    "prettier"
+  ],
   "rules": {
-    "arrow-parens": 0,
     "import/no-unresolved": 0,
     "import/prefer-default-export": 0,
     "no-nested-ternary": "off",
     "no-unused-vars": "warn",
     "no-unused-expressions": "warn",
-    "space-before-function-paren": [
-      "warn",
-      "always"
-    ],
     "no-spaced-func": "off",
-    "func-call-spacing": [
-      "warn",
-      "always"
-    ],
     "no-underscore-dangle": "off",
-    "no-mixed-spaces-and-tabs": "error",
     "no-shadow": "warn",
-    "max-len": [
-      "warn",
-      150
-    ],
     "prefer-const": "warn",
     "consistent-return": [
       "warn",
