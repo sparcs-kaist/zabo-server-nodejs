@@ -6,6 +6,7 @@
   "rules": {
     "import/no-unresolved": 0,
     "import/prefer-default-export": 0,
+    "import/no-import-module-exports": 0,
     "no-nested-ternary": "off",
     "no-unused-vars": "warn",
     "no-unused-expressions": "warn",
