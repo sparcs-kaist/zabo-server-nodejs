@@ -1,42 +1,42 @@
 version: "3"
 
 services:
-  zabo-server:
+  server:
     container_name: zabo-server
     restart: always
-    image: zabo-server-image
+    image: zabo-server
     ports:
-      - "${SERVER_PORT}:80"
+      - "${SERVER_PORT}:6001"
     depends_on:
-      - zabo-mongo
-      - zabo-redis
+      - mongo
+      - redis
     links:
-      - zabo-mongo
-      - zabo-redis
+      - mongo
+      - redis
     environment:
       - MINIMUM_LOG_LEVEL=info
-      - SSO_CLIENT_ID=
-      - SSO_SECRET=
-      - AWS_ACCESS_KEY_ID=
-      - AWS_SECRET_ACCESS_KEY=
-      - SESSION_SECRET=
-      - JWT_SECRET=
-      - S3_BUCKET=
-      - MONGODB_URL=
-      - REDIS_PORT="zabo-redis:"
-      - SLACK_WEBHOOK_URL=
-  zabo-mongo:
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
+      - SSO_SECRET=${SSO_SECRET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - S3_BUCKET=${S3_BUCKET}
+      - MONGODB_URL=mongodb://mongo:27017/zabo
+      - REDIS_PORT="redis:6379"
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+
+  mongo:
     container_name: zabo-mongo
     restart: always
     image: mongo:4.4
     volumes:
-      - zabo-mongo-data:/data/db
+      - mongo-data:/data/db
 
-  zabo-redis:
+  redis:
     container_name: zabo-redis
     restart: always
     image: redis:7.0.4-alpine
 
 volumes:
-  zabo-mongo-data:
-    external: true
+  mongo-data:
