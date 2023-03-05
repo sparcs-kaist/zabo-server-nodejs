@@ -25,9 +25,9 @@
     ]
   },
   "dependencies": {
-    "@babel/core": "^7.4.3",
-    "@babel/preset-env": "^7.4.3",
-    "@babel/register": "^7.4.0",
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/register": "^7.21.0",
     "aws-sdk": "^2.485.0",
     "axios": ">=0.18.1",
     "chalk": "^2.4.2",
