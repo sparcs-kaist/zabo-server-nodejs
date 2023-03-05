@@ -1,0 +1,38 @@
+services:
+  mongo:
+    image: mongo 
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: zabo 
+      MONGO_INITDB_ROOT_PASSWORD: 123454321
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-volume:/data/db
+  mongo-express:
+    image: mongo-express 
+    restart: always 
+    ports: 
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: zabo
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 123454321
+      ME_CONFIG_MONGODB_URL: mongodb://zabo:123454321@mongo:27017/
+  redis:
+    image: redis 
+    restart: always
+    volumes:
+      - redis-volume:/data
+    ports:
+      - 6379:6379
+  redis-insight:
+    image: redislabs/redisinsight
+    restart: always 
+    ports:
+      - 8001:8001
+
+volumes:
+  mongo-volume:
+    external: false 
+  redis-volume:
+    external: false 
