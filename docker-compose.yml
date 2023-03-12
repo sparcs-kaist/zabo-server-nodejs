@@ -24,7 +24,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - S3_BUCKET=${S3_BUCKET}
       - MONGODB_URL=mongodb://mongo:27017/zabo
-      - REDIS_PORT="redis:6379"
+      - REDIS_URL=redis://redis:6379
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 
   mongo:

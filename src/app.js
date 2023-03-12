@@ -16,7 +16,7 @@ import { logger } from "./utils/logger";
 
 const app = express();
 const RedisStore = connectRedis(session);
-const redisClient = new Redis(process.env.REDIS_PORT);
+const redisClient = new Redis(process.env.REDIS_URL);
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
