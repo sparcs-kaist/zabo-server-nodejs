@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  server:
+    container_name: zabo-server
+    restart: always
+    build: .
+    ports:
+      - "${SERVER_PORT}:6001"
+    depends_on:
+      - mongo
+      - redis
+    links:
+      - mongo
+      - redis
+    environment:
+      - MINIMUM_LOG_LEVEL=info
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
+      - SSO_SECRET=${SSO_SECRET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - S3_BUCKET=${S3_BUCKET}
+      - MONGODB_URL=mongodb://mongo:27017/zabo
+      - REDIS_PORT="redis:6379"
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+
+  mongo:
+    container_name: zabo-mongo
+    restart: always
+    image: mongo:4.4
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    container_name: zabo-redis
+    restart: always
+    image: redis:7.0.4-alpine
+
+volumes:
+  mongo-data:
+    external: true
