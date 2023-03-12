@@ -12,4 +12,4 @@ RUN yarn
 COPY . .
 
 EXPOSE 80
-ENTRYPOINT [ "yarn", "prod" ]
+ENTRYPOINT [ "yarn", "start" ]
