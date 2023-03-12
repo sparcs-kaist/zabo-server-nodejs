@@ -4,7 +4,7 @@ services:
   server:
     container_name: zabo-server
     restart: always
-    image: zabo-server
+    build: .
     ports:
       - "${SERVER_PORT}:6001"
     depends_on:
@@ -40,3 +40,4 @@ services:
 
 volumes:
   mongo-data:
+    external: true
