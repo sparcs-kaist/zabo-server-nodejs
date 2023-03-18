@@ -8,15 +8,28 @@ import helmet from "helmet";
 import Redis from "ioredis";
 import connectRedis from "connect-redis";
 
+// FIXME Temporary add of admin js
+import AdminJSExpress from "@adminjs/express";
+import AdminJS from "adminjs";
+//
 import routes from "./routes";
 
 import "./db";
 
 import { logger } from "./utils/logger";
+// FIXME Temporary add of admin js
 
 const app = express();
 const RedisStore = connectRedis(session);
 const redisClient = new Redis(process.env.REDIS_URL);
+const admin = new AdminJS({});
+const adminRouter = AdminJSExpress.buildRouter(admin);
+app.use(admin.options.rootPath, adminRouter);
+console.log(
+  `AdminJS started on http://localhost:6001${admin.options.rootPath}`,
+);
+
+//
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
