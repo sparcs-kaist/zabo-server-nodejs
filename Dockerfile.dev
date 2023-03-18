@@ -1,0 +1,17 @@
+FROM node:16.19.1 
+
+RUN apt update 
+
+RUN apt install git -y 
+
+WORKDIR /app 
+
+COPY . /app/
+
+RUN yarn
+
+EXPOSE 6001
+
+VOLUME [ "/app" ]
+
+CMD ["tail", "-f", "/dev/null"]
