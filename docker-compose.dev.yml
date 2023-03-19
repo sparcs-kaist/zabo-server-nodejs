@@ -1,4 +1,13 @@
 services:
+  server:
+    container_name: zabo-server
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    ports: 
+      - 6001:6001 
+    volumes:
+      - .:/app
   mongo:
     image: mongo 
     restart: always
