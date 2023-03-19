@@ -11,18 +11,50 @@ import connectRedis from "connect-redis";
 // FIXME Temporary add of admin js
 import AdminJSExpress from "@adminjs/express";
 import AdminJS from "adminjs";
+import * as AdminJSMongoose from "@adminjs/mongoose";
+import mongoose from "mongoose";
+import {
+  AdminUser,
+  User,
+  DeletedZabo,
+  Board,
+  Group,
+  GroupApply,
+  Statistic,
+  PreRegister,
+  Meta,
+  Zabo,
+} from "./db/index";
 //
 import routes from "./routes";
 
-import "./db";
-
 import { logger } from "./utils/logger";
-// FIXME Temporary add of admin js
+
+AdminJS.registerAdapter({
+  Resource: AdminJSMongoose.Resource,
+  Database: AdminJSMongoose.Database,
+});
 
 const app = express();
 const RedisStore = connectRedis(session);
 const redisClient = new Redis(process.env.REDIS_URL);
-const admin = new AdminJS({});
+
+// FIXME Temporary add of admin js
+const adminOptions = {
+  resources: [
+    AdminUser,
+    User,
+    DeletedZabo,
+    Board,
+    Group,
+    GroupApply,
+    Statistic,
+    PreRegister,
+    Meta,
+    Zabo,
+  ],
+};
+const admin = new AdminJS(adminOptions);
 const adminRouter = AdminJSExpress.buildRouter(admin);
 app.use(admin.options.rootPath, adminRouter);
 console.log(
