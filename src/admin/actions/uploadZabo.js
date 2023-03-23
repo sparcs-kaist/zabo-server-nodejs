@@ -9,5 +9,6 @@ export const uploadZaboAction = {
   component: false,
   handler: async (req, res, context) => {
     console.log(context);
+    return [];
   },
 };
