@@ -13,14 +13,13 @@ export const acceptGroupAction = {
     //FIXME get current admin information from admin js authenticator
     //const { record, currentAdmin } = context;
     const { record } = context;
-    console.log(record);
     const currentAdmin = await AdminUser.findOne({}).populate("user");
 
     const groupName = record.params.name;
     const adminName = currentAdmin.user.username;
 
-    logger.api.info(
-      "adminjs accept request; name: %s, adminUser: %s",
+    logger.admin.info(
+      "Accept Group; name: %s, adminUser: %s",
       groupName,
       adminName,
     );

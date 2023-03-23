@@ -41,6 +41,7 @@ logger.pin = createCLogger("PIN");
 logger.event = createCLogger("EVENT");
 logger.mw = createCLogger("MIDDLEWARE");
 logger.sec = createCLogger("SECURITY");
+logger.admin = createCLogger("ADMIN");
 
 export { logger };
 
