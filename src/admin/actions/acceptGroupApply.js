@@ -13,13 +13,14 @@ export const acceptGroupAction = {
     //FIXME get current admin information from admin js authenticator
     //const { record, currentAdmin } = context;
     const { record } = context;
+    console.log(record);
     const currentAdmin = await AdminUser.findOne({}).populate("user");
 
     const groupName = record.params.name;
     const adminName = currentAdmin.user.username;
 
     logger.api.info(
-      "post /admin/group/apply/accept request; name: %s, adminUser: %s",
+      "adminjs accept request; name: %s, adminUser: %s",
       groupName,
       adminName,
     );
@@ -41,7 +42,7 @@ export const acceptGroupAction = {
       ...newGroupJSON.members.map(({ user }) =>
         User.findByIdAndUpdate(user._id, { $push: { groups: created._id } }),
       ),
-      currentAdminTest.save(),
+      currentAdmin.save(),
     ]);
 
     sendApplyDoneMessage(groupName, currentAdmin);
