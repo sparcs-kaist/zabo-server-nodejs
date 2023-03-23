@@ -48,7 +48,7 @@ export const acceptGroupAction = {
 
     return {
       record: record.toJSON(currentAdmin),
-      msg: "Accepting Group Success",
+      msg: "Accepting Group: Success",
     };
   },
 };
