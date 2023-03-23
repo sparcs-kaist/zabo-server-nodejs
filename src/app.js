@@ -19,12 +19,12 @@ import {
   DeletedZabo,
   Board,
   Group,
-  GroupApply,
   Statistic,
   PreRegister,
   Meta,
   Zabo,
 } from "./db/index";
+import { GroupResource } from "./admin/resources/Group";
 //
 import routes from "./routes";
 
@@ -46,8 +46,8 @@ const adminOptions = {
     User,
     DeletedZabo,
     Board,
+    GroupResource,
     Group,
-    GroupApply,
     Statistic,
     PreRegister,
     Meta,
