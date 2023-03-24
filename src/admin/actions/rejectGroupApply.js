@@ -9,6 +9,7 @@ import { AdminUser } from "../../db/index";
 export const rejectGroupAction = {
   actionType: "record",
   component: false,
+  guard: "Do you really want to reject this group?",
   handler: async (req, res, context) => {
     //FIXME get current admin information from admin js authenticator
     //const { record, currentAdmin } = context;
