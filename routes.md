@@ -6,39 +6,44 @@
 
 ### Authentication
 
-* [`GET` Check Auth](routes.md) /auth
-* [`GET` Login](routes.md) /auth/login
-* [`POST` Login Callback](routes.md)  /auth/login/callback
-* [`GET` Logout](routes.md) /auth/logout
-* [`GET` Unregister](routes.md) /auth/unregister
+* [`GET`](routes.md) /auth
+* [`GET`](routes.md) /auth/login
+* [`GET`](routes.md) /auth/loginApi
+* [`POST`](routes.md)  /auth/login/callback
+* [`GET`](routes.md) /auth/logout
+* [`GET`](routes.md) /auth/unregister
 
 ### Group
 
-* [`GET` Get Group Info](routes.md) /group/:groupId
-* [`POST` Update Group Photo](routes.md) /group/:groupId
-* [`POST` Update Group Member](routes.md) /group/:groupId/member
-* [`DELETE` Delete Group Member](routes.md) /group/:groupId/member
+* [`GET`](routes.md) /group/recommends
+* ['POST`](routes.md) /group/apply
+* [`GET`](routes.md) /group/:groupName
+* [`POST`](routes.md) /group/:groupName
+* [`POST`](routes.md) /group/:groupName/background
+* [`PUT`](routes.md) /group/:groupName/member
+* [`POST`](routes.md) /group/:groupName/member
+* [`DELETE`](routes.md) /group/:groupName/member
+* [`GET`](routes.md) /group/:groupName/zabo/list
 
 ### User
 
-* [`GET` Get User Info](routes.md) /user
-* [`POST` Set Current Group](routes.md) /user/currentGroup/:groupId
+* [`GET`](routes.md) /user
+* [`POST`](routes.md) /user
+* [`GET`](routes.md) /user/:username/pins
+* [`POST`](routes.md) /user/background
+* [`POST`](routes.md) /user/currentGroup/:groupName
 
 ### Zabo
 
-* [`GET` Get Zabo Info](routes.md) /zabo
-* [`GET` Get Zabo List](routes.md) /zabo/list
-* [`GET` Get Next Zabo List](routes.md) /zabo/list/next
-* [`POST` Create New Zabo](routes.md) /zabo
-* [`DELETE` Delete Zabo](routes.md) /zabo
-
-### Admin
-
-* [`POST` Create New Group](routes.md) /admin/group
-* [`DELETE` Delete Group](routes.md) /admin/group/:groupId
-* [`POST` Fake Register](routes.md) /admin/fakeRegister
-* [`POST` Fake Login](routes.md) /admin/fakeLogin
-* [`GET` Get User Info](routes.md) /admin/user/:studentId
+* [`POST`](routes.md) /zabo
+* [`GET`](routes.md) /zabo/:zaboId
+* [`GET`](routes.md) /zabo/list
+* [`GET`](routes.md) /zabo/hot
+* [`GET`](routes.md) /zabo/deadline
+* [`PATCH`](routes.md) /zabo/:zaboId
+* [`POST`](routes.md) /zabo/:zaboId/pin
+* [`POST`](routes.md) /zabo/:zaboId/like
+* [`DELETE`](routes.md) /zabo/:zaboId/
 
 ## Authentication
 
@@ -354,59 +359,6 @@ TODO: 그룹의 정보 \(사진\)을 업데이트할 수 있습니다. 이름도
 **Errors**
 
 400 : null id 500
-
-### Admin
-
-#### `POST` /admin/group \(name, ownerStudentId\) =&gt; `groupInfo`
-
-유효성 확인
-
-* name과 ownerStudentId는 필수
-* 같은 이름을 가진 그룹이 존재할 수 없음 \(schema constraint\)
-* ownerStudentId에 해당하는 유저가 존재해야함
-
-그룹을 생성하고 첫 관리자를 추가합니다. 관리자의 doc에 그룹을 추가합니다. 생성된 그룹 정보로 응답합니다.
-
-| Param | Type | Description |
-| :--- | :--- | :--- |
-| name | `string` | group name |
-| ownerStudentId | `string` | student id |
-
-#### `DELETE` /admin/group/:groupId \(\) =&gt; success
-
-TODO '삭제' 상태의 그룹에는 맴버 추가, 그룹 선택 기능이 불가능하도록 한다. 그룹을 상태를 '삭제' 상태로 업데이트한다.  그룹의 맴버가 해당 그룹을 currentGroup으로 가지고 있으면 초기화한다.
-
-| Param | Type | Description |
-| :--- | :--- | :--- |
-| groupId | `string` | group id |
-
-#### `POST` /admin/fakeRegister \(studentId\) =&gt; `userInfo`
-
-유효성 확인
-
-* studentId는 필수입니다.
-
-새로운 유저를 생성합니다. 생성된 유저의 정보로 응답합니다.
-
-| Param | Type | Description |
-| :--- | :--- | :--- |
-| studentId | `string` | student id |
-
-#### `POST` /admin/fakeLogin \(studentId\) =&gt; `jwt`
-
-액세스 토큰을 발급해줍니다.
-
-| Param | Type | Description |
-| :--- | :--- | :--- |
-| studentId | `string` | student id |
-
-#### `GET` /admin/user/:studentId \(\) =&gt; `userInfo`
-
-유저 정보로 응답합니다.
-
-| Param | Type | Description |
-| :--- | :--- | :--- |
-| studentId | `string` | student id |
 
 ## English
 
