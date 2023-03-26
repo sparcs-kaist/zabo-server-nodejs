@@ -60,6 +60,14 @@ Following **Authorization** field must be set in HTTP request header
 
 인증 요구사항 : 유저 엑세스 토큰 \(선택\)
 
+**Require**
+
+없음
+
+**Response**
+
+없음
+
 **Errors**
 
 403 : 유효하지 않은 토큰 500
@@ -69,6 +77,15 @@ Following **Authorization** field must be set in HTTP request header
 #### `GET` /auth/login \(\) =&gt; `redirect to sparcssso`
 
 세션 검증을 위한 state 코드를 생성하고, 유저를 sparcssso 서비스로 리다이렉트 시킵니다.
+
+**Require**
+ 
+url : String
+state : String
+ 
+**Response**
+ 
+없음
 
 **Errors**
 
@@ -84,6 +101,15 @@ Following **Authorization** field must be set in HTTP request header
 
 주어진 code로 sparcssso 유저 정보를 취득합니다. 서비스 데이터베이스에 해당 유저의 정보가 존재하는지 체크하고 최신 정보로 업데이트합니다. 유저가 처음 생성된 경우 "저장된 포스터" board를 새로 생성하고 할당합니다. 새로운 엑세스 토큰을 발급합니다. 토큰과 유저 정보로 응답합니다.
 
+**Require**
+ 
+url : String
+state : String
+ 
+**Response**
+ 
+url: String
+
 **Errors**
 
 401 : 세션 hijacked 500
@@ -94,6 +120,20 @@ Following **Authorization** field must be set in HTTP request header
 
 TODO: 토큰을 만료시킵니다. sparcssso 로그아웃 주소로 리다이렉트 시킵니다.
 
+**Request**
+
+없음
+
+URL Parameter: 없음
+Body: 없음
+
+**Response**
+
+없음
+
+사용자를 sparcs sso url로 리다이렉트 시킵니다.
+이동시킬 주소를 Response 객체의 location에 담고, http 301 응답 코드를 반환합니다.
+
 **Errors**
 
 500
@@ -103,6 +143,14 @@ TODO: 토큰을 만료시킵니다. sparcssso 로그아웃 주소로 리다이�
 #### `POST` /auth/unreigister \(\) =&gt; `?`
 
 TODO : 회원 정보를 삭제하고 sparcssso에 등록해지 요청을 보냅니다.
+
+**Require**
+
+없음
+
+**Response**
+
+없음
 
 **Errors**
 
