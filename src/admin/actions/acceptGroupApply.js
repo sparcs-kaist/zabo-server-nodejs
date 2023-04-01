@@ -47,7 +47,7 @@ export const acceptGroupAction = {
     sendApplyDoneMessage(groupName, currentAdmin);
 
     return {
-      record: record.toJSON(currentAdmin),
+      record: record.toJSON(created),
       msg: "Accepting Group: Success",
     };
   },
