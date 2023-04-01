@@ -15,6 +15,7 @@ import {
 
 import { GroupResource } from "./resources/Group";
 import { ZaboResource } from "./resources/Zabo";
+import { AdminUserResource } from "./resources/AdminUser";
 
 AdminJS.registerAdapter({
   Resource: AdminJSMongoose.Resource,
@@ -23,7 +24,7 @@ AdminJS.registerAdapter({
 
 const adminOptions = {
   resources: [
-    AdminUser,
+    AdminUserResource,
     User,
     DeletedZabo,
     Board,
