@@ -5,7 +5,7 @@ export const AdminUserResource = {
   resource: AdminUser,
   options: {
     actions: {
-      initAdminGroupAction: initAdminGroupAction,
+      initAdminGroup: initAdminGroupAction,
     },
   },
 };
