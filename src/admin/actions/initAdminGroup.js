@@ -11,10 +11,8 @@ export const initAdminGroupAction = {
   actionType: "resource",
   component: false,
   handler: async (req, res, context) => {
-    //FIXME get current admin information from admin js authenticator
-    //const { record, currentAdmin } = context;
     const { record } = context;
-    const currentAdmin = await AdminUser.findOne({}).populate("user");
+    const currentAdmin = req.adminUser;
 
     //FIXME 관리자 그룹에 표기될 자세한 내용 수정
     const adminGroup = {

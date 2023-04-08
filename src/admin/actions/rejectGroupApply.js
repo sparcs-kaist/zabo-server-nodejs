@@ -11,10 +11,8 @@ export const rejectGroupAction = {
   component: false,
   guard: "Do you really want to reject this group?",
   handler: async (req, res, context) => {
-    //FIXME get current admin information from admin js authenticator
-    //const { record, currentAdmin } = context;
     const { record } = context;
-    const currentAdmin = await AdminUser.findOne({}).populate("user");
+    const currentAdmin = req.adminUser;
 
     const groupName = record.params.name;
     const adminName = currentAdmin.user.username;
