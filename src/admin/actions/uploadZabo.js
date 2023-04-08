@@ -1,14 +1,13 @@
-import { Zabo } from "../../db";
-import { logger } from "../../utils/logger";
-
-//FIXME using hard coded admin data
-import { AdminUser } from "../../db/index";
+import { adminZaboGroup } from "..";
+import { Components } from "../components";
 
 export const uploadZaboAction = {
   actionType: "resource",
   component: false,
   handler: async (req, res, context) => {
-    console.log(context);
+    const currentAdmin = req.adminUser;
+    const adminGroup = adminZaboGroup;
+
     return [];
   },
 };

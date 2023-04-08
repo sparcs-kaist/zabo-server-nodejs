@@ -1,10 +1,6 @@
-import { Group, GroupApply } from "../../db";
-import { adminUserSchema } from "../../db/schema";
+import { GroupApply } from "../../db";
 import { logger } from "../../utils/logger";
 import { sendRejectDoneMessage } from "../../utils/slack";
-
-//FIXME using hard coded admin data
-import { AdminUser } from "../../db/index";
 
 export const rejectGroupAction = {
   actionType: "record",

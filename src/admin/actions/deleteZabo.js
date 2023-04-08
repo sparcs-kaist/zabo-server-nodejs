@@ -1,9 +1,6 @@
 import { DeletedZabo, Zabo, Board } from "../../db";
 import { logger } from "../../utils/logger";
 
-//FIXME using hard coded admin data
-import { AdminUser } from "../../db/index";
-
 export const deleteZaboAction = {
   actionType: "record",
   component: false,

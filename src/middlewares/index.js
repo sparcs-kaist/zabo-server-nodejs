@@ -58,12 +58,10 @@ export const validateId = key => (req, res, next) => {
 };
 export const validateZaboId = validateId("zaboId");
 
-// FIXME change name!
 export const isAdmin = ash(async (req, res, next) => {
   const { isAdmin } = req.session;
   const { adminId } = req.session;
   if (isAdmin) {
-    // TODO set req.adminUser to admin user object
     const adminUser = await AdminUser.findOne({ user: adminId }).populate(
       "user",
     );
