@@ -58,22 +58,8 @@ export const validateId = key => (req, res, next) => {
 };
 export const validateZaboId = validateId("zaboId");
 
-export const isAdmin = ash(async (req, res, next) => {
-  const { sid } = req.decoded;
-  const self = await User.findOne({ sso_sid: sid });
-  const adminUser = await AdminUser.findOne({ user: self._id });
-  if (!adminUser) {
-    return res.status(403).json({
-      error: "Permission Denied",
-    });
-  }
-  req.adminUser = adminUser;
-  req.self = self;
-  return next();
-});
-
 // FIXME change name!
-export const isAdmin2 = ash(async (req, res, next) => {
+export const isAdmin = ash(async (req, res, next) => {
   const { isAdmin } = req.session;
   const { adminId } = req.session;
   if (isAdmin) {
