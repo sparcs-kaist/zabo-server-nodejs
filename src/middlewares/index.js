@@ -74,18 +74,20 @@ export const isAdmin = ash(async (req, res, next) => {
 
 // FIXME change name!
 export const isAdmin2 = ash(async (req, res, next) => {
-  console.log(`request session isAdmin: ${req.session.isAdmin}`);
-  if (req.session.isAdmin) {
+  const { isAdmin } = req.session;
+  const { adminId } = req.session;
+  if (isAdmin) {
     // TODO set req.adminUser to admin user object
-    req.adminUser = await AdminUser.findById(req.session.adminId).populate(
+    const adminUser = await AdminUser.findOne({ user: adminId }).populate(
       "user",
     );
+    req.adminUser = adminUser;
+    next();
   } else {
     return res.status(404).json({
       error: "not administer",
     });
   }
-  next();
 });
 
 export const findSelfMiddleware = ash(async (req, res, next) => {
