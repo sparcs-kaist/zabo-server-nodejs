@@ -12,7 +12,7 @@ import { adminRouter, adminRouterPath } from "./admin";
 import routes from "./routes";
 
 import { logger } from "./utils/logger";
-import { isAdmin2 } from "./middlewares";
+import { isAdmin } from "./middlewares";
 
 const app = express();
 const RedisStore = connectRedis(session);
@@ -47,7 +47,7 @@ app.get("/api/hc", (req, res) => {
 });
 app.use("/api", routes);
 
-app.use(adminRouterPath, isAdmin2, adminRouter);
+app.use(adminRouterPath, isAdmin, adminRouter);
 console.log(`AdminJS started on http://localhost:6001${adminRouterPath}`);
 
 // catch 404 and forward to error handler
