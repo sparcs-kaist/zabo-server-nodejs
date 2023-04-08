@@ -29,8 +29,6 @@ export const authCheck = ash(async (req, res) => {
       })
       .populate("boards");
     // FIXME
-    console.log(`authcheck is called. user's isAdmin value is ${user.isAdmin}`);
-    console.log(`setting req.session.isAdmin to ${user.isAdmin}`);
     if (user.isAdmin) {
       req.session.isAdmin = true;
       req.session.adminId = user._id;
