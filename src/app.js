@@ -12,15 +12,14 @@ import { adminRouter, adminRouterPath } from "./admin";
 import routes from "./routes";
 
 import { logger } from "./utils/logger";
+import { isAdmin2 } from "./middlewares";
 
 const app = express();
 const RedisStore = connectRedis(session);
 const redisClient = new Redis(process.env.REDIS_URL);
 
-app.use(adminRouterPath, adminRouter);
-console.log(`AdminJS started on http://localhost:6001${adminRouterPath}`);
-
 app.use(express.static(path.join(__dirname, "public")));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -47,6 +46,9 @@ app.get("/api/hc", (req, res) => {
   res.sendStatus(200);
 });
 app.use("/api", routes);
+
+app.use(adminRouterPath, isAdmin2, adminRouter);
+console.log(`AdminJS started on http://localhost:6001${adminRouterPath}`);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
