@@ -5,8 +5,8 @@ export const GroupResource = {
   resource: GroupApply,
   options: {
     actions: {
-      acceptGroupAction: acceptGroupAction,
-      rejectGroupAction: rejectGroupAction,
+      acceptGroup: acceptGroupAction,
+      rejectGroup: rejectGroupAction,
     },
   },
 };
