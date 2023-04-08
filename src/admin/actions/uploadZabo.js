@@ -1,5 +1,4 @@
 import { adminZaboGroup } from "..";
-import { Components } from "../components";
 
 export const uploadZaboAction = {
   actionType: "resource",
