@@ -28,6 +28,16 @@ export const authCheck = ash(async (req, res) => {
         select: "name profilePhoto followers recentUpload subtitle",
       })
       .populate("boards");
+    // FIXME
+    console.log(`authcheck is called. user's isAdmin value is ${user.isAdmin}`);
+    console.log(`setting req.session.isAdmin to ${user.isAdmin}`);
+    if (user.isAdmin) {
+      req.session.isAdmin = true;
+      req.session.adminId = user._id;
+    } else {
+      req.session.isAdmin = false;
+      req.session.adminId = null;
+    }
     const groupApplies = await GroupApply.find(
       { members: { $elemMatch: { user: user._id } } },
       { name: 1, profilePhoto: 1, subtitle: 1 },
