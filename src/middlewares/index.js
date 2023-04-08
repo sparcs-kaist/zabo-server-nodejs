@@ -72,6 +72,22 @@ export const isAdmin = ash(async (req, res, next) => {
   return next();
 });
 
+// FIXME change name!
+export const isAdmin2 = ash(async (req, res, next) => {
+  console.log(`request session isAdmin: ${req.session.isAdmin}`);
+  if (req.session.isAdmin) {
+    // TODO set req.adminUser to admin user object
+    req.adminUser = await AdminUser.findById(req.session.adminId).populate(
+      "user",
+    );
+  } else {
+    return res.status(404).json({
+      error: "not administer",
+    });
+  }
+  next();
+});
+
 export const findSelfMiddleware = ash(async (req, res, next) => {
   const { sid } = req.decoded;
   const user = await User.findOne({ sso_sid: sid });
