@@ -1,0 +1,56 @@
+import { Group, GroupApply, User } from "../../db";
+import { adminUserSchema } from "../../db/schema";
+import { logger } from "../../utils/logger";
+import { sendApplyDoneMessage } from "../../utils/slack";
+
+//FIXME using hard coded admin data
+import { AdminUser } from "../../db/index";
+
+export const acceptAllGroupAction = {
+  actionType: "bulk",
+  component: false,
+  handler: async (req, res, context) => {
+    //FIXME get current admin information from admin js authenticator
+    //const { record, currentAdmin } = context;
+    const { records } = context;
+    const currentAdmin = await AdminUser.findOne({}).populate("user");
+    console.log(records);
+
+    const adminName = currentAdmin.user.username;
+
+    const groupName = record.params.name;
+
+    logger.admin.info(
+      "Accept Group; name: %s, adminUser: %s",
+      groupName,
+      adminName,
+    );
+
+    const newGroup = await GroupApply.findOneAndDelete({ name: groupName });
+    const newGroupJSON = newGroup.toJSON({ virtuals: false });
+    delete newGroupJSON._id;
+    newGroupJSON.members.forEach((member, i) => {
+      delete newGroupJSON.members[i]._id;
+    });
+    const created = await Group.create(newGroupJSON);
+
+    currentAdmin.actionHistory.push({
+      name: "acceptGroup",
+      target: created._id,
+    });
+
+    await Promise.all([
+      ...newGroupJSON.members.map(({ user }) =>
+        User.findByIdAndUpdate(user._id, { $push: { groups: created._id } }),
+      ),
+      currentAdmin.save(),
+    ]);
+
+    sendApplyDoneMessage(groupName, currentAdmin);
+
+    return {
+      records: records,
+      msg: "Accepting Groups: Success",
+    };
+  },
+};
