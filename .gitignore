@@ -20,6 +20,7 @@ yarn-error.log*
 # Generated files
 /tmp
 /config/sids.json
+.adminjs
 
 # Deployment files
 process.json

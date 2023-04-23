@@ -41,3 +41,11 @@ export const sendApplyDoneMessage = async (groupName, adminUser) => {
     - by ${user.username}
   `);
 };
+
+export const sendRejectDoneMessage = async (groupName, adminUser) => {
+  const user = await User.findById(adminUser.user);
+  return sendMessage(`${devLog}
+    *${groupName}* 그룹 거절 완료
+    - by ${user.username}
+  `);
+};
