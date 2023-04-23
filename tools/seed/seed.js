@@ -1,6 +1,6 @@
 import clear from 'clear';
 import chalk from 'chalk';
-import figlet from 'figlet';
+// import figlet from 'figlet';
 import inquirer from 'inquirer';
 import { AdminUser, Group, PreRegister, User } from '../../src/db';
 
@@ -11,11 +11,11 @@ import { AdminUser, Group, PreRegister, User } from '../../src/db';
  */
 clear ();
 
-console.log (
-  chalk.blueBright (
-    figlet.textSync ('SPARCS', { horizontalLayout: 'full', font: 'ghost' }),
-  ),
-);
+// console.log (
+//   chalk.blueBright (
+//     figlet.textSync ('SPARCS', { horizontalLayout: 'full', font: 'ghost' }),
+//   ),
+// );
 
 const actions = {
   addAdminUser: 'Add Admin User',
