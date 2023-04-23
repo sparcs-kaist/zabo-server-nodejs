@@ -48,7 +48,7 @@ app.get("/api/hc", (req, res) => {
 app.use("/api", routes);
 
 app.use(adminRouterPath, isAdmin, adminRouter);
-console.log(`AdminJS started on http://localhost:6001${adminRouterPath}`);
+console.log(`AdminJS started on http://localhost:${process.env.PORT || '6001'}${adminRouterPath}`);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
