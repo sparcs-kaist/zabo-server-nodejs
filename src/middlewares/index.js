@@ -69,7 +69,7 @@ export const isAdmin = ash(async (req, res, next) => {
     next();
   } else {
     return res.status(404).json({
-      error: "not administer",
+      error: "not administrator",
     });
   }
 });
