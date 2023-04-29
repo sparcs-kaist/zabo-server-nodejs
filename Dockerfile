@@ -12,4 +12,4 @@ RUN yarn
 COPY . .
 
 EXPOSE 80
-ENTRYPOINT [ "yarn", "start" ]
+CMD [ "yarn", "start" ]

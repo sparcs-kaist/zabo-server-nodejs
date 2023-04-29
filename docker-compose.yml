@@ -27,6 +27,19 @@ services:
       - REDIS_URL=redis://redis:6379
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 
+  worker:
+    container_name: zabo-worker
+    restart: always
+    build: .
+    depends_on:
+      - mongo
+    links:
+      - mongo
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - MINIMUM_LOG_LEVEL=info
+      - MONGODB_URL=mongodb://mongo:27017/zabo
+    command: yarn worker
   mongo:
     container_name: zabo-mongo
     restart: always

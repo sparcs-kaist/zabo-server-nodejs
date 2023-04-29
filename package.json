@@ -10,6 +10,7 @@
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
     "prod": "yarn env:prod nodemon index",
+    "worker": "yarn env:prod node worker.js",
     "seed": "node tools/seed"
   },
   "husky": {
