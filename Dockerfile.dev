@@ -6,12 +6,8 @@ RUN apt install git -y
 
 WORKDIR /app 
 
-COPY . /app/
-
-RUN yarn
-
 EXPOSE 6001
 
 VOLUME [ "/app" ]
 
-CMD ["tail", "-f", "/dev/null"]
+CMD ["yarn", "dev"]
