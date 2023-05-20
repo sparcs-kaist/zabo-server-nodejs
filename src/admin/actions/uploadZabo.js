@@ -1,9 +1,8 @@
+import { Components } from "../components";
+
+//action without component.
+//component will use axios to send request for uploading zabo
 export const uploadZaboAction = {
   actionType: "resource",
-  component: false,
-  handler: async (req, res, context) => {
-    const currentAdmin = req.adminUser;
-
-    return [];
-  },
+  component: Components.uploadZaboComponent,
 };
