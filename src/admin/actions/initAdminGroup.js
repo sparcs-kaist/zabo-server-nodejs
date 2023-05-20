@@ -5,7 +5,14 @@ import { AdminUser } from "../../db/index";
 import { nameUsabilityCheck, validateName } from "../../utils";
 import { sendApplyDoneMessage } from "../../utils/slack";
 
-import { adminZaboGroup } from "..";
+export const adminZaboGroup = {
+  name: "관리자 그룹",
+  description: "관리자 그룹",
+  subtitle: "관리자 그룹",
+  purpose: "관리자 그룹",
+  category: "관리자그룹",
+  isBusiness: false,
+};
 
 export const initAdminGroupAction = {
   actionType: "resource",
