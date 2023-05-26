@@ -43,6 +43,7 @@
 * [`PATCH`](routes.md) /zabo/:zaboId
 * [`POST`](routes.md) /zabo/:zaboId/pin
 * [`POST`](routes.md) /zabo/:zaboId/like
+* [`POST`](routes.md) /zabo/:zaboId/share
 * [`DELETE`](routes.md) /zabo/:zaboId/
 
 ## Authentication
