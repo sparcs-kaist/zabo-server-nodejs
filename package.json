@@ -10,7 +10,6 @@
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
     "dev:db": "yarn docker:dev up -d",
-    "docker:dev": "docker-compose -f .docker/docker-compose.dev.yml --env-file=.docker/.env.development",
     "prod": "yarn env:prod nodemon index",
     "seed": "node tools/seed"
   },
