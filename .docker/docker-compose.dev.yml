@@ -1,0 +1,20 @@
+services:
+  mongo:
+    container_name: zabo-mongo-dev
+    extends:
+      file: ./docker-compose.yml
+      service: mongo
+    restart: unless-stopped
+    ports:
+      - ${MONGO_PORT:-27017}:27017
+  redis:
+    container_name: zabo-redis-dev
+    extends:
+      file: ./docker-compose.yml
+      service: redis
+    restart: unless-stopped
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+
+volumes:
+  mongo-data:
