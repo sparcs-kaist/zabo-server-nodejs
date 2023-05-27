@@ -14,8 +14,9 @@ yarn-error.log*
 
 *.log
 
-.env*
-!.env.example
+**/.env*
+!**/.env.example
+!**/.env.*.example
 
 # Generated files
 /tmp
