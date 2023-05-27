@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import ash from "express-async-handler";
+import { promisify } from "util";
 
 import { Board, User, Group, GroupApply } from "../db";
 
@@ -12,37 +13,33 @@ import { checkPreAndRegister } from "../utils/preRegister";
 export const authCheck = ash(async (req, res) => {
   const jwtSecret = req.app.get("jwt-secret");
   const token = (req.headers.authorization || "").substring(7);
-  jwt.verify(token, jwtSecret, async (error, decoded) => {
-    if (error) {
-      console.error(error.message, error.lineNumber);
-      res.status(403).json({
-        error: error.message,
-      });
-      return;
-    }
-    req.decoded = decoded;
-    const { sid } = decoded;
-    const user = await User.findOne({ sso_sid: sid })
-      .populate({
-        path: "groups",
-        select: "name profilePhoto followers recentUpload subtitle",
-      })
-      .populate("boards");
-    if (user.isAdmin) {
-      req.session.isAdmin = true;
-      req.session.adminId = user._id;
-    } else {
-      req.session.isAdmin = false;
-      req.session.adminId = null;
-    }
-    const groupApplies = await GroupApply.find(
-      { members: { $elemMatch: { user: user._id } } },
-      { name: 1, profilePhoto: 1, subtitle: 1 },
-    );
-    const userJSON = user.toJSON();
-    userJSON.pendingGroups = groupApplies;
-    res.json(userJSON);
-  });
+
+  const { sid } = await promisify(jwt.verify)(token, jwtSecret);
+
+  const user = await User.findOne({ sso_sid: sid })
+    .populate({
+      path: "groups",
+      select: "name profilePhoto followers recentUpload subtitle",
+    })
+    .populate("boards");
+  if (user.isAdmin) {
+    req.session.isAdmin = true;
+    req.session.adminId = user._id;
+  } else {
+    req.session.isAdmin = false;
+    req.session.adminId = null;
+  }
+  const groupApplies = await GroupApply.find(
+    { members: { $elemMatch: { user: user._id } } },
+    {
+      name: 1,
+      profilePhoto: 1,
+      subtitle: 1,
+    },
+  );
+  const userJSON = user.toJSON();
+  userJSON.pendingGroups = groupApplies;
+  return res.json(userJSON);
 });
 
 export const login = ash((req, res) => {
@@ -217,7 +214,11 @@ export const loginCallback = ash(async (req, res) => {
 
   const groupApplies = await GroupApply.find(
     { members: { $elemMatch: { user: user._id } } },
-    { name: 1, profilePhoto: 1, subtitle: 1 },
+    {
+      name: 1,
+      profilePhoto: 1,
+      subtitle: 1,
+    },
   );
   const userJSON = user.toJSON();
   userJSON.pendingGroups = groupApplies;
