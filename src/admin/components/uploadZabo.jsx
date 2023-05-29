@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
-import { Box, H3, Input, Button } from '@adminjs/design-system';
-import axios from 'axios';
+import { H3, Input, Button } from '@adminjs/design-system';
+import uploadZabo from '../api/uploadZabo';
 
 const gridLayoutCompareFunction = (a, b) => {
   const { x: ax, y: ay } = a.updatedLayout;
@@ -58,18 +58,6 @@ const dataURLToBlob = (dataURL) => {
   // const file = new Blob ([new Uint8Array (array)], { type: 'image/png' });
   return new Blob([new Uint8Array(array)]);
 };
-
-const uploadZabo = async (formData) => {
-
-  //TODO: create admin zabo upload api.
-  //existing api has jwt check middleware. So we need to create new api for admin user.
-
-  await axios.post("/api/zabo", formData, {
-    headers: {
-      "Content-Type": "multipart/form-datra",
-    }
-  })
-}
 
 const imageFileGetWidthHeight = async (file) => {
   console.log("start imagefilegetwidthheight function");
@@ -130,17 +118,14 @@ const uploadZaboComponent = (props) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("category", category);
+    const zaboJSON = {};
+    zaboJSON["title"] = title;
+    zaboJSON["description"] = description;
+    zaboJSON["category"] = category;
+    zaboJSON["files"] = [];
     //TODO: handle if schedule exists
     // formData.append("schedule", schedule);
 
-    //console log formdata
-    for (var key of formData.entries()) {
-      console.log(key[0] + ', ' + key[1]);
-    }
 
     //resize images
     const sortedImageFiles = await zaboList.slice()
@@ -157,14 +142,10 @@ const uploadZaboComponent = (props) => {
     const sources = await Promise.all(sortedImageFiles.map((file) => cropImage(file, ratio)));
     sources.forEach((imgSrc) => {
       const blob = dataURLToBlob(imgSrc);
-      formData.append("img", blob);
-    })
-
-    //console log formdata
-    for (var key of formData.entries()) {
-      console.log(key[0] + ', ' + key[1]);
-    }
-    await uploadZabo(formData);
+      zaboJSON["files"].push(blob);
+    });
+    console.log(zaboList);
+    await uploadZabo(zaboJSON);
     return
   }
   
@@ -186,6 +167,10 @@ const uploadZaboComponent = (props) => {
       <br/>
       <br/>
       <Button size="icon" rounded="True" onClick={handleZaboUpload}>Submit</Button>
+      <br/>
+      <br/>
+      <br/>
+      <img id='testing'></img>
     </div>
   ) 
 };
