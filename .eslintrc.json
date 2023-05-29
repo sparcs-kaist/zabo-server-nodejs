@@ -22,6 +22,9 @@
     ],
     "no-await-in-loop": "warn"
   },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
   "env": {
     "browser": false,
     "node": true

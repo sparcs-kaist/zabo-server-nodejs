@@ -48,7 +48,10 @@ app.get("/api/hc", (req, res) => {
 app.use("/api", routes);
 
 app.use(adminRouterPath, isAdmin, adminRouter);
-console.log(`AdminJS started on http://localhost:${process.env.PORT || '6001'}${adminRouterPath}`);
+logger.event.info(
+  `AdminJS started on http://localhost:${process.env.PORT ||
+    "6001"}${adminRouterPath}`,
+);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -60,7 +63,7 @@ app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
-  logger.api.error(err); // TODO: Log params and body?
+  logger.api.error(err?.message || err); // TODO: Log params and body?
   res.status(err.status || 500);
   res.json({
     error: err,
