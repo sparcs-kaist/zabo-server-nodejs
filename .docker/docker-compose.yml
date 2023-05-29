@@ -4,7 +4,9 @@ services:
   server:
     container_name: zabo-server
     restart: always
-    build: .
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile
     ports:
       - "${SERVER_PORT}:6001"
     depends_on:
