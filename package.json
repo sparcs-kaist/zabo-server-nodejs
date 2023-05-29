@@ -10,6 +10,8 @@
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
     "dev:db": "yarn docker:dev up -d",
+    "dev:db:down": "yarn docker:dev down",
+    "dev:db:attach": "docker exec -it zabo-mongo-dev /bin/bash",
     "docker:dev": "docker-compose -f .docker/docker-compose.dev.yml --env-file=.docker/.env.development",
     "prod": "yarn env:prod nodemon index",
     "seed": "node tools/seed"
