@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "env:dev": "cross-env NODE_ENV=development",
+    "env:dev": "cross-env NODE_ENV=development NODE_OPTIONS=--max-old-space-size=4096",
     "env:prod": "cross-env NODE_ENV=production",
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
