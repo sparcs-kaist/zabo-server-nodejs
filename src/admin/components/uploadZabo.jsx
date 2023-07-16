@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import { H3, Input, Button } from '@adminjs/design-system';
-import uploadZabo from '../api/uploadZabo';
+import axios from 'axios';
 
 const gridLayoutCompareFunction = (a, b) => {
   const { x: ax, y: ay } = a.updatedLayout;
@@ -69,6 +69,8 @@ const imageFileGetWidthHeight = async (file) => {
 
 //admin user가 외부 단체의 자보를 올려줄 때 사용하는 액션
 const uploadZaboComponent = (props) => {
+  console.log("printing props");
+  console.log(props);
   const [zaboList, setZaboList] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -113,6 +115,18 @@ const uploadZaboComponent = (props) => {
 
 
   const handleZaboUpload = async () => {
+
+    //identify itself 
+    const adminInfo = await axios.get("http://localhost:3000/api/admin");
+    const isAdmin = adminInfo.data.success;
+    const adminName = adminInfo.data.adminName;
+    
+    if(!isAdmin) {
+      //not admin 
+      console.log("Not admin");
+      return;
+    }
+
     if(!zaboList) {
       //TODO: show error message that there is no file to upload 
       return;
@@ -145,7 +159,11 @@ const uploadZaboComponent = (props) => {
       zaboJSON["files"].push(blob);
     });
     console.log(zaboList);
-    await uploadZabo(zaboJSON);
+    //await uploadZabo(zaboJSON);
+    console.log("uploading zabo");
+    await axios.post('http://localhost:3000/admin/api/resources/Zabo/actions/uploadZabo', zaboJSON);
+    console.log("upload finish!");
+
     return
   }
   
