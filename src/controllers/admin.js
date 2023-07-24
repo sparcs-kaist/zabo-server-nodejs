@@ -3,7 +3,23 @@ import { Board, Group, GroupApply, User, Zabo } from "../db";
 import { logger } from "../utils/logger";
 import { isNameInvalidWithRes, jwtSign, parseJSON } from "../utils";
 import { sendApplyDoneMessage } from "../utils/slack";
+import { sizeS3Item } from "../utils/aws";
 // import { nameUsabilityCheck, validateName } from "../utils";
+
+// check if user is admin
+export const checkAdmin = ash(async (req, res, next) => {
+  if (req.session.isAdmin) {
+    res.json({
+      success: true,
+      adminName: req.adminUser.user.username,
+    });
+  } else {
+    res.json({
+      success: false,
+      adminName: null,
+    });
+  }
+});
 
 // export const checkAdmin = ash(async (req, res) => {
 //   const { adminUser } = req;
@@ -82,80 +98,85 @@ import { sendApplyDoneMessage } from "../utils/slack";
 //   });
 // });
 
-// export const postNewZabo = ash(async (req, res) => {
-//   const self = req.adminUser;
-//   const { title, description, schedules: jsonSchedules } = req.body;
-//   const schedules = parseJSON(jsonSchedules, []);
-//   let { category } = req.body;
-//   logger.zabo.info(
-//     "post /zabo/ request; by: %s, title: %s, description: %s, category: %s, schedules: %s, files info: %s",
-//     self.username,
-//     title,
-//     description,
-//     category,
-//     schedules,
-//     req.files,
-//   );
-//   category = (category || "")
-//     .toLowerCase()
-//     .split("#")
-//     .filter(x => !!x);
-//   if (!req.files || !title || !description) {
-//     logger.zabo.error("post /zabo/ request error; 400");
-//     return res.status(400).json({
-//       error: "bad request",
-//     });
-//   }
-//   if (!self.currentGroup) {
-//     return res.status(403).json({
-//       error: "Requested User Is Not Currently Belonging to Any Group",
-//     });
-//   }
+export const postNewZabo = ash(async (req, res) => {
+  const self = req.adminUser.user;
+  console.log(`self is ${self}`);
+  console.log(`req.body is`);
+  console.log(req.body);
 
-//   const newZabo = new Zabo({
-//     owner: self.currentGroup,
-//     createdBy: self._id,
-//     title,
-//     description,
-//     category,
-//     schedules,
-//   });
+  const { title, description, schedules: jsonSchedules } = req.body;
+  const schedules = parseJSON(jsonSchedules, []);
+  let { category } = req.body;
+  logger.zabo.info(
+    "post /zabo/ request; by: %s, title: %s, description: %s, category: %s, schedules: %s, files info: %s",
+    self.username,
+    title,
+    description,
+    category,
+    schedules,
+    req.files,
+  );
+  category = (category || "")
+    .toLowerCase()
+    .split("#")
+    .filter(x => !!x);
+  if (!req.files || !title || !description) {
+    logger.zabo.error("post /zabo/ request error; 400");
+    return res.status(400).json({
+      error: "bad request",
+    });
+  }
+  if (!self.currentGroup) {
+    return res.status(403).json({
+      error: "Requested User Is Not Currently Belonging to Any Group",
+    });
+  }
 
-//   const calSizes = [];
+  const newZabo = new Zabo({
+    owner: self.currentGroup,
+    createdBy: self._id,
+    title,
+    description,
+    category,
+    schedules,
+  });
 
-//   for (let i = 0; i < req.files.length; i += 1) {
-//     const s3ImageKey = req.files[i].key;
-//     calSizes.push(sizeS3Item(s3ImageKey));
-//   }
+  const calSizes = [];
 
-//   const results = await Promise.all(calSizes);
-//   const photos = results.map(([dimensions, bytesRead], index) => ({
-//     url: req.files[index].location,
-//     width: dimensions.width,
-//     height: dimensions.height,
-//   }));
-//   newZabo.photos = newZabo.photos.concat(photos);
-//   await Promise.all([
-//     newZabo.save(),
-//     Group.findByIdAndUpdate(self.currentGroup, {
-//       $set: { recentUpload: new Date() },
-//     }),
-//   ]);
-//   await newZabo
-//     .populate("owner", "name profilePhoto subtitle description")
-//     .execPopulate();
-//   const zaboJSON = newZabo.toJSON();
-//   zaboJSON.isLiked = false;
-//   zaboJSON.isPinned = false;
+  for (let i = 0; i < req.files.length; i += 1) {
+    const s3ImageKey = req.files[i].key;
+    calSizes.push(sizeS3Item(s3ImageKey));
+  }
 
-//   return res.send(zaboJSON);
-// })
+  const results = await Promise.all(calSizes);
+  const photos = results.map(([dimensions, bytesRead], index) => ({
+    url: req.files[index].location,
+    width: dimensions.width,
+    height: dimensions.height,
+  }));
+  newZabo.photos = newZabo.photos.concat(photos);
+  await Promise.all([
+    newZabo.save(),
+    Group.findByIdAndUpdate(self.currentGroup, {
+      $set: { recentUpload: new Date() },
+    }),
+  ]);
+  await newZabo
+    .populate("owner", "name profilePhoto subtitle description")
+    .execPopulate();
+  const zaboJSON = newZabo.toJSON();
+  zaboJSON.isLiked = false;
+  zaboJSON.isPinned = false;
+
+  return res.send(zaboJSON);
+});
 
 export const listGroupApplies = ash(async (req, res) => {
   const applies = await GroupApply.find().populate("members.user");
   return res.json(applies);
 });
 
+// put /admin/group
 export const acceptGroupApply = ash(async (req, res) => {
   const { adminUser } = req;
   const { name } = req.body;
