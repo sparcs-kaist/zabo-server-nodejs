@@ -1,7 +1,6 @@
 import { GroupApply } from "../../db";
 import { logger } from "../../utils/logger";
 import { sendRejectDoneMessage } from "../../utils/slack";
-import rejectGroup from "../api/rejectGroup";
 
 export const rejectGroupAction = {
   actionType: "record",
@@ -19,4 +18,26 @@ export const rejectGroupAction = {
       msg: "Rejecting Group: Success",
     };
   },
+};
+
+const rejectGroup = async (currAdmin, groupName) => {
+  const adminName = currAdmin.user.username;
+  logger.admin.info(
+    "Reject Group; name: %s, adminUser: %s",
+    groupName,
+    adminName,
+  );
+
+  const newGroup = await GroupApply.deleteOne({ name: groupName });
+
+  currAdmin.actionHistory.push({
+    name: "rejectGroup",
+    target: groupName,
+  });
+
+  await currAdmin.save();
+
+  sendRejectDoneMessage(groupName, currAdmin);
+
+  return;
 };
