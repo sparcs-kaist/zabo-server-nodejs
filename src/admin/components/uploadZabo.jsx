@@ -10,7 +10,6 @@ const gridLayoutCompareFunction = (a, b) => {
 };
 
 const loadImageFile = (file) => {
-  console.log("start loadimagefile function");
   const img = new Image();
   const objectUrl = URL.createObjectURL(file);
   return new Promise((res) => {
@@ -60,17 +59,13 @@ const dataURLToBlob = (dataURL) => {
 };
 
 const imageFileGetWidthHeight = async (file) => {
-  console.log("start imagefilegetwidthheight function");
   const image = await loadImageFile(file);
-  console.log("finish loadimagefile function");
   const { width, height } = image;
   return { width, height, ratio: width / height };
 };
 
 //admin user가 외부 단체의 자보를 올려줄 때 사용하는 액션
-const uploadZaboComponent = (props) => {
-  console.log("printing props");
-  console.log(props);
+const uploadZaboComponent =  (props) => {
   const [zaboList, setZaboList] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -115,28 +110,15 @@ const uploadZaboComponent = (props) => {
 
 
   const handleZaboUpload = async () => {
-
-    //identify itself 
-    const adminInfo = await axios.get("http://localhost:3000/api/admin");
-    const isAdmin = adminInfo.data.success;
-    const adminName = adminInfo.data.adminName;
-    
-    if(!isAdmin) {
-      //not admin 
-      console.log("Not admin");
-      return;
-    }
-
     if(!zaboList) {
       //TODO: show error message that there is no file to upload 
       return;
     }
 
-    const zaboJSON = {};
-    zaboJSON["title"] = title;
-    zaboJSON["description"] = description;
-    zaboJSON["category"] = category;
-    zaboJSON["files"] = [];
+    const zaboJSON = new FormData();
+    zaboJSON.append("title", title);
+    zaboJSON.append("description", description);
+    zaboJSON.append("category", category);
     //TODO: handle if schedule exists
     // formData.append("schedule", schedule);
 
@@ -145,24 +127,22 @@ const uploadZaboComponent = (props) => {
     const sortedImageFiles = await zaboList.slice()
     await sortedImageFiles.sort(gridLayoutCompareFunction);
     
-    console.log(sortedImageFiles);
-
     const {width, height} = await imageFileGetWidthHeight(sortedImageFiles[0]);
-    console.log("finish getwidthheight function");
-    console.log(`width: ${width}, height: ${height}`);
     const ratio = width / height;
     if (ratio > 2) ratio = 2;
     else if (ratio < 0.5) ratio = 0.5;
     const sources = await Promise.all(sortedImageFiles.map((file) => cropImage(file, ratio)));
     sources.forEach((imgSrc) => {
       const blob = dataURLToBlob(imgSrc);
-      zaboJSON["files"].push(blob);
+      zaboJSON.append("img", blob);
     });
-    console.log(zaboList);
-    //await uploadZabo(zaboJSON);
-    console.log("uploading zabo");
-    await axios.post('http://localhost:3000/admin/api/resources/Zabo/actions/uploadZabo', zaboJSON);
-    console.log("upload finish!");
+    await axios.post('http://localhost:3000/api/admin/zabo', 
+    zaboJSON,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+  });
 
     return
   }
