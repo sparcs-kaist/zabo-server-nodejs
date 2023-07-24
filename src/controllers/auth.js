@@ -28,6 +28,8 @@ export const authCheck = ash(async (req, res) => {
         select: "name profilePhoto followers recentUpload subtitle",
       })
       .populate("boards");
+
+    // initialize admin related session
     if (user.isAdmin) {
       req.session.isAdmin = true;
       req.session.adminId = user._id;
