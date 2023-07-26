@@ -27,6 +27,7 @@ export const authCheck = ash(async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
+  // initialize admin related session
   if (user.isAdmin) {
     req.session.isAdmin = true;
     req.session.adminId = user._id;

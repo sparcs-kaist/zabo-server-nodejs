@@ -9,29 +9,35 @@ export const rejectGroupAction = {
   handler: async (req, res, context) => {
     const { record } = context;
     const currentAdmin = req.adminUser;
-
     const groupName = record.params.name;
-    const adminName = currentAdmin.user.username;
 
-    logger.admin.info(
-      "Reject Group; name: %s, adminUser: %s",
-      groupName,
-      adminName,
-    );
-
-    const newGroup = await GroupApply.deleteOne({ name: groupName });
-
-    currentAdmin.actionHistory.push({
-      name: "rejectGroup",
-      target: groupName,
-    });
-    await currentAdmin.save();
-
-    sendRejectDoneMessage(groupName, currentAdmin);
+    await rejectGroup(currentAdmin, groupName);
 
     return {
-      record: record.toJSON(currentAdmin),
+      record: {},
       msg: "Rejecting Group: Success",
     };
   },
+};
+
+const rejectGroup = async (currAdmin, groupName) => {
+  const adminName = currAdmin.user.username;
+  logger.admin.info(
+    "Reject Group; name: %s, adminUser: %s",
+    groupName,
+    adminName,
+  );
+
+  const newGroup = await GroupApply.deleteOne({ name: groupName });
+
+  currAdmin.actionHistory.push({
+    name: "rejectGroup",
+    target: groupName,
+  });
+
+  await currAdmin.save();
+
+  sendRejectDoneMessage(groupName, currAdmin);
+
+  return;
 };

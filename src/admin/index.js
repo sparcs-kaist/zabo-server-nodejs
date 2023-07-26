@@ -1,6 +1,7 @@
 import AdminJSExpress from "@adminjs/express";
 import AdminJS from "adminjs";
 import * as AdminJSMongoose from "@adminjs/mongoose";
+import { componentLoader } from "./components";
 
 import {
   AdminUser,
@@ -35,15 +36,7 @@ const adminOptions = {
     Meta,
     ZaboResource,
   ],
-};
-
-export const adminZaboGroup = {
-  name: "관리자 그룹",
-  description: "관리자 그룹",
-  subtitle: "관리자 그룹",
-  purpose: "관리자 그룹",
-  category: "관리자그룹",
-  isBusiness: false,
+  componentLoader,
 };
 
 const admin = new AdminJS(adminOptions);

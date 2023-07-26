@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "env:dev": "cross-env NODE_ENV=development",
+    "env:dev": "cross-env NODE_ENV=development NODE_OPTIONS=--max-old-space-size=4096",
     "env:prod": "cross-env NODE_ENV=production",
     "start": "node index",
     "dev": "yarn env:dev nodemon index --watch src",
@@ -34,6 +34,7 @@
     "@adminjs/mongoose": "^3.0.3",
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
     "@babel/register": "^7.21.0",
     "adminjs": "^6.8.7",
     "aws-sdk": "^2.485.0",
@@ -95,7 +96,8 @@
             "node": "current"
           }
         }
-      ]
+      ],
+      "@babel/preset-react"
     ]
   }
 }
