@@ -1,4 +1,4 @@
-export const adminZaboGroup = {
+export const adminGroup = {
     name: "관리자 그룹",
     description: "관리자 그룹",
     subtitle: "관리자 그룹",

@@ -3,7 +3,7 @@ import { nameUsabilityCheck } from "../../utils";
 import { validateName } from "../../utils";
 import { logger } from "../../utils/logger";
 import { sendApplyDoneMessage } from "../../utils/slack";
-import { adminGroupInfo } from "..";
+import { adminGroup } from "../../../config/adminGroup";
 
 export const initAdminGroupAction = {
   actionType: "resource",
@@ -13,7 +13,7 @@ export const initAdminGroupAction = {
     console.log(currentAdmin);
 
     //TODO create admingroup config file
-    await initAdminGroup(currentAdmin, adminGroupInfo);
+    await initAdminGroup(currentAdmin, adminGroup);
 
     return {
       records: [],
