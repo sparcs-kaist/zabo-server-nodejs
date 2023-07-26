@@ -42,12 +42,3 @@ const adminOptions = {
 const admin = new AdminJS(adminOptions);
 export const adminRouter = AdminJSExpress.buildRouter(admin);
 export const adminRouterPath = admin.options.rootPath;
-
-export const adminGroupInfo = {
-  name: "관리자 그룹",
-  description: "admin group",
-  subtitle: "admin group",
-  purpose: "admin group",
-  category: "admin",
-  isBusiness: false,
-};
