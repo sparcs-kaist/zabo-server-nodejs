@@ -100,9 +100,6 @@ export const checkAdmin = ash(async (req, res, next) => {
 
 export const postNewZabo = ash(async (req, res) => {
   const self = req.adminUser.user;
-  console.log(`self is ${self}`);
-  console.log(`req.body is`);
-  console.log(req.body);
 
   const { title, description, schedules: jsonSchedules } = req.body;
   const schedules = parseJSON(jsonSchedules, []);
@@ -127,6 +124,12 @@ export const postNewZabo = ash(async (req, res) => {
     });
   }
   if (!self.currentGroup) {
+    // initZaboAdminGroup action will help resolve this error
+    logger.zabo.error(
+      "post /zabo/ request; by: %s is not in adminGroup. Please initialize invite or set current group to adminGroup. ",
+      self.username,
+    );
+
     return res.status(403).json({
       error: "Requested User Is Not Currently Belonging to Any Group",
     });
