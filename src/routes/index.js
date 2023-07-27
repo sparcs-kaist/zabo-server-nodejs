@@ -7,11 +7,11 @@ import zaboRoutes from "./zabo";
 import groupRoutes from "./group";
 import searchRoutes from "./search";
 import shareRoutes from "./share";
-import { isAdmin } from "../middlewares";
+import { isAdmin, setCurrGroup2admin } from "../middlewares";
 
 const router = express.Router();
 
-router.use("/admin", isAdmin, adminRoutes);
+router.use("/admin", isAdmin, setCurrGroup2admin, adminRoutes);
 router.use("/auth", authRoutes);
 router.use("/user", userRoutes);
 router.use("/profile", profileRoutes);
