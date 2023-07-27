@@ -136,7 +136,7 @@ const uploadZaboComponent =  (props) => {
       const blob = dataURLToBlob(imgSrc);
       zaboJSON.append("img", blob);
     });
-    await axios.post('http://localhost:3000/api/admin/zabo', 
+    await axios.post('/api/admin/zabo', 
     zaboJSON,
     {
       headers: {
