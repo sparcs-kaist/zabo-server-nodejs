@@ -3,7 +3,7 @@ import { nameUsabilityCheck } from "../../utils";
 import { validateName } from "../../utils";
 import { logger } from "../../utils/logger";
 import { sendApplyDoneMessage } from "../../utils/slack";
-import { adminGroup } from "../../../config/adminGroup";
+import { adminGroupConfig } from "../../../config/adminGroup";
 
 export const initAdminGroupAction = {
   actionType: "resource",
@@ -13,7 +13,7 @@ export const initAdminGroupAction = {
     console.log(currentAdmin);
 
     //TODO create admingroup config file
-    await initAdminGroup(currentAdmin, adminGroup);
+    await initAdminGroup(currentAdmin, adminGroupConfig);
 
     return {
       records: [],
@@ -52,9 +52,10 @@ const initAdminGroup = async (currAdmin, groupInfo) => {
       currAdmin.name,
       groupInfo.name,
     );
-    //TODO: add current admin members to existing admin group
+
     return true;
   }
+  //add all admin to admin group
   const adminUsers = await AdminUser.find({});
   const adminMembers = adminUsers.map(function(admin) {
     return {
@@ -79,8 +80,6 @@ const initAdminGroup = async (currAdmin, groupInfo) => {
     name: "init AdminGroup",
     target: created._id,
   });
-
-  currAdmin.currentGroup = created._id;
 
   await Promise.all([
     ...newGroupJSON.members.map(({ user }) =>
