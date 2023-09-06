@@ -63,6 +63,7 @@ export const isAdmin = ash(async (req, res, next) => {
   const { adminId } = req.session;
   if (!isAdmin) {
     // req.session.isAdmin is not set
+    logger.error(`isAdmin middleware; req.session.isAdmin is not set.`);
     return res.status(404).json({
       error: "admin session cookie is not set. Please log out and login again.",
     });
