@@ -62,6 +62,13 @@ export const validateZaboId = validateId("zaboId");
 export const isAdmin = ash(async (req, res, next) => {
   const { isAdmin } = req.session;
   const { adminId } = req.session;
+  if (!isAdmin) {
+    // req.session.isAdmin is not set
+    logger.error(`isAdmin middleware; req.session.isAdmin is not set.`);
+    return res.status(404).json({
+      error: "admin session cookie is not set. Please log out and login again.",
+    });
+  }
   if (isAdmin) {
     const adminUser = await AdminUser.findOne({ user: adminId }).populate(
       "user",

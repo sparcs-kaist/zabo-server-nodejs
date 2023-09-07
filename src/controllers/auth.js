@@ -26,15 +26,7 @@ export const authCheck = ash(async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
-
-  // initialize admin related session
-  if (user.isAdmin) {
-    req.session.isAdmin = true;
-    req.session.adminId = user._id;
-  } else {
-    req.session.isAdmin = false;
-    req.session.adminId = null;
-  }
+  
   const groupApplies = await GroupApply.find(
     { members: { $elemMatch: { user: user._id } } },
     {
@@ -203,6 +195,16 @@ export const loginCallback = ash(async (req, res) => {
       select: "name profilePhoto followers recentUpload subtitle",
     })
     .populate("boards");
+
+  // set req.session.isAdmin, req.session.adminId when user login
+  if (user.isAdmin) {
+    req.session.isAdmin = true;
+    req.session.adminId = user._id;
+  } else {
+    req.session.isAdmin = false;
+    req.session.adminId = null;
+  }
+
   // User wants to refresh SSO data
   if (update) {
     if (!user) {
