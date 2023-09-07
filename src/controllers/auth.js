@@ -26,7 +26,7 @@ export const authCheck = ash(async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
-
+  
   const groupApplies = await GroupApply.find(
     { members: { $elemMatch: { user: user._id } } },
     {

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { AdminUser, Group, User, Zabo } from "../db";
 import { logger } from "../utils/logger";
 import { isValidId } from "../utils";
+import { adminGroupConfig } from "../../config/adminGroup";
 
 export const authMiddleware = (req, res, next) => {
   const jwtSecret = req.app.get("jwt-secret");
@@ -79,6 +80,33 @@ export const isAdmin = ash(async (req, res, next) => {
       error: "not administrator",
     });
   }
+});
+
+export const setCurrGroup2admin = ash(async (req, res, next) => {
+  // set administrator's current group to admin
+  // need to verify if user is admin
+  // use after isAdmin middleware
+
+  const adminId = req.adminUser.user._id;
+
+  // find admin group id
+  const adminGroup = await Group.findOne({
+    name: adminGroupConfig.name,
+  });
+
+  // check if admin is in admin group
+  const member = adminGroup.members.find(m => m.user.equals(adminId));
+
+  if (!member) {
+    // administrator is not in admin group
+    return res.status(404).json({
+      error: "administrator is not in admin group",
+    });
+  }
+
+  // set adminUser's current group to admin group
+  req.adminUser.user.currentGroup = adminGroup._id;
+  next();
 });
 
 export const findSelfMiddleware = ash(async (req, res, next) => {

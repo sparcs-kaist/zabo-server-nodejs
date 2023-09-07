@@ -47,6 +47,7 @@ app.get("/api/hc", (req, res) => {
 });
 app.use("/api", routes);
 
+// redirect to adminjs page
 app.use(adminRouterPath, isAdmin, adminRouter);
 logger.event.info(
   `AdminJS started on http://localhost:${process.env.PORT ||
