@@ -17,4 +17,4 @@ services:
       - ${REDIS_PORT:-6379}:6379
 
 volumes:
-  mongo-data:
+  zabo-mongo-data:
