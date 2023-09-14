@@ -50,8 +50,8 @@ services:
       context: ..
       dockerfile: .scheduler/Dockerfile 
     environment:
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_S3_DUMP_BUCKET_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_S3_DUMP_BUCKET_SECRET_ACCESS_KEY}
       - BUCKET=${AWS_S3_DUMP_BUCKET_NAME}
       - BACKUP_FOLDER=mongodb-dump/
       - MONGODB_HOST=zabo-mongo:27017
