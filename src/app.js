@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
-    cookie: { maxAge: 60000 },
+    cookie: { maxAge: 60 * 60 * 1000 },
     store: new RedisStore({ client: redisClient }),
     resave: false,
     saveUninitialized: true,
