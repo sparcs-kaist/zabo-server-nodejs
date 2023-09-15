@@ -65,6 +65,10 @@ zaboSchema.virtual("pinsCount").get(function() {
   return this.pins ? this.pins.length : undefined;
 });
 
+zaboSchema.virtual("sharesCount").get(function() {
+  return this.shares ? this.shares : undefined;
+});
+
 zaboSchema.index(
   {
     title: "text",

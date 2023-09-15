@@ -328,3 +328,15 @@ export const likeZabo = ash(async (req, res) => {
     likesCount: zabo.likesWithTime.length,
   });
 });
+
+export const shareZabo = ash(async (req, res) => {
+  const { self, zabo, zaboId } = req;
+  logger.zabo.info(
+    `post /zabo/share request; zaboId: ${zaboId}, by: ${self.username} (${self.sso_sid})`,
+  );
+  zabo.shares += 1;
+  await zabo.save();
+  return res.send({
+    sharesCount: zabo.shares,
+  });
+});

@@ -82,6 +82,10 @@ const zaboSchemaObject = {
   ], // Pin
   likes: [zaboLikeSchema], // Currently not being used
   likesWithTime: [zaboLikeSchema],
+  shares: {
+    type: Number,
+    default: 0,
+  },
   score: {
     type: Number,
     default: 0,
