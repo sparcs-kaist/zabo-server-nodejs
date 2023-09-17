@@ -28,5 +28,5 @@ jobs:
           script_stop: true # stop script if any command has failed
           script: |
             cd ${{ secrets.PROD_WORKING_DIRECTORY }}
-            yarn docker:prod pull
-            yarn docker:prod up --force-recreate --build -d
+            docker compose -f .docker/docker-compose.yml -p zabo --env-file=.docker/.env.prod pull
+            docker compose -f .docker/docker-compose.yml -p zabo --env-file=.docker/.env.prod up --force-recreate --build -d
