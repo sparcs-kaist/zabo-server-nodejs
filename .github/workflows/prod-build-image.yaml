@@ -28,6 +28,7 @@ jobs:
         env:
           IMAGE_TAG: ${{github.ref_name}}
         with:
+          file: ./.docker/Dockerfile
           push: true
           tags: |
             "ghcr.io/sparcs-kaist/zabo-server:${{ env.IMAGE_TAG }}"

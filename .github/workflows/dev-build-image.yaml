@@ -26,6 +26,7 @@ jobs:
         env:
           IMAGE_TAG: dev
         with:
+          file: ./.docker/Dockerfile
           push: true
           tags: "ghcr.io/sparcs-kaist/zabo-server:${{ env.IMAGE_TAG }}"
           cache-from: type=local,src=/tmp/.buildx-cache
