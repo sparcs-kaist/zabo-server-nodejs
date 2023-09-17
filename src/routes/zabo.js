@@ -34,14 +34,6 @@ const isZaboOwner = [
   isZaboOwnerMiddleware,
 ];
 
-router.post(
-  "/",
-  authMiddleware,
-  findSelfMiddleware,
-  zaboUpload.array("img", 20),
-  zc.postNewZabo,
-);
-router.get("/:zaboId", validateZaboId, tryFindSelf, zc.getZabo);
 router.get(
   "/list",
   tryFindSelf,
@@ -51,10 +43,18 @@ router.get(
 );
 router.get("/list/hot", zc.listHotZabos);
 router.get("/list/deadline", zc.listMagamImbakList);
-router.patch("/:zaboId", isZaboOwner, zc.editZabo);
 router.post("/:zaboId/pin", findZaboWithAuth, zc.pinZabo);
 router.post("/:zaboId/like", findZaboWithAuth, zc.likeZabo);
 router.post("/:zaboId/share", findZaboWithAuth, zc.shareZabo);
+router.get("/:zaboId", validateZaboId, tryFindSelf, zc.getZabo);
+router.patch("/:zaboId", isZaboOwner, zc.editZabo);
 router.delete("/:zaboId", isZaboOwner, zc.deleteZabo);
+router.post(
+  "/",
+  authMiddleware,
+  findSelfMiddleware,
+  zaboUpload.array("img", 20),
+  zc.postNewZabo,
+);
 
 module.exports = router;
