@@ -1,28 +1,24 @@
-import axios from 'axios';
-import { User } from '../db';
+import axios from "axios";
+import { User } from "../db";
 
 const WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 
-export const sendMessage = async (message) => {
+export const sendMessage = async message => {
   if (!WEBHOOK_URL) return;
-  return axios.post (WEBHOOK_URL, { text: message });
+  return axios.post(WEBHOOK_URL, { text: message });
 };
 
-const devLog = (process.env.NODE_ENV !== 'production') ? `
+const devLog =
+  process.env.NODE_ENV !== "production"
+    ? `
     [DEV]
-  ` : '';
+  `
+    : "";
 
 export const sendNewApplyMessage = async (group, user) => {
-  const {
-    name,
-    description,
-    subtitle,
-    purpose,
-    category,
-    isBusiness,
-  } = group;
+  const { name, description, subtitle, purpose, category, isBusiness } = group;
 
-  return sendMessage (`${devLog}
+  return sendMessage(`${devLog}
     ##새로운 그룹 신청이 있습니다.##
     <http://zabo.sparcs.org/admin/group/${name}|*link*> @channel
     *이름* : ${name}
@@ -39,9 +35,17 @@ export const sendNewApplyMessage = async (group, user) => {
 };
 
 export const sendApplyDoneMessage = async (groupName, adminUser) => {
-  const user = await User.findById (adminUser.user);
-  return sendMessage (`${devLog}
+  const user = await User.findById(adminUser.user);
+  return sendMessage(`${devLog}
     *${groupName}* 그룹 승인 완료
+    - by ${user.username}
+  `);
+};
+
+export const sendRejectDoneMessage = async (groupName, adminUser) => {
+  const user = await User.findById(adminUser.user);
+  return sendMessage(`${devLog}
+    *${groupName}* 그룹 거절 완료
     - by ${user.username}
   `);
 };

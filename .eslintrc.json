@@ -1,0 +1,32 @@
+{
+  "extends": [
+    "airbnb-base",
+    "prettier"
+  ],
+  "rules": {
+    "import/no-unresolved": 0,
+    "import/prefer-default-export": 0,
+    "import/no-import-module-exports": 0,
+    "no-nested-ternary": "off",
+    "no-unused-vars": "warn",
+    "no-unused-expressions": "warn",
+    "no-spaced-func": "off",
+    "no-underscore-dangle": "off",
+    "no-shadow": "warn",
+    "prefer-const": "warn",
+    "consistent-return": [
+      "warn",
+      {
+        "treatUndefinedAsUnspecified": true
+      }
+    ],
+    "no-await-in-loop": "warn"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "env": {
+    "browser": false,
+    "node": true
+  }
+}

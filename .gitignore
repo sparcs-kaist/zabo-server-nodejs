@@ -14,12 +14,14 @@ yarn-error.log*
 
 *.log
 
-.env*
-!.env.example
+**/.env*
+!**/.env.example
+!**/.env.*.example
 
 # Generated files
 /tmp
 /config/sids.json
+.adminjs
 
 # Deployment files
 process.json

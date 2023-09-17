@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:image" content="{{img}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:site_name" content="Zabo - 자보">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:image:width" content="{{imgWidth}}">
+  <meta property="og:image:height" content="{{imgHeight}}">
+</head>
+<body>
+자보 페이지로 리디렉션 중입니다.
+자동으로 리디렉트되지 않으면 <a href="/zabo/{{id}}">여기를 클릭하세요</a>.
+<script>
+  window.location.replace ("/zabo/{{id}}");
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
-import { Statistic } from '../db';
-import { EVENTS_MAP } from './variables';
+import { Statistic } from "../db";
+import { EVENTS_MAP } from "./variables";
 
 export const statZabo = async ({ zaboId, decoded }) => {
   if (!decoded) return null;
@@ -8,7 +8,7 @@ export const statZabo = async ({ zaboId, decoded }) => {
     zabo: zaboId,
     user: decoded._id || decoded.id,
   };
-  return Statistic.create (data);
+  return Statistic.create(data);
 };
 
 export const statSearch = async ({ query, category, decoded }) => {
@@ -20,5 +20,5 @@ export const statSearch = async ({ query, category, decoded }) => {
   if (decoded) {
     data.user = decoded._id || decoded.id;
   }
-  return Statistic.create (data);
+  return Statistic.create(data);
 };

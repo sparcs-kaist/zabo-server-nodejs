@@ -1,69 +1,72 @@
-import jwt from 'jsonwebtoken';
-import ash from 'express-async-handler';
+import jwt from "jsonwebtoken";
+import ash from "express-async-handler";
+import { promisify } from "util";
 
-import {
-  Board, User, Group, GroupApply,
-} from '../db';
+import { Board, User, Group, GroupApply } from "../db";
 
 /* eslint camelcase:0 */
-import SSOClient from '../utils/sso';
-import { jwtSign, parseJSON } from '../utils';
-import { logger } from '../utils/logger';
-import { checkPreAndRegister } from '../utils/preRegister';
+import SSOClient from "../utils/sso";
+import { jwtSign, parseJSON } from "../utils";
+import { logger } from "../utils/logger";
+import { checkPreAndRegister } from "../utils/preRegister";
 
-export const authCheck = ash (async (req, res) => {
-  const jwtSecret = req.app.get ('jwt-secret');
-  const token = (req.headers.authorization || '').substring (7);
-  jwt.verify (token, jwtSecret, async (error, decoded) => {
-    if (error) {
-      console.error (error.message, error.lineNumber);
-      res.status (403).json ({
-        error: error.message,
-      });
-      return;
-    }
-    req.decoded = decoded;
-    const { sid } = decoded;
-    const user = await User.findOne ({ sso_sid: sid })
-      .populate ({
-        path: 'groups',
-        select: 'name profilePhoto followers recentUpload subtitle',
-      })
-      .populate ('boards');
-    const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } }, { name: 1, profilePhoto: 1, subtitle: 1 });
-    const userJSON = user.toJSON ();
-    userJSON.pendingGroups = groupApplies;
-    res.json (userJSON);
-  });
+export const authCheck = ash(async (req, res) => {
+  const jwtSecret = req.app.get("jwt-secret");
+  const token = (req.headers.authorization || "").substring(7);
+
+  const { sid } = await promisify(jwt.verify)(token, jwtSecret);
+
+  const user = await User.findOne({ sso_sid: sid })
+    .populate({
+      path: "groups",
+      select: "name profilePhoto followers recentUpload subtitle",
+    })
+    .populate("boards");
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const groupApplies = await GroupApply.find(
+    { members: { $elemMatch: { user: user._id } } },
+    {
+      name: 1,
+      profilePhoto: 1,
+      subtitle: 1,
+    },
+  );
+  const userJSON = user.toJSON();
+  userJSON.pendingGroups = groupApplies;
+  return res.json(userJSON);
 });
 
-export const login = ash ((req, res) => {
-  const { url, state } = SSOClient.getLoginParams ();
-  logger.api.info ('get /auth/login request; url: %s, state: %s', url, state);
+export const login = ash((req, res) => {
+  const { url, state } = SSOClient.getLoginParams();
+  logger.api.info("get /auth/login request; url: %s, state: %s", url, state);
   req.session.state = state;
-  res.redirect (url);
+  res.redirect(url);
 });
 
-export const loginApi = ash ((req, res) => {
-  const { url, state } = SSOClient.getLoginParams ();
-  logger.api.info ('get /auth/login request; url: %s, state: %s', url, state);
+export const loginApi = ash((req, res) => {
+  const { url, state } = SSOClient.getLoginParams();
+  logger.api.info("get /auth/login request; url: %s, state: %s", url, state);
   req.session.state = state;
-  return res.json ({ url });
+  return res.json({ url });
 });
 
 // TODO: Performance issue. Any better idea?
-const generateUsernameWithPostfix = async (username) => {
+const generateUsernameWithPostfix = async username => {
   let maxNum = 90;
   let bias = 10;
   let trialLeft = 50;
   let dup;
-  let testUsername = `${username}${Math.floor (Math.random () * maxNum) + bias}`;
+  let testUsername = `${username}${Math.floor(Math.random() * maxNum) + bias}`;
   do {
-    dup = await User.findOne ({ username: testUsername });
-    if (!dup) dup = await Group.findOne ({ name: testUsername });
+    dup = await User.findOne({ username: testUsername });
+    if (!dup) dup = await Group.findOne({ name: testUsername });
     if (dup) {
       trialLeft -= 1;
-      const postFix = Math.floor (Math.random () * maxNum) + bias;
+      const postFix = Math.floor(Math.random() * maxNum) + bias;
       testUsername = `${username}${postFix}`;
       if (trialLeft <= 0) {
         trialLeft = bias * 5;
@@ -100,7 +103,7 @@ const updateOrCreateUserData = async (userData, create) => {
     mail: kaist_email,
     ku_psft_user_status_kor,
     ku_kname,
-  } = (parseJSON (kaist_info) || {});
+  } = parseJSON(kaist_info) || {};
 
   const setParams = {
     $set: {
@@ -126,13 +129,18 @@ const updateOrCreateUserData = async (userData, create) => {
   };
   if (create) {
     let username = ku_kname || `${first_name}${last_name}`;
-    if (!username) username = 'noname';
-    username = await generateUsernameWithPostfix (username);
+    if (!username) username = "noname";
+    username = await generateUsernameWithPostfix(username);
 
-    logger.event.info ('===== New User Has Registered | %s - %s %s ===', ku_std_no, `${first_name} ${last_name}`, username);
-    const board = await Board.create ({ title: '저장한 포스터' });
+    logger.event.info(
+      "===== New User Has Registered | %s - %s %s ===",
+      ku_std_no,
+      `${first_name} ${last_name}`,
+      username,
+    );
+    const board = await Board.create({ title: "저장한 포스터" });
     const boards = [board._id];
-    Object.assign (setParams, {
+    Object.assign(setParams, {
       $set: {
         ...setParams.$set,
         boards,
@@ -141,68 +149,90 @@ const updateOrCreateUserData = async (userData, create) => {
     });
   }
 
-  let newUser = await User.findOneAndUpdate ({ sso_sid: sid }, setParams, {
+  let newUser = await User.findOneAndUpdate({ sso_sid: sid }, setParams, {
     upsert: true,
     new: true,
     setDefaultsOnInsert: true,
   })
-    .populate ({
-      path: 'groups',
-      select: 'name profilePhoto followers recentUpload subtitle',
+    .populate({
+      path: "groups",
+      select: "name profilePhoto followers recentUpload subtitle",
     })
-    .populate ('boards');
+    .populate("boards");
 
   if (create) {
-    const preRegisteredUser = await checkPreAndRegister (newUser);
+    const preRegisteredUser = await checkPreAndRegister(newUser);
     newUser = preRegisteredUser || newUser;
   }
 
   return newUser;
 };
 
-const register = async (userData) => updateOrCreateUserData (userData, true);
+const register = async userData => updateOrCreateUserData(userData, true);
 
-export const loginCallback = ash (async (req, res) => {
+export const loginCallback = ash(async (req, res) => {
   const stateBefore = req.session.state;
   const { state, code, update } = req.body;
-  logger.api.info ('get /auth/callback request; state: %s, code: %s, update: %s', state, code, update);
-  const jwtSecret = req.app.get ('jwt-secret');
+  logger.api.info(
+    "get /auth/callback request; state: %s, code: %s, update: %s",
+    state,
+    code,
+    update,
+  );
+  const jwtSecret = req.app.get("jwt-secret");
 
   if (stateBefore !== state) {
-    res.status (401).json ({
-      error: 'TOKEN MISMATCH: session might be hijacked!',
+    res.status(401).json({
+      error: "TOKEN MISMATCH: session might be hijacked!",
       status: 401,
     });
     return;
   }
-  const userData = await SSOClient.getUserInfo (code);
-  let user = await User.findOne ({ sso_sid: userData.sid })
-    .populate ({
-      path: 'groups',
-      select: 'name profilePhoto followers recentUpload subtitle',
+  const userData = await SSOClient.getUserInfo(code);
+  let user = await User.findOne({ sso_sid: userData.sid })
+    .populate({
+      path: "groups",
+      select: "name profilePhoto followers recentUpload subtitle",
     })
-    .populate ('boards');
+    .populate("boards");
+
   // User wants to refresh SSO data
   if (update) {
     if (!user) {
-      res.status (401).json ({
-        error: 'Please register first.',
+      res.status(401).json({
+        error: "Please register first.",
         status: 401,
       });
       return;
     }
-    user = await updateOrCreateUserData (userData, false);
+    user = await updateOrCreateUserData(userData, false);
   }
   if (!user) {
-    user = await register (userData);
+    user = await register(userData);
   }
 
-  const groupApplies = await GroupApply.find ({ members: { $elemMatch: { user: user._id } } }, { name: 1, profilePhoto: 1, subtitle: 1 });
-  const userJSON = user.toJSON ();
+  // set req.session.isAdmin, req.session.adminId when user login
+  if (user.isAdmin) {
+    req.session.isAdmin = true;
+    req.session.adminId = user._id;
+  } else {
+    req.session.isAdmin = false;
+    req.session.adminId = null;
+  }
+
+  const groupApplies = await GroupApply.find(
+    { members: { $elemMatch: { user: user._id } } },
+    {
+      name: 1,
+      profilePhoto: 1,
+      subtitle: 1,
+    },
+  );
+  const userJSON = user.toJSON();
   userJSON.pendingGroups = groupApplies;
 
-  const token = jwtSign (user, jwtSecret);
-  res.json ({
+  const token = jwtSign(user, jwtSecret);
+  res.json({
     token,
     user: userJSON,
   });
@@ -211,18 +241,18 @@ export const loginCallback = ash (async (req, res) => {
 export const logout = (req, res) => {
   const { sid } = req.session;
   const { token } = req.session;
-  const jwtSecret = req.app.get ('jwt-secret');
+  const jwtSecret = req.app.get("jwt-secret");
 
-  jwt.verify (token, jwtSecret, (err, decoded) => {
+  jwt.verify(token, jwtSecret, (err, decoded) => {
     if (err) {
-      return console.error (err);
+      return console.error(err);
     }
   }); // TODO : FIX
   // const redirectUrl = encodeURIComponent('http://ssal.sparcs.org:10001/after/logout')
-  const logoutUrl = SSOClient.getLogoutUrl (sid);
-  res.redirect (logoutUrl);
+  const logoutUrl = SSOClient.getLogoutUrl(sid);
+  res.redirect(logoutUrl);
 };
 
 export const unregister = (req, res) => {
-  res.json ();
+  res.json();
 };
