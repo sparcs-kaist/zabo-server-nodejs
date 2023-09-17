@@ -4,7 +4,7 @@ services:
   zabo-server:
     container_name: zabo-server
     restart: always
-    image: ghcr.io/sparcs-kaist/zabo-server:latest
+    image: ghcr.io/sparcs-kaist/zabo-server:dev
     ports:
       - "${SERVER_PORT}:6001"
     depends_on:

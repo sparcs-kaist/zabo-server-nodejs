@@ -13,7 +13,8 @@
     "dev:db:down": "yarn docker:dev down",
     "dev:db:attach": "docker exec -it zabo-mongo-dev /bin/bash",
     "docker:dev": "docker compose -f .docker/docker-compose.dev.yml -p zabo-dev --env-file=.docker/.env.development",
-    "docker:prod": "docker compose -f .docker/docker-compose.yml -p zabo --env-file=.docker/.env.prod up",
+    "docker:stage": "docker compose -f .docker/docker-compose.stage.yml -p zabo --env-file=.docker/.env.prod",
+    "docker:prod": "docker compose -f .docker/docker-compose.yml -p zabo --env-file=.docker/.env.prod",
     "prod": "yarn env:prod nodemon index",
     "seed": "node tools/seed"
   },
