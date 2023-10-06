@@ -63,7 +63,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - MINIMUM_LOG_LEVEL=info
-      - MONGODB_HOST=zabo-mongo:27017
+      - MONGODB_URL=mongodb://zabo-mongo:27017/zabo
       - DB_STR=zabo
     volumes:
       - zabo-worker-log:/backup_log:rw
