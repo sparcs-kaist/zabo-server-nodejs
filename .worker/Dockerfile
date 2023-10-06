@@ -11,4 +11,4 @@ RUN yarn
 
 COPY . .
 
-CMD ["node", "src/bin/worker.js"]
+CMD ["node", "worker.js"]
