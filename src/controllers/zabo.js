@@ -182,16 +182,18 @@ export const deleteZabo = ash(async (req, res) => {
   return res.send(true);
 });
 
-const queryZabos = async (req, queryOptions) => {
+const queryZabos = async (req, queryOptions, sortBy = "createdAt") => {
+  const sortOption = {};
+  sortOption[sortBy] = -1;
   const zabos = await Zabo.find(queryOptions)
-    .sort({ score: -1 })
+    .sort(sortOption)
     .limit(20)
     .populate("owner", "name profilePhoto subtitle description");
   return populateZabosPrivateStats(zabos, req.self);
 };
 
 export const listHotZabos = ash(async (req, res) => {
-  const zabos = await queryZabos(req, {}); // TODO: Store likes count with pre
+  const zabos = await queryZabos(req, {}, "score"); // TODO: Store likes count with pre
   // save
   // or some other hooks
   const results = [];
