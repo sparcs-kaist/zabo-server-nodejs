@@ -12,6 +12,7 @@ import {
   Statistic,
   PreRegister,
   Meta,
+  Device,
 } from "../db";
 
 import { GroupResource } from "./resources/Group";
@@ -34,6 +35,7 @@ const adminOptions = {
     Statistic,
     PreRegister,
     Meta,
+    Device,
     ZaboResource,
   ],
   componentLoader,
