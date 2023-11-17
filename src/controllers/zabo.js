@@ -3,7 +3,7 @@ import moment from "moment";
 import { logger } from "../utils/logger";
 import { sizeS3Item } from "../utils/aws";
 import { statZabo } from "../utils/statistic";
-import { User, Zabo, Group, Board, DeletedZabo } from "../db";
+import { User, Zabo, Group, Board, DeletedZabo, Device } from "../db";
 import { isValidId, parseJSON } from "../utils";
 import {
   populateZaboPrivateStats,
@@ -255,6 +255,35 @@ export const listNextZabos = ash(async (req, res) => {
   let queryOptions = {};
   if (relatedTo) {
     const zabo = await Zabo.findById(relatedTo);
+    if (!zabo) {
+      logger.zabo.error(
+        "get /zabo/list request error; 404 - related zabo does not exist",
+      );
+      return res.status(404).json({
+        error: "related zabo does not exist",
+      });
+    }
+    queryOptions = {
+      category: { $in: zabo.category },
+      _id: { $ne: relatedTo },
+    };
+  }
+  if (lastSeen) {
+    const lastSeenZabo = await Zabo.findById(lastSeen, "score");
+    queryOptions.score = {
+      $lt: lastSeenZabo.score,
+    };
+  }
+  const result = await queryZabos(req, queryOptions);
+  return res.send(result);
+});
+
+export const listZabosForBoard = ash(async (req, res) => {
+  const { lastSeen, relatedTo } = req.query;
+  let queryOptions = {};
+  if (relatedTo) {
+    const zabo = await Zabo.findById(relatedTo);
+    // const device = await Device.findById()
     if (!zabo) {
       logger.zabo.error(
         "get /zabo/list request error; 404 - related zabo does not exist",

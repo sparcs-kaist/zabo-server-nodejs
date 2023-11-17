@@ -8,10 +8,14 @@ import {
   tryFindSelf,
   validateId,
   validateZaboId,
+  validateDeviceId,
+  findDeviceMiddleware,
 } from "../middlewares";
 import { zaboUpload } from "../utils/aws";
 
 import * as zc from "../controllers/zabo";
+
+import { Device } from "../db";
 
 const router = express.Router();
 
@@ -43,6 +47,29 @@ router.get(
 );
 router.get("/list/hot", zc.listHotZabos);
 router.get("/list/deadline", zc.listMagamImbakList);
+router.get(
+  "/board",
+  validateDeviceId,
+  findDeviceMiddleware,
+  zc.listZabosForBoard,
+);
+
+router.get("/deviceId", async (req, res) => {
+  const { deviceId } = req.query;
+  if (deviceId) {
+    const device = await Device.findOne({ deviceId });
+
+    if (device) {
+      req.session.deviceId = deviceId;
+      res.json({ message: "Device ID is set" });
+    } else {
+      res.status(400).json({ error: "Invalid Device ID" });
+    }
+  } else {
+    res.status(400).json({ error: "Device ID is required" });
+  }
+});
+
 router.post("/:zaboId/pin", findZaboWithAuth, zc.pinZabo);
 router.post("/:zaboId/like", findZaboWithAuth, zc.likeZabo);
 router.post("/:zaboId/share", findZaboWithAuth, zc.shareZabo);
