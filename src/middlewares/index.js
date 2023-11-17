@@ -59,6 +59,31 @@ export const validateId = key => (req, res, next) => {
 };
 export const validateZaboId = validateId("zaboId");
 
+export const validateDeviceId = validateId("deviceId");
+
+export const findDeviceMiddleware = ash(async (req, res, next) => {
+  const { deviceId } = req;
+  if (!deviceId) {
+    logger.api.error(
+      `[${req.method}] ${req.originalUrl} request error; 400 - empty device id`,
+    );
+    return res.status(400).json({
+      error: "bad request: device id required",
+    });
+  }
+  const device = await Device.findById(deviceId);
+  if (!device) {
+    logger.api.error(
+      `[${req.method}] ${req.originalUrl}  request error; 404 - device id : ${deviceId}`,
+    );
+    return res.status(404).json({
+      error: "device not found",
+    });
+  }
+  req.device = device;
+  return next();
+});
+
 export const isAdmin = ash(async (req, res, next) => {
   const { isAdmin } = req.session;
   const { adminId } = req.session;

@@ -444,3 +444,7 @@ export const preRegisterSchema = new mongoose.Schema({
     default: false,
   },
 });
+
+export const deviceSchema = new mongoose.Schema({
+  location: String,
+});
