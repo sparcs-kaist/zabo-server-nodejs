@@ -9,4 +9,3 @@ data:
   S3_BUCKET: "sparcs-kaist-zabo-prod"
   MONGODB_URL: "mongodb-tset-mongodb-sharded"
   REDIS_URL: "zabo-redis-service"
-
