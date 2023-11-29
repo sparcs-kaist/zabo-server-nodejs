@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: zabo-server
+  labels:
+    app: zabo-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zabo-server
+  template:
+    metadata:
+      labels:
+        app: zabo-server
+    spec:
+      containers:
+        - name: zabo-server
+          image: ghcr.io/sparcs-kaist/zabo-server:dev
+          envFrom:
+          - secretRef:
+              name: zabo-secret
+          env:
+          - name: NODE_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: zabo-env
+                key: NODE_ENV
+          - name: MINIMUM_LOG_LEVEL
+            value: "info"
+          - name: SSO_CLIENT_ID
+            valueFrom:
+              configMapKeyRef:
+                name: zabo-env
+                key: SSO_CLIENT_ID
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              configMapKeyRef:
+                name: zabo-env
+                key: AWS_ACCESS_KEY_ID
+          - name: S3_BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: zabo-env
+                key: S3_BUCKET
+          - name: MONGODB_URL
+            valueFrom:
+              configMapKeyRef:
+                name: zabo-env
+                key: MONGODB_URL
+          - name: REDIS_URL
+            valueFrom:
+              configMapKeyRef:
+                name: zabo-env
+                key: REDIS_URL
