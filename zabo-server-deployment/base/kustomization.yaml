@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
 - deployment.yaml
 - configmap.yaml
+- service.yaml
+- redis-deployment.yaml
