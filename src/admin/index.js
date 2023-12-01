@@ -12,12 +12,12 @@ import {
   Statistic,
   PreRegister,
   Meta,
-  Device,
 } from "../db";
 
 import { GroupResource } from "./resources/Group";
 import { ZaboResource } from "./resources/Zabo";
 import { AdminUserResource } from "./resources/AdminUser";
+import { DeviceResource } from "./resources/Device";
 
 AdminJS.registerAdapter({
   Resource: AdminJSMongoose.Resource,
@@ -35,7 +35,7 @@ const adminOptions = {
     Statistic,
     PreRegister,
     Meta,
-    Device,
+    DeviceResource,
     ZaboResource,
   ],
   componentLoader,
