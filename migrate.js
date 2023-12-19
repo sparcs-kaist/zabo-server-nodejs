@@ -1,5 +1,5 @@
 require ('./config/env');
 
 module.exports = {
-  dbConnectionUri: process.env.CONNECTION_STRING,
+  dbConnectionUri: process.env.MONGODB_URL,
 };

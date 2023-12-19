@@ -43,17 +43,12 @@ spec:
               configMapKeyRef:
                 name: zabo-env
                 key: S3_BUCKET
-          - name: MONGODB_URL
-            valueFrom:
-              configMapKeyRef:
-                name: zabo-env
-                key: MONGODB_URL
           - name: REDIS_URL
             valueFrom:
               configMapKeyRef:
                 name: zabo-env
                 key: REDIS_URL
-          - name: "CONNECTION_STRING"
+          - name: MONGODB_URL
             valueFrom:
               secretKeyRef:
                 name: zabo-mongodb-admin-zabo
