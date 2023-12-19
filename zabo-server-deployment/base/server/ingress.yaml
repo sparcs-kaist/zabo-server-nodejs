@@ -9,7 +9,7 @@ metadata:
     alb.ingress.kubernetes.io/target-type: 'ip'
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:666583083672:certificate/2f5020e0-01dd-43dd-aa7e-0699015d6b89
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-2016-08
-  name: zabo
+  name: zabo-ingress
   namespace: zabo
   finalizers:
     - ingress.k8s.aws/resources
