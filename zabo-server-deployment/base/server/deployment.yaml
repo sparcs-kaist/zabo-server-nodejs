@@ -20,6 +20,7 @@ spec:
           ports:
           - containerPort: 6001
             name: http-port
+            protocol: TCP
           envFrom:
           - secretRef:
               name: zabo-secret
