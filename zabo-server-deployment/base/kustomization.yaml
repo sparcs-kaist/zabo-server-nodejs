@@ -1,7 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- deployment.yaml
-- configmap.yaml
-- service.yaml
-- redis-deployment.yaml
+- ./server/deployment.yaml
+- ./server/configmap.yaml
+- ./server/service.yaml
+- ./redis/deployment.yaml
+- ./redis/service.yaml

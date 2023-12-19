@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zabo-server-service
+spec:
+  selector:
+    app: zabo-server
+  ports:
+  - name: zabo-server-service-port
+    protocol: TCP
+    port: 6001
+    targetPort: zabo-server-port
