@@ -10,4 +10,3 @@ spec:
   - name: http-port
     protocol: TCP
     port: 6001
-    targetPort: http-port
