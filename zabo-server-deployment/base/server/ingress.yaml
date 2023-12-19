@@ -26,7 +26,7 @@ spec:
           service:
             name: zabo-service
             port:
-              number: 443
+              name: http-port
         pathType: Prefix
   tls:
   - hosts:
