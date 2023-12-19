@@ -24,7 +24,7 @@ spec:
       - path: /
         backend:
           service:
-            name: zabo-server-service
+            name: zabo-service
             port:
               number: 443
         pathType: Prefix

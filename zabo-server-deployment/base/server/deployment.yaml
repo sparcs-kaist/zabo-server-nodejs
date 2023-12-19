@@ -19,7 +19,7 @@ spec:
           image: ghcr.io/sparcs-kaist/zabo-server:dev
           ports:
           - containerPort: 6001
-            name: zabo-server-port
+            name: http-port
           envFrom:
           - secretRef:
               name: zabo-secret
