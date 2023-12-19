@@ -25,7 +25,8 @@ spec:
         backend:
           service:
             name: zabo-svc
-            port: 80
+            port: 
+              number: 80
         pathType: Prefix
   tls:
   - hosts:
