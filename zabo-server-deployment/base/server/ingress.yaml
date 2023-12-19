@@ -26,7 +26,7 @@ spec:
           service:
             name: zabo-svc
             port: 
-              number: 80
+              number: 6001
         pathType: Prefix
   tls:
   - hosts:

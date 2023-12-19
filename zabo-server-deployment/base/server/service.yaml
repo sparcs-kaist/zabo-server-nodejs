@@ -8,5 +8,5 @@ spec:
     app: zabo-server
   ports:
   - protocol: TCP
-    port: 80
+    port: 6001
     targetPort: 6001
