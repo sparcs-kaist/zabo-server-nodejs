@@ -4,5 +4,6 @@ resources:
 - ./server/deployment.yaml
 - ./server/configmap.yaml
 - ./server/service.yaml
+- ./server/ingress.yaml
 - ./redis/deployment.yaml
 - ./redis/service.yaml
