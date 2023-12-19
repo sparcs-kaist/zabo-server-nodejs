@@ -23,10 +23,8 @@ spec:
       paths:
       - path: /
         backend:
-          service:
-            name: zabo-service
-            port:
-              name: http-port
+          serviceName: zabo-svc
+          servicePort: 80
         pathType: Prefix
   tls:
   - hosts:
