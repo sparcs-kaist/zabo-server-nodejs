@@ -53,3 +53,8 @@ spec:
               configMapKeyRef:
                 name: zabo-env
                 key: REDIS_URL
+          - name: "CONNECTION_STRING"
+            valueFrom:
+              secretKeyRef:
+                name: zabo-mongodb-admin-zabo
+                key: connectionString.standardSrv
