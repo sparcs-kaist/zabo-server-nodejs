@@ -4,7 +4,7 @@ metadata:
   name: zabo-env
 data:
   NODE_ENV: "production"
-  SSO_CLIENT_ID: "00"
+  SSO_CLIENT_ID: "01"
   AWS_ACCESS_KEY_ID: "00"
   S3_BUCKET: "sparcs-kaist-zabo-prod"
   REDIS_URL: "zabo-redis-service"
