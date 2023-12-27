@@ -13,7 +13,11 @@ services:
     volumes:
       - zabo-server-log:/app/log
     environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - MINIMUM_LOG_LEVEL=info
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
       - SSO_SECRET=${SSO_SECRET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - SESSION_SECRET=${SESSION_SECRET}
       - JWT_SECRET=${JWT_SECRET}
