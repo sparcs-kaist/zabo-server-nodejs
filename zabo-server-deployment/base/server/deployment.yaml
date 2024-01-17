@@ -17,6 +17,7 @@ spec:
       containers:
         - name: zabo-server
           image: ghcr.io/sparcs-kaist/zabo-server:dev
+          imagePullPolicy: Always
           ports:
           - containerPort: 6001
           envFrom:
