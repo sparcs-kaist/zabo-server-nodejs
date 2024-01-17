@@ -33,6 +33,7 @@ app.use(
 app.use(
   cors({
     origin: [/sparcs\.org$/, /kaist\.ac\.kr$/],
+    credentials: true,
   }),
 );
 
@@ -67,7 +68,7 @@ app.use((err, req, res, next) => {
   logger.api.error(err?.message || err); // TODO: Log params and body?
   res.status(err.status || 500);
   res.json({
-    error: err,
+    error: err, // 이거 뭐임? 왜 넣었지 ㅋㅋ 이거 없애도 되는거 아님? ㅋㅋ 이거 없애면 에러 안나는데 ㅋㅋ 이거 왜 넣었지 ㅋㅋ
   });
 });
 
