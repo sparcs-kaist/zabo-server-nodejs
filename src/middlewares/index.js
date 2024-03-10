@@ -62,8 +62,7 @@ export const validateZaboId = validateId("zaboId");
 export const validateDeviceId = validateId("deviceId");
 
 export const isDevice = ash(async (req, res, next) => {
-  const { isDevice } = req.session;
-  const { deviceId } = req.session;
+  const { isDevice, deviceName } = req.session;
 
   if (!isDevice) {
     logger.error(`isDevice middleware; req.session.isDevice is not set.`);
@@ -73,10 +72,10 @@ export const isDevice = ash(async (req, res, next) => {
     });
   }
   if (isDevice) {
-    const device = await Device.findById(deviceId);
+    const device = await Device.findOne({ name: deviceName });
     if (!device) {
       logger.api.error(
-        `[${req.method}] ${req.originalUrl}  request error; 404 - device id : ${deviceId}`,
+        `[${req.method}] ${req.originalUrl}  request error; 404 - deviceName : ${deviceName}`,
       );
       return res.status(404).json({
         error: "device not found",

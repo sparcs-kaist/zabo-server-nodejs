@@ -6,5 +6,7 @@ const router = express.Router();
 
 router.post("/device", isAdmin, bc.addDevice);
 router.delete("/device", isAdmin, bc.removeDevice);
+router.post("/login", bc.deviceLogin);
+router.post("/logout", bc.deviceLogout);
 
 module.exports = router;
