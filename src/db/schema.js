@@ -445,6 +445,17 @@ export const preRegisterSchema = new mongoose.Schema({
   },
 });
 
-export const deviceSchema = new mongoose.Schema({
-  location: String,
-});
+export const deviceSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    passwordHash: String,
+    description: String,
+  },
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+  },
+);
