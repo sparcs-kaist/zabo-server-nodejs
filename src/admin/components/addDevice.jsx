@@ -2,29 +2,27 @@ import React, {useState} from 'react'
 import { H3, Input, Button } from '@adminjs/design-system';
 import axios from 'axios';
 
-const addDevice = async (deviceId, location, password) => {
-    await axios.post('/api/admin/device',
+const addDevice = async (name, description, password) => {
+    const response = await axios.post('/api/board/device',
     {
-        deviceId,
-        password,
-        location
+        name,
+        description,
+        password
     }
     );
-
-    return;
 }
 
 const addDeviceComponent = (props) => {
-    const [deviceId, setDeviceId] = useState("");
-    const [location, setLocation] = useState("");
+    const [name, setName] = useState("");
+    const [description, setDescription] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleDeviceIdChange = (e) => {
-        setDeviceId(e.target.value);
+    const handleNameChange = (e) => {
+        setName(e.target.value);
     }
 
-    const handleLocationChange = (e) => {
-        setLocation(e.target.value);
+    const handleDescriptionChange = (e) => {
+      setDescription(e.target.value);
     }
 
     const handlePasswordChange = (e) => {
@@ -32,16 +30,16 @@ const addDeviceComponent = (props) => {
     }
 
     const handleDeviceSubmit = async() => {
-        await addDevice(deviceId, location, password);
+        await addDevice(name, description, password);
     }
 
     return (
         <div>
             <H3> Create your zabo boards device</H3>
             <br/>
-            <Input type="text" onChange={handleDeviceIdChange} placeholder="deviceId"/>
+            <Input type="text" onChange={handleNameChange} placeholder="name" />
             <br/>
-            <Input type="text" onChange={handleLocationChange} placeholder="location" />
+            <Input type="text" onChange={handleDescriptionChange} placeholder="description" />
             <br/>
             <Input type="password" onChange={handlePasswordChange} placeholder="password" />
             <br/>

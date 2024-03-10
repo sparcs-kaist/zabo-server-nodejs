@@ -1,6 +1,6 @@
 import ash from "express-async-handler";
 import jwt from "jsonwebtoken";
-import { AdminUser, Group, User, Zabo } from "../db";
+import { AdminUser, Device, Group, User, Zabo } from "../db";
 import { logger } from "../utils/logger";
 import { isValidId } from "../utils";
 import { adminGroupConfig } from "../../config/adminGroup";
@@ -61,27 +61,31 @@ export const validateZaboId = validateId("zaboId");
 
 export const validateDeviceId = validateId("deviceId");
 
-export const findDeviceMiddleware = ash(async (req, res, next) => {
-  const { deviceId } = req;
-  if (!deviceId) {
-    logger.api.error(
-      `[${req.method}] ${req.originalUrl} request error; 400 - empty device id`,
-    );
-    return res.status(400).json({
-      error: "bad request: device id required",
-    });
-  }
-  const device = await Device.findById(deviceId);
-  if (!device) {
-    logger.api.error(
-      `[${req.method}] ${req.originalUrl}  request error; 404 - device id : ${deviceId}`,
-    );
+export const isDevice = ash(async (req, res, next) => {
+  const { isDevice } = req.session;
+  const { deviceId } = req.session;
+
+  if (!isDevice) {
+    logger.error(`isDevice middleware; req.session.isDevice is not set.`);
     return res.status(404).json({
-      error: "device not found",
+      error:
+        "device session cookie is not set. Please log out and login again.",
     });
   }
-  req.device = device;
-  return next();
+  if (isDevice) {
+    const device = await Device.findById(deviceId);
+    if (!device) {
+      logger.api.error(
+        `[${req.method}] ${req.originalUrl}  request error; 404 - device id : ${deviceId}`,
+      );
+      return res.status(404).json({
+        error: "device not found",
+      });
+    }
+
+    req.device = device;
+    return next();
+  }
 });
 
 export const isAdmin = ash(async (req, res, next) => {
