@@ -454,6 +454,11 @@ export const deviceSchema = new mongoose.Schema(
     },
     passwordHash: String,
     description: String,
+    lastSeen: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Zabo",
+      required: false,
+    },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

@@ -9,4 +9,8 @@ router.delete("/device", isAdmin, bc.removeDevice);
 router.post("/login", bc.deviceLogin);
 router.post("/logout", bc.deviceLogout);
 
+// TODO
+// create API that sends zabo list to device
+router.get("/list", isDevice, bc.getDeviceZabos);
+
 module.exports = router;

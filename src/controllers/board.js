@@ -1,7 +1,9 @@
 import ash from "express-async-handler";
 import { hash, compare } from "bcrypt";
+import { last } from "lodash";
 import { logger } from "../utils/logger";
-import { Device } from "../db";
+import { Device, Zabo } from "../db";
+import { queryZabos } from "./zabo";
 
 const checkDeviceNameUnique = async name => {
   const device = await Device.findOne({ name });
@@ -116,4 +118,23 @@ export const deviceLogout = ash(async (req, res) => {
   res.json({
     message: "Device Logout Success!",
   });
+});
+
+// TODO
+// implement good sorting for zabo score...
+export const getDeviceZabos = ash(async (req, res) => {
+  // get device information that is created from isDevice middleware
+  const deviceInfo = req.device;
+
+  const zaboList = await queryZabos({}, {});
+
+  // update lastSeen
+  console.log(`${zaboList}`);
+  console.log(`${deviceInfo._id}`);
+  const newLastSeen = last(zaboList)._id;
+  await Device.findByIdAndUpdate(deviceInfo._id, {
+    lastSeen: newLastSeen,
+  });
+
+  return res.send(zaboList);
 });
