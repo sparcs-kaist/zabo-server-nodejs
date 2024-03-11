@@ -182,7 +182,7 @@ export const deleteZabo = ash(async (req, res) => {
   return res.send(true);
 });
 
-const queryZabos = async (req, queryOptions, sortBy = "createdAt") => {
+export const queryZabos = async (req, queryOptions, sortBy = "createdAt") => {
   const sortOption = {};
   sortOption[sortBy] = -1;
   const zabos = await Zabo.find(queryOptions)
