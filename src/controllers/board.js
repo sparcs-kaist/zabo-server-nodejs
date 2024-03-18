@@ -80,11 +80,11 @@ export const deviceLogin = ash(async (req, res) => {
 
   // check password
   const match = await checkDevicePassword(name, password);
-  console.log(`match: ${match}`);
 
   if (!match) {
     logger.api.info(`POST /board/login request: name: ${name} FAILED`);
     return res.json({
+      success: false,
       error: `Invalid Credentials. Please check device name and password.`,
     });
   }
@@ -95,6 +95,7 @@ export const deviceLogin = ash(async (req, res) => {
   req.session.deviceName = name;
 
   return res.json({
+    success: true,
     message: "Device Login Success!",
   });
 });
