@@ -73,9 +73,6 @@ export const removeDevice = ash(async (req, res) => {
   });
 });
 
-// TODO
-// having error at deviceLogin controller
-// it accepts login if name and password is undefined
 export const deviceLogin = ash(async (req, res) => {
   const { name, password } = req.body;
 
@@ -131,7 +128,7 @@ export const getDeviceZabos = ash(async (req, res) => {
   const zaboList = await queryZabos({}, {});
 
   // create zaboIdList
-  const zaboIdList = _.map(zaboList, zabo => zabo._id || zabo.id);
+  const zaboIdList = zaboList.map(zabo => zabo._id || zabo.id);
 
   statBoard({ deviceInfo, zaboIds: zaboIdList });
 
