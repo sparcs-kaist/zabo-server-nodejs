@@ -41,7 +41,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set("jwt-secret", process.env.JWT_SECRET);
-app.set("device-jwt-secret", process.env.DEVICE_JWT_SECRET);
 
 app.get("/api/hc", (req, res) => {
   res.sendStatus(200);
