@@ -1,9 +1,10 @@
 import ash from "express-async-handler";
 import { hash, compare } from "bcrypt";
-import { last } from "lodash";
+import _, { last } from "lodash";
 import { logger } from "../utils/logger";
 import { Device, Zabo } from "../db";
 import { queryZabos } from "./zabo";
+import { statBoard } from "../utils/statistic";
 
 const checkDeviceNameUnique = async name => {
   const device = await Device.findOne({ name });
@@ -129,9 +130,12 @@ export const getDeviceZabos = ash(async (req, res) => {
 
   const zaboList = await queryZabos({}, {});
 
+  // create zaboIdList
+  const zaboIdList = _.map(zaboList, zabo => zabo._id || zabo.id);
+
+  statBoard({ deviceInfo, zaboIds: zaboIdList });
+
   // update lastSeen
-  console.log(`${zaboList}`);
-  console.log(`${deviceInfo._id}`);
   const newLastSeen = last(zaboList)._id;
   await Device.findByIdAndUpdate(deviceInfo._id, {
     lastSeen: newLastSeen,

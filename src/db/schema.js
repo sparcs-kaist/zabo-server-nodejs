@@ -464,3 +464,26 @@ export const deviceSchema = new mongoose.Schema(
     timestamps: { createdAt: true, updatedAt: false },
   },
 );
+
+export const deviceLogSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      required: true,
+      enum: EVENTS,
+    },
+    device: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Device",
+    },
+    zabos: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Zabo",
+      },
+    ],
+  },
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+  },
+);
