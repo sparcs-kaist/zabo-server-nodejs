@@ -43,6 +43,7 @@ router.get(
 );
 router.get("/list/hot", zc.listHotZabos);
 router.get("/list/deadline", zc.listMagamImbakList);
+
 router.post("/:zaboId/pin", findZaboWithAuth, zc.pinZabo);
 router.post("/:zaboId/like", findZaboWithAuth, zc.likeZabo);
 router.post("/:zaboId/share", findZaboWithAuth, zc.shareZabo);

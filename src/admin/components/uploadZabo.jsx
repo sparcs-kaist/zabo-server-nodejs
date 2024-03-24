@@ -128,7 +128,7 @@ const uploadZaboComponent =  (props) => {
     await sortedImageFiles.sort(gridLayoutCompareFunction);
     
     const {width, height} = await imageFileGetWidthHeight(sortedImageFiles[0]);
-    const ratio = width / height;
+    let ratio = width / height;
     if (ratio > 2) ratio = 2;
     else if (ratio < 0.5) ratio = 0.5;
     const sources = await Promise.all(sortedImageFiles.map((file) => cropImage(file, ratio)));
@@ -144,7 +144,6 @@ const uploadZaboComponent =  (props) => {
       },
   });
 
-    return
   }
   
   return (

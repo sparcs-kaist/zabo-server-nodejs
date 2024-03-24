@@ -7,6 +7,7 @@ import zaboRoutes from "./zabo";
 import groupRoutes from "./group";
 import searchRoutes from "./search";
 import shareRoutes from "./share";
+import boardRoutes from "./board";
 import { isAdmin, setCurrGroup2admin } from "../middlewares";
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.use("/zabo", zaboRoutes);
 router.use("/group", groupRoutes);
 router.use("/search", searchRoutes);
 router.use("/s", shareRoutes);
+router.use("/board", boardRoutes);
 
 module.exports = router;
