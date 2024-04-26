@@ -71,6 +71,7 @@ const uploadZaboComponent =  (props) => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [schedule, setSchedule] = useState({});
+  const [showBoard, setShowBoard] = useState(false);
 
   const handleZaboChange = (e) => {
     const files = Array.from(e.target.files);
@@ -119,6 +120,7 @@ const uploadZaboComponent =  (props) => {
     zaboJSON.append("title", title);
     zaboJSON.append("description", description);
     zaboJSON.append("category", category);
+    zaboJSON.append("showBoard", showBoard);
     //TODO: handle if schedule exists
     // formData.append("schedule", schedule);
 
