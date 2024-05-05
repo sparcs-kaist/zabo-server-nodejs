@@ -7,6 +7,7 @@ const Components = {
     "uploadZaboComponent",
     "./uploadZabo",
   ),
+  addDeviceComponent: componentLoader.add("addDeviceComponent", "./addDevice"),
 };
 
 export { componentLoader, Components };

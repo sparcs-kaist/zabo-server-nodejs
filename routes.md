@@ -46,6 +46,14 @@
 * [`POST`](routes.md) /zabo/:zaboId/share
 * [`DELETE`](routes.md) /zabo/:zaboId/
 
+### Board
+* [`POST`](routes.md) /board/device
+* [`DELETE`](routes.md) /board/device
+* [`POST`](routes.md) /board/login
+* [`POST`](routes.md) /board/logout
+* [`GET`](routes.md) /board/list
+
+
 ## Authentication
 
 Following **Authorization** field must be set in HTTP request header
@@ -360,6 +368,40 @@ TODO: 그룹의 정보 \(사진\)을 업데이트할 수 있습니다. 이름도
 **Errors**
 
 400 : null id 500
+
+### Board
+#### `POST` /board/device { name, description, password } => deviceInfo
+자보 보드를 게시할 디바이스를 생성합니다. Admin 패널에서 생성할 수 있습니다.
+Admin 권한이 필요합니다. 기존의 디바이스들과 이름이 겹치면 생성되지 않습니다.
+
+유효성 확인
+* 관리자이여야 합니다.
+* 기존의 디바이스와 겹치지 않는 디바이스 이름이여야 합니다.
+
+#### `DELETE` /board/device { name } => { message }
+자보 보드를 게시하는 디바이스를 삭제합니다. Admin 패널에서 삭제할 수 있습니다.
+
+유효성 확인
+* 관리자이여야 합니다.
+* 유효한 디바이스 이름이여야 합니다.
+
+#### `POST` /board/login { name, password } => { success, message }
+자보 보드 디바이스에 로그인합니다. 세션 쿠키를 사용하여 인증합니다.
+
+유효성 확인
+* 올바른 디바이스 이름 및 비밀번호인지 확인합니다.
+
+#### `POST` /board/logout => { message }
+자보 보드 디바이스에서 로그아웃합니다. 
+
+유효성 확인
+* 디바이스로 로그인되어있어야 합니다.
+
+#### `GET` /board/list => zaboList
+디바이스에서 자보 보드용 자보를 받아옵니다. 디바이스 로깅을 위해 /zabo/list와 분리해서 사용해야 합니다.
+
+유효성 확인
+* 디바이스로 로그인되어있어야 합니다.
 
 ## English
 

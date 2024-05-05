@@ -2,6 +2,7 @@ export const EVENTS_MAP = {
   REGISTER: "REGISTER",
   GET_ZABO: "GET_ZABO",
   SEARCH: "SEARCH",
+  SHOW: "SHOW", // used in Zabo Boards device logging
 };
 export const EVENTS = Object.values(EVENTS_MAP);
 export const RESERVED_ROUTES_USERNAME_EXCEPTIONS = [
