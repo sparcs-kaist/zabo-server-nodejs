@@ -74,6 +74,7 @@ const zaboSchemaObject = {
       eventType: String, // '행사' or '신청'
     },
   ],
+  showBoard: Boolean,
   pins: [
     {
       type: mongoose.Schema.ObjectId,

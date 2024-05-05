@@ -64,7 +64,7 @@ export const getZabo = ash(async (req, res) => {
 
 export const postNewZabo = ash(async (req, res) => {
   const { self } = req;
-  const { title, description, schedules: jsonSchedules } = req.body;
+  const { title, description, schedules: jsonSchedules, showBoard } = req.body;
   const schedules = parseJSON(jsonSchedules, []);
   let { category } = req.body;
   logger.zabo.info(
@@ -74,6 +74,7 @@ export const postNewZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
     req.files,
   );
   category = (category || "")
@@ -99,6 +100,7 @@ export const postNewZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
   });
 
   const calSizes = [];
@@ -133,7 +135,7 @@ export const postNewZabo = ash(async (req, res) => {
 
 export const editZabo = ash(async (req, res) => {
   const { zabo } = req;
-  const { title, description, schedules = [] } = req.body;
+  const { title, description, schedules = [], showBoard } = req.body;
   let { category } = req.body;
   logger.zabo.info(
     "post /zabo/%s/edit request; title: %s, description: %s, category: %s, schedules: %s",
@@ -142,6 +144,7 @@ export const editZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
   );
   category = (category || "")
     .toLowerCase()
@@ -151,12 +154,14 @@ export const editZabo = ash(async (req, res) => {
   zabo.description = description;
   zabo.category = category;
   zabo.schedules = schedules;
+  zabo.showBoard = showBoard;
   await zabo.save();
   return res.json({
     title: zabo.title,
     description: zabo.description,
     category: zabo.category,
     schedules: zabo.schedules,
+    showBoard: zabo.showBoard,
   });
 });
 
