@@ -1,6 +1,6 @@
 import ash from "express-async-handler";
 import jwt from "jsonwebtoken";
-import { AdminUser, Group, User, Zabo } from "../db";
+import { AdminUser, Device, Group, User, Zabo } from "../db";
 import { logger } from "../utils/logger";
 import { isValidId } from "../utils";
 import { adminGroupConfig } from "../../config/adminGroup";
@@ -58,6 +58,34 @@ export const validateId = key => (req, res, next) => {
   return next();
 };
 export const validateZaboId = validateId("zaboId");
+
+export const validateDeviceId = validateId("deviceId");
+
+export const isDevice = ash(async (req, res, next) => {
+  const { isDevice, deviceName } = req.session;
+
+  if (!isDevice) {
+    logger.error(`isDevice middleware; req.session.isDevice is not set.`);
+    return res.status(404).json({
+      error:
+        "device session cookie is not set. Please log out and login again.",
+    });
+  }
+  if (isDevice) {
+    const device = await Device.findOne({ name: deviceName });
+    if (!device) {
+      logger.api.error(
+        `[${req.method}] ${req.originalUrl}  request error; 404 - deviceName : ${deviceName}`,
+      );
+      return res.status(404).json({
+        error: "device not found",
+      });
+    }
+
+    req.device = device;
+    return next();
+  }
+});
 
 export const isAdmin = ash(async (req, res, next) => {
   const { isAdmin } = req.session;

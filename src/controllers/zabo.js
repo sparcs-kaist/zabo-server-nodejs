@@ -3,7 +3,7 @@ import moment from "moment";
 import { logger } from "../utils/logger";
 import { sizeS3Item } from "../utils/aws";
 import { statZabo } from "../utils/statistic";
-import { User, Zabo, Group, Board, DeletedZabo } from "../db";
+import { User, Zabo, Group, Board, DeletedZabo, Device } from "../db";
 import { isValidId, parseJSON } from "../utils";
 import {
   populateZaboPrivateStats,
@@ -64,7 +64,7 @@ export const getZabo = ash(async (req, res) => {
 
 export const postNewZabo = ash(async (req, res) => {
   const { self } = req;
-  const { title, description, schedules: jsonSchedules } = req.body;
+  const { title, description, schedules: jsonSchedules, showBoard } = req.body;
   const schedules = parseJSON(jsonSchedules, []);
   let { category } = req.body;
   logger.zabo.info(
@@ -74,6 +74,7 @@ export const postNewZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
     req.files,
   );
   category = (category || "")
@@ -99,6 +100,7 @@ export const postNewZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
   });
 
   const calSizes = [];
@@ -133,7 +135,7 @@ export const postNewZabo = ash(async (req, res) => {
 
 export const editZabo = ash(async (req, res) => {
   const { zabo } = req;
-  const { title, description, schedules = [] } = req.body;
+  const { title, description, schedules = [], showBoard } = req.body;
   let { category } = req.body;
   logger.zabo.info(
     "post /zabo/%s/edit request; title: %s, description: %s, category: %s, schedules: %s",
@@ -142,6 +144,7 @@ export const editZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
   );
   category = (category || "")
     .toLowerCase()
@@ -151,12 +154,14 @@ export const editZabo = ash(async (req, res) => {
   zabo.description = description;
   zabo.category = category;
   zabo.schedules = schedules;
+  zabo.showBoard = showBoard;
   await zabo.save();
   return res.json({
     title: zabo.title,
     description: zabo.description,
     category: zabo.category,
     schedules: zabo.schedules,
+    showBoard: zabo.showBoard,
   });
 });
 
@@ -182,16 +187,18 @@ export const deleteZabo = ash(async (req, res) => {
   return res.send(true);
 });
 
-const queryZabos = async (req, queryOptions) => {
+export const queryZabos = async (req, queryOptions, sortBy = "createdAt") => {
+  const sortOption = {};
+  sortOption[sortBy] = -1;
   const zabos = await Zabo.find(queryOptions)
-    .sort({ score: -1 })
+    .sort(sortOption)
     .limit(20)
     .populate("owner", "name profilePhoto subtitle description");
   return populateZabosPrivateStats(zabos, req.self);
 };
 
 export const listHotZabos = ash(async (req, res) => {
-  const zabos = await queryZabos(req, {}); // TODO: Store likes count with pre
+  const zabos = await queryZabos(req, {}, "score"); // TODO: Store likes count with pre
   // save
   // or some other hooks
   const results = [];
@@ -253,6 +260,35 @@ export const listNextZabos = ash(async (req, res) => {
   let queryOptions = {};
   if (relatedTo) {
     const zabo = await Zabo.findById(relatedTo);
+    if (!zabo) {
+      logger.zabo.error(
+        "get /zabo/list request error; 404 - related zabo does not exist",
+      );
+      return res.status(404).json({
+        error: "related zabo does not exist",
+      });
+    }
+    queryOptions = {
+      category: { $in: zabo.category },
+      _id: { $ne: relatedTo },
+    };
+  }
+  if (lastSeen) {
+    const lastSeenZabo = await Zabo.findById(lastSeen, "score");
+    queryOptions.score = {
+      $lt: lastSeenZabo.score,
+    };
+  }
+  const result = await queryZabos(req, queryOptions);
+  return res.send(result);
+});
+
+export const listZabosForBoard = ash(async (req, res) => {
+  const { lastSeen, relatedTo } = req.query;
+  let queryOptions = {};
+  if (relatedTo) {
+    const zabo = await Zabo.findById(relatedTo);
+    // const device = await Device.findById()
     if (!zabo) {
       logger.zabo.error(
         "get /zabo/list request error; 404 - related zabo does not exist",

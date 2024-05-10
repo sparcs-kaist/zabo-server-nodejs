@@ -53,6 +53,20 @@ services:
       - DB_STR=zabo
     volumes:
       - zabo-scheduler-log:/backup_log:rw
+  
+#  zabo-worker:
+#    container_name: zabo-worker
+#    restart: always
+#    build:
+#      context: ..
+#      dockerfile: .worker/Dockerfile
+#    environment:
+#      - NODE_ENV=${NODE_ENV:-production}
+#      - MINIMUM_LOG_LEVEL=info
+#      - MONGODB_URL=mongodb://zabo-mongo:27017/zabo
+#      - DB_STR=zabo
+#    volumes:
+#      - zabo-worker-log:/backup_log:rw
 
 volumes:
   zabo-server-log:
@@ -61,3 +75,5 @@ volumes:
     external: true
   zabo-scheduler-log:
     external: true 
+#  zabo-worker-log:
+#    external: true

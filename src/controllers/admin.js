@@ -101,7 +101,7 @@ export const checkAdmin = ash(async (req, res, next) => {
 export const postNewZabo = ash(async (req, res) => {
   const self = req.adminUser.user;
 
-  const { title, description, schedules: jsonSchedules } = req.body;
+  const { title, description, schedules: jsonSchedules, showBoard } = req.body;
   const schedules = parseJSON(jsonSchedules, []);
   let { category } = req.body;
   logger.zabo.info(
@@ -111,6 +111,7 @@ export const postNewZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
     req.files,
   );
   category = (category || "")
@@ -142,6 +143,7 @@ export const postNewZabo = ash(async (req, res) => {
     description,
     category,
     schedules,
+    showBoard,
   });
 
   const calSizes = [];

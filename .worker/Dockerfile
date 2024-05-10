@@ -1,4 +1,4 @@
-FROM node:18.18.2-alpine
+FROM node:16-alpine
 
 
 RUN apk add --no-cache git
@@ -11,5 +11,4 @@ RUN yarn
 
 COPY . .
 
-EXPOSE 80
-ENTRYPOINT [ "yarn", "start" ]
+CMD ["node", "worker.js"]

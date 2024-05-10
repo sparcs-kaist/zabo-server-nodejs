@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zabo-redis
+  labels:
+    app: zabo-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zabo-redis
+  template:
+    metadata:
+      labels:
+        app: zabo-redis
+    spec:
+      containers:
+      - name: zabo-redis
+        image: redis:7.0.4-alpine
+        ports:
+        - containerPort: 6379
+          name: zabo-redis-port

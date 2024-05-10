@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zabo-env
+data:
+  NODE_ENV: "production"
+  SSO_CLIENT_ID: "zabo"
+  AWS_ACCESS_KEY_ID: "AKIAZWM3SVKMFPOO3OOU"
+  S3_BUCKET: "sparcs-kaist-zabo-prod"
+  REDIS_URL: "zabo-redis-service"

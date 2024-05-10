@@ -1,4 +1,4 @@
-import { Statistic } from "../db";
+import { Statistic, DeviceLog } from "../db";
 import { EVENTS_MAP } from "./variables";
 
 export const statZabo = async ({ zaboId, decoded }) => {
@@ -9,6 +9,18 @@ export const statZabo = async ({ zaboId, decoded }) => {
     user: decoded._id || decoded.id,
   };
   return Statistic.create(data);
+};
+
+export const statBoard = async ({ deviceInfo, zaboIds }) => {
+  // TODO
+  // make statistic generator for zabo boards
+  const data = {
+    type: EVENTS_MAP.SHOW,
+    device: deviceInfo._id || deviceInfo.id,
+    zabos: zaboIds,
+  };
+
+  return DeviceLog.create(data);
 };
 
 export const statSearch = async ({ query, category, decoded }) => {
